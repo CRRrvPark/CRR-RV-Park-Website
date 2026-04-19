@@ -1,0 +1,36 @@
+---
+import { blockText, blockHtml, blockJson, webpFor, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', 'The Region');
+const headline = blockText(blocks, 'headline', '');
+const headlineItalic = blockText(blocks, 'headline_italic', '');
+const intro = blockHtml(blocks, 'intro', '');
+const cards = blockJson<{ image: string; alt: string; distance: string; title: string; desc: string; href: string }[]>(blocks, 'cards', []);
+---
+<section style="background:#fff;">
+  <div class="container">
+    <div class="reveal">
+      {label && <span class="section-label">{label}</span>}
+      <h2 class="st">{headline}{headlineItalic && <><br /><em>{headlineItalic}</em></>}</h2>
+      {intro && <p class="section-body" set:html={intro}></p>}
+    </div>
+    <div class="ex-grid">
+      {cards.map((c, i) => (
+        <a href={c.href} class={`ex-card reveal${i % 3 === 1 ? ' rd1' : i % 3 === 2 ? ' rd2' : ''} ex-link`}>
+          <div class="ex-vis">
+            <picture>
+              <source srcset={webpFor(c.image)} type="image/webp" />
+              <img src={c.image} alt={c.alt} width="1400" height="931" loading="lazy" />
+            </picture>
+            <div class="ex-dist">{c.distance}</div>
+          </div>
+          <div class="ex-body">
+            <div class="ex-title">{c.title}</div>
+            <div class="ex-desc">{c.desc}</div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

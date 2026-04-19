@@ -1,0 +1,55 @@
+---
+import { blockText, blockHtml, blockJson, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', 'Site Types');
+const headline = blockText(blocks, 'headline', '');
+const headlineItalic = blockText(blocks, 'headline_italic', '');
+const intro = blockHtml(blocks, 'intro', '');
+interface Tag { text: string; highlight?: boolean; }
+interface Card { featured?: boolean; badge?: string; title: string; description: string; tags: Tag[]; price_nightly?: number; price_weekly?: number; href?: string; }
+const cards = blockJson<Card[]>(blocks, 'cards', []);
+---
+<section id="sites" style="background:#fff;">
+  <div class="container">
+    <div class="sites-intro reveal">
+      {label && <span class="section-label">{label}</span>}
+      <h2 class="st">{headline}{headlineItalic && <><br /><em>{headlineItalic}</em></>}</h2>
+      {intro && <p class="section-body" set:html={intro}></p>}
+    </div>
+    <div class="sites-grid">
+      {cards.map((c, i) => {
+        const rd = i % 4 === 1 ? ' rd1' : i % 4 === 2 ? ' rd2' : i % 4 === 3 ? ' rd3' : '';
+        const ext = typeof c.href === 'string' && c.href.startsWith('http');
+        const body = (
+          <>
+            {c.badge && <div class="site-card-label">{c.badge}</div>}
+            <h3>{c.title}</h3>
+            <p set:html={c.description}></p>
+            <div class="site-specs">
+              {c.tags.map((t) => (
+                <span class={`spec-tag${t.highlight ? ' highlight' : ''}`}>{t.text}</span>
+              ))}
+            </div>
+            {(c.price_nightly || c.price_weekly) && (
+              <div class="site-price">
+                From <strong>${c.price_nightly}</strong><small>/night</small>
+                {c.price_weekly && <> · <strong>${c.price_weekly}</strong><small>/week</small></>}
+              </div>
+            )}
+          </>
+        );
+        return c.href ? (
+          <a
+            class={`site-card site-card-link${c.featured ? ' featured' : ''} reveal${rd}`}
+            href={c.href}
+            target={ext ? '_blank' : undefined}
+            rel={ext ? 'noopener noreferrer' : undefined}
+          >{body}</a>
+        ) : (
+          <div class={`site-card${c.featured ? ' featured' : ''} reveal${rd}`}>{body}</div>
+        );
+      })}
+    </div>
+  </div>
+</section>

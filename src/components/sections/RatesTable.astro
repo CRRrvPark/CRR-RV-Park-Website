@@ -1,0 +1,39 @@
+---
+import { blockText, blockJson, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', 'Rates');
+const headline = blockText(blocks, 'headline', '');
+interface Row { name: string; nightly?: number; weekly?: number; monthly?: number; notes?: string; }
+const rows = blockJson<Row[]>(blocks, 'rows', []);
+---
+<section class="sec-dark" style="padding:3rem 0;">
+  <div class="container">
+    <div class="reveal" style="margin-bottom:1.5rem;">
+      {label && <span class="section-label" style="color:var(--gold);">{label}</span>}
+      {headline && <h2 class="st" style="color:#fff;">{headline}</h2>}
+    </div>
+    <table class="rate-table">
+      <thead>
+        <tr>
+          <th>Site Type</th>
+          <th>Nightly</th>
+          <th>Weekly</th>
+          <th>Monthly</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr>
+            <td>{r.name}</td>
+            <td>{r.nightly !== undefined ? <span class="rate-price">${r.nightly}</span> : '—'}</td>
+            <td>{r.weekly !== undefined ? <span class="rate-price">${r.weekly}</span> : '—'}</td>
+            <td>{r.monthly !== undefined ? <span class="rate-price">${r.monthly}</span> : '—'}</td>
+            <td>{r.notes || ''}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

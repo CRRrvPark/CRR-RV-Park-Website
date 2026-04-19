@@ -1,0 +1,76 @@
+---
+/**
+ * Dynamic public page route. Renders any user-created page from the database.
+ *
+ * Astro's static pre-rendered files (index.astro, book-now.astro, etc.) take
+ * precedence over this dynamic route, so existing hand-coded pages are
+ * unaffected. New pages created via the admin's "+ New Page" button are
+ * served by this route.
+ *
+ * Route resolution at request time:
+ *   1. Look up `pages` row by slug
+ *   2. 404 if not found OR is_draft=true (drafts only visible to admin preview)
+ *   3. Render via PageRenderer using the page's stored sections + content
+ *
+ * Note on prerender: this route is dynamic (SSR) so newly-created pages
+ * appear without a rebuild. For static deploy targets, you'd use a
+ * getStaticPaths() that pulls from the DB and re-runs on each build.
+ */
+
+import Base from '@layouts/Base.astro';
+import PageRenderer from '@components/PageRenderer.astro';
+import { serverClient } from '@lib/supabase';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+interface PageRow {
+  id: string;
+  slug: string;
+  title: string;
+  meta_description: string | null;
+  canonical_url: string | null;
+  og_image: string | null;
+  hero_preload: string | null;
+  is_draft: boolean;
+  schemas: unknown;
+}
+
+let page: PageRow | null = null;
+const hasUrl = Boolean(import.meta.env.PUBLIC_SUPABASE_URL ?? (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined));
+const hasKey = Boolean((import.meta.env as any).SUPABASE_SERVICE_ROLE_KEY ?? (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined));
+
+if (hasUrl && hasKey && slug) {
+  try {
+    const sb = serverClient();
+    const { data } = await sb.from('pages').select('*').eq('slug', slug).maybeSingle();
+    page = data;
+  } catch (err) {
+    console.warn('[/[slug].astro] DB lookup failed:', err);
+  }
+}
+
+// 404 if page doesn't exist OR is a draft (drafts not visible publicly)
+if (!page || page.is_draft) {
+  return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
+const schemas = Array.isArray(page.schemas) ? page.schemas as Record<string, unknown>[] : [];
+---
+<Base
+  title={page.title}
+  description={page.meta_description ?? ''}
+  canonical={page.canonical_url ?? `https://www.crookedriverranchrv.com/${page.slug}`}
+  ogImage={page.og_image ?? undefined}
+  heroImagePreload={page.hero_preload ?? undefined}
+  schemas={schemas}
+>
+  <PageRenderer pageSlug={page.slug}>
+    <!-- Empty fallback: a custom page with zero sections renders an empty page.
+         Editors should add at least one section before publishing. -->
+    <section style="padding:6rem 0;text-align:center;color:var(--muted);">
+      <p>This page has no content yet.</p>
+    </section>
+  </PageRenderer>
+</Base>

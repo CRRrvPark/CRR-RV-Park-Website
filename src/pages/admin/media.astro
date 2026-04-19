@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { MediaAdmin } from '@components/react/MediaAdmin.tsx';
+---
+<AdminBase
+  title="Media Library"
+  subtitle="Every photo on the site. Drag & drop to upload, or edit details and copy URLs."
+  active="media"
+>
+  <MediaAdmin client:only="react" />
+</AdminBase>

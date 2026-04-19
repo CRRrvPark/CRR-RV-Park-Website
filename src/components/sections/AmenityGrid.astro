@@ -1,0 +1,10 @@
+---
+// AmenityGrid is functionally identical to CardGrid — kept as a separate type
+// so editors can pick a clear "Amenity" semantic and so we can diverge styling
+// later without breaking either.
+import CardGrid from './CardGrid.astro';
+import type { BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+---
+<CardGrid blocks={blocks} />

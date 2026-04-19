@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { UsersAdmin } from '@components/react/UsersAdmin.tsx';
+---
+<AdminBase
+  title="Users"
+  subtitle="Invite editors, change roles, and manage access. Owner-only for changes."
+  active="users"
+>
+  <UsersAdmin client:only="react" />
+</AdminBase>

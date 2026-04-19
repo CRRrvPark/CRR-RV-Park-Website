@@ -1,0 +1,163 @@
+[build]
+  command = "npm run build"
+  # Astro's Netlify adapter emits a serverless bundle into `dist/` and
+  # wires up functions/edge automatically. Don't point publish elsewhere.
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--include=dev"
+
+  # -------- Netlify secrets scanner configuration --------
+  # Netlify scans every file in the repo + build output for values of the
+  # environment variables set in the dashboard, and blocks the deploy if any
+  # are found. That's great for accidental leaks of real secrets, but a few
+  # of our vars are INTENTIONALLY exposed or public identifiers:
+  #
+  #   - PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY: Vite bakes these into
+  #     the browser bundle — that's by design. Supabase's anon key is safe to
+  #     publish; access is governed by Row-Level Security, not by secrecy.
+  #   - NETLIFY_SITE_ID: an identifier that shows up in URLs and logs already.
+  #   - SITE_URL / ADMIN_EMAIL_FROM: public contact info.
+  #   - ZOHO_REDIRECT_URI / ZOHO_ACCOUNT_DOMAIN: fixed public URIs.
+  #   - ZOHO_WORKDRIVE_MEDIA_FOLDER_ID / ZOHO_CALENDAR_PUBLIC_EVENTS_ID:
+  #     resource IDs — not secrets, but the scanner flags them because they
+  #     look like opaque tokens.
+  #
+  # The SECRET values (service role key, NETLIFY_AUTH_TOKEN, Zoho client
+  # secret + refresh token, SCHEDULED_FN_SECRET) stay under scanner
+  # protection.
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY,NETLIFY_SITE_ID,SITE_URL,ADMIN_EMAIL_FROM,ZOHO_REDIRECT_URI,ZOHO_ACCOUNT_DOMAIN,ZOHO_WORKDRIVE_MEDIA_FOLDER_ID,ZOHO_CALENDAR_PUBLIC_EVENTS_ID,ZOHO_CLIENT_ID"
+
+  # Skip scanning our own documentation — they mention env-var NAMES and
+  # shaped placeholders but not real values. NOTE: `.env.example` is
+  # intentionally NOT in this list — the scanner should check it, because
+  # we've been burned by real keys ending up in the template. If it ever
+  # false-positives on a placeholder, sanitize the placeholder instead of
+  # re-adding the whitelist exemption.
+  SECRETS_SCAN_OMIT_PATHS = "NETLIFY-DEPLOY.md,HANDOFF-TO-NEXT-SESSION.md,CHECKIN.md,SETUP.md,README.md,RUNBOOK.md,SPEC-PHASE-1.md"
+
+[functions]
+  # The Astro Netlify adapter (v5+) emits SSR functions into .netlify/v1/functions/
+  # using the new Functions v2 format. Point the directory here so Netlify CLI
+  # finds and deploys the SSR function bundle during `netlify deploy --prod`.
+  directory = ".netlify/v1/functions"
+  node_bundler = "esbuild"
+  # sharp ships with prebuilt binaries per platform; keep it external so
+  # the Linux build isn't blocked by our Windows dev machines.
+  external_node_modules = ["sharp"]
+
+# ---------- Security headers ----------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.clarity.ms https://c.bing.com https://*.supabase.co https://*.zoho.com https://*.zohousercontent.com; frame-src https://www.google.com; connect-src 'self' https://*.clarity.ms https://c.bing.com https://*.supabase.co wss://*.supabase.co https://accounts.zoho.com https://workdrive.zoho.com https://calendar.zoho.com https://mail.zoho.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+# ---------- Cache policy ----------
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Admin routes must never be cached
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+    X-Robots-Tag = "noindex, nofollow"
+
+# ---------- Scheduled Functions ----------
+[functions."zoho-drive-sync"]
+  schedule = "*/15 * * * *"
+
+[functions."zoho-calendar-sync"]
+  schedule = "17 * * * *"
+
+[functions."snapshots-prune"]
+  schedule = "23 3 * * *"
+
+# ---------- Pretty URLs (extensionless) ----------
+# With output:'server', Astro emits pages at their slug (no .html suffix)
+# so these redirects keep any old inbound links working. Harmless if the
+# target already serves.
+[[redirects]]
+  from = "/book-now.html"
+  to = "/book-now"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/golf-stays.html"
+  to = "/golf-stays"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/golf-course.html"
+  to = "/golf-course"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/group-sites.html"
+  to = "/group-sites"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/extended-stays.html"
+  to = "/extended-stays"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/amenities.html"
+  to = "/amenities"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/area-guide.html"
+  to = "/area-guide"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/privacy.html"
+  to = "/privacy"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/park-policies.html"
+  to = "/park-policies"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/events.html"
+  to = "/events"
+  status = 301
+  force = true

@@ -1,0 +1,24 @@
+---
+import { blockJson, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const items = blockJson<{ icon: string; text: string; href?: string }[]>(blocks, 'items', []);
+---
+{items.length > 0 && (
+  <div id="trust">
+    {items.map((item, i) => {
+      const ext = typeof item.href === 'string' && item.href.startsWith('http');
+      const body = (<><span class="ticon">{item.icon}</span> {item.text}</>);
+      return (
+        <>
+          {i > 0 && <div class="td"></div>}
+          {item.href ? (
+            <a class="ti ti-link" href={item.href} target={ext ? '_blank' : undefined} rel={ext ? 'noopener noreferrer' : undefined}>{body}</a>
+          ) : (
+            <div class="ti">{body}</div>
+          )}
+        </>
+      );
+    })}
+  </div>
+)}

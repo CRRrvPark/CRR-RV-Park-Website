@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { AuditLog } from '@components/react/AuditLog.tsx';
+---
+<AdminBase
+  title="Change Log"
+  subtitle="Every meaningful action — content edits, publishes, logins, role changes — recorded here."
+  active="audit"
+>
+  <AuditLog client:only="react" />
+</AdminBase>

@@ -1,0 +1,234 @@
+---
+/**
+ * /things-to-do — the 60-item destination guide, filterable by persona.
+ *
+ * Filtering is client-side via query params + a tiny inline script, so the
+ * page stays prerendered and SEO-friendly.
+ */
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import { getThingsToDo, CATEGORY_LABELS, type ThingCategory } from '@lib/area-guide';
+
+const things = await getThingsToDo();
+
+const categories: { key: 'all' | ThingCategory; label: string; emoji: string }[] = [
+  { key: 'all',             label: 'All',             emoji: '✨' },
+  { key: 'families',        label: 'Families',        emoji: '👨‍👩‍👧' },
+  { key: 'active',          label: 'Active',          emoji: '🥾' },
+  { key: 'rvers',           label: 'RVers',           emoji: '🚐' },
+  { key: 'dogs',            label: 'Dog Owners',      emoji: '🐕' },
+  { key: 'day_trippers',    label: 'Day Trippers',    emoji: '🚗' },
+  { key: 'winter',          label: 'Winter',          emoji: '❄' },
+  { key: 'food_community',  label: 'Food & Community',emoji: '🍺' },
+];
+
+const title = '60 Things to Do near Crooked River Ranch RV Park | Central Oregon';
+const description = 'Smith Rock hikes, Cove Palisades boating, Bend breweries, Crescent Moon alpacas, Steelhead Falls — 60 things to do within easy reach of our Central Oregon RV park.';
+const canonical = 'https://www.crookedriverranchrv.com/things-to-do';
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:40vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#5A3D25 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">Central Oregon</div>
+      <h1 class="hero-hl">60 things to do,<br /><em>from the canyon rim.</em></h1>
+      <p class="hero-sub">Pick your crew. We'll show you what matches — families, dogs, hikers, RVers, winter escapes, or food and community.</p>
+    </div>
+  </section>
+
+  <section style="padding:2.5rem 3rem 1rem;position:sticky;top:0;z-index:10;background:rgba(250,250,247,0.95);backdrop-filter:blur(8px);border-bottom:1px solid #e8e3d8;">
+    <div class="container" style="overflow-x:auto;">
+      <div class="things-filter-row" role="tablist" aria-label="Filter activities">
+        {categories.map((c) => (
+          <button
+            type="button"
+            class="things-filter-btn"
+            data-filter={c.key}
+            aria-pressed={c.key === 'all' ? 'true' : 'false'}
+          >
+            <span style="margin-right:.4rem;">{c.emoji}</span>{c.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:3rem 3rem 6rem;">
+    <div class="container">
+      {things.length === 0 ? (
+        <div style="padding:3rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
+          No activities configured yet. Admins can add activities at <code>/admin/things-to-do</code>.
+        </div>
+      ) : (
+        <div class="things-grid">
+          {things.map((t) => (
+            <a
+              class="thing-card"
+              href={`/things-to-do/${t.slug}`}
+              data-category={t.category}
+              data-personas={t.personas.join(',')}
+            >
+              <div class="thing-card-visual">
+                {t.hero_image_url ? (
+                  <img src={t.hero_image_url} alt={t.title} loading="lazy" />
+                ) : (
+                  <span class="thing-card-emoji">{t.icon || '✨'}</span>
+                )}
+              </div>
+              <div class="thing-card-body">
+                <div class="thing-card-cat">{CATEGORY_LABELS[t.category]}</div>
+                <div class="thing-card-title">{t.title}</div>
+                {t.summary && <div class="thing-card-summary">{t.summary}</div>}
+                <div class="thing-card-meta">
+                  {t.distance_from_park && <span>📍 {t.distance_from_park}</span>}
+                </div>
+              </div>
+            </a>
+          ))}
+          <div id="things-empty-state" style="display:none;grid-column:1/-1;padding:3rem;background:var(--sand);border-radius:4px;text-align:center;color:var(--muted);">
+            No activities in this category yet. Try another filter.
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <style>
+    .things-filter-row {
+      display: flex;
+      gap: .5rem;
+      padding: .5rem 0;
+      white-space: nowrap;
+    }
+    .things-filter-btn {
+      background: #fff;
+      border: 1px solid #e8e3d8;
+      color: var(--text);
+      padding: .55rem 1rem;
+      border-radius: 999px;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: all 160ms ease;
+      font-family: inherit;
+    }
+    .things-filter-btn:hover { border-color: var(--rust); color: var(--rust); }
+    .things-filter-btn[aria-pressed="true"] {
+      background: var(--rust);
+      color: #fff;
+      border-color: var(--rust);
+    }
+    .things-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .thing-card {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid #e8e3d8;
+      border-radius: 4px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+    .thing-card:hover,
+    .thing-card:focus-visible {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,.10);
+      border-color: var(--rust);
+      outline: none;
+    }
+    .thing-card-visual {
+      aspect-ratio: 16 / 10;
+      background: linear-gradient(135deg, #f5efe3 0%, #e8d8b3 100%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .thing-card-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .thing-card-emoji { font-size: 3rem; }
+    .thing-card-body {
+      padding: 1rem 1.1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      flex: 1;
+    }
+    .thing-card-cat {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--rust);
+      font-weight: 500;
+    }
+    .thing-card-title {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .thing-card-summary {
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.5;
+    }
+    .thing-card-meta {
+      margin-top: auto;
+      padding-top: .5rem;
+      font-size: .78rem;
+      color: var(--muted);
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+  </style>
+
+  <script is:inline>
+    (function () {
+      const btns = document.querySelectorAll('.things-filter-btn');
+      const cards = document.querySelectorAll('.thing-card');
+      const empty = document.getElementById('things-empty-state');
+
+      function apply(filter) {
+        let visible = 0;
+        cards.forEach((card) => {
+          const personas = (card.dataset.personas || '').split(',').filter(Boolean);
+          const cat = card.dataset.category || '';
+          const match = filter === 'all' || personas.includes(filter) || cat === filter;
+          card.style.display = match ? '' : 'none';
+          if (match) visible++;
+        });
+        if (empty) empty.style.display = visible === 0 ? '' : 'none';
+      }
+
+      btns.forEach((b) => {
+        b.addEventListener('click', () => {
+          btns.forEach((x) => x.setAttribute('aria-pressed', 'false'));
+          b.setAttribute('aria-pressed', 'true');
+          const f = b.getAttribute('data-filter') || 'all';
+          apply(f);
+          // Reflect state in URL so the filter is shareable + preserved on refresh
+          const url = new URL(window.location.href);
+          if (f === 'all') url.searchParams.delete('filter');
+          else url.searchParams.set('filter', f);
+          window.history.replaceState({}, '', url.toString());
+        });
+      });
+
+      // Honor ?filter=... from initial URL
+      const initial = new URL(window.location.href).searchParams.get('filter');
+      if (initial) {
+        const b = document.querySelector(`.things-filter-btn[data-filter="${CSS.escape(initial)}"]`);
+        if (b) b.click();
+      }
+    })();
+  </script>
+</Base>

@@ -1,0 +1,169 @@
+---
+/**
+ * Lightbox — single global dialog + delegated click handler for images.
+ *
+ * Any public image that should open at full size on click just needs:
+ *   <img data-lightbox="true" data-lightbox-caption="optional" ... />
+ *
+ * The page-level renderer markup handles the data attributes; this
+ * component only emits the dialog scaffold + one tiny script.
+ *
+ * Rendered once in Base.astro. Costs ~1KB of HTML + ~1.5KB of JS.
+ * No external dependency. Uses native <dialog> for focus trap + a11y.
+ */
+---
+<dialog id="crr-lightbox" class="crr-lightbox" aria-label="Image viewer">
+  <button type="button" class="crr-lightbox-close" aria-label="Close (Esc)">&times;</button>
+  <figure class="crr-lightbox-figure">
+    <img id="crr-lightbox-img" alt="" />
+    <figcaption id="crr-lightbox-caption" class="crr-lightbox-caption" hidden></figcaption>
+  </figure>
+</dialog>
+
+<style is:global>
+  /* Thumbnails with data-lightbox get a subtle affordance so users know they're interactive. */
+  [data-lightbox="true"] {
+    cursor: zoom-in;
+    transition: filter 180ms ease;
+  }
+  [data-lightbox="true"]:hover,
+  [data-lightbox="true"]:focus-visible {
+    filter: brightness(1.03) saturate(1.04);
+  }
+
+  /* The dialog itself. Using `::backdrop` for the darken layer keeps it cheap. */
+  .crr-lightbox {
+    border: none;
+    background: transparent;
+    padding: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    color: #fff;
+  }
+  .crr-lightbox::backdrop {
+    background: rgba(8, 6, 3, 0.92);
+    backdrop-filter: blur(4px);
+  }
+  .crr-lightbox-figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  .crr-lightbox-figure img {
+    max-width: min(100%, 1400px);
+    max-height: calc(100vh - 6rem);
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+  }
+  .crr-lightbox-caption {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    max-width: 780px;
+    line-height: 1.5;
+  }
+  .crr-lightbox-close {
+    position: fixed;
+    top: 1rem;
+    right: 1.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 160ms ease;
+  }
+  .crr-lightbox-close:hover,
+  .crr-lightbox-close:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+    outline: none;
+  }
+
+  @media (max-width: 640px) {
+    .crr-lightbox-figure { padding: 1rem; }
+    .crr-lightbox-figure img { max-height: calc(100vh - 4rem); }
+  }
+</style>
+
+<script>
+  // Delegated click handler — one listener for all lightbox-eligible images.
+  (function () {
+    const dialog = document.getElementById('crr-lightbox') as HTMLDialogElement | null;
+    const img = document.getElementById('crr-lightbox-img') as HTMLImageElement | null;
+    const cap = document.getElementById('crr-lightbox-caption') as HTMLElement | null;
+    const closeBtn = dialog?.querySelector('.crr-lightbox-close') as HTMLButtonElement | null;
+    if (!dialog || !img || !cap || !closeBtn) return;
+    // Some older Safaris ship without dialog.showModal — gracefully skip.
+    if (typeof dialog.showModal !== 'function') return;
+
+    const open = (src: string, alt: string, caption?: string) => {
+      img.src = src;
+      img.alt = alt || '';
+      if (caption) {
+        cap.textContent = caption;
+        cap.hidden = false;
+      } else {
+        cap.textContent = '';
+        cap.hidden = true;
+      }
+      dialog.showModal();
+    };
+    const close = () => { dialog.close(); img.src = ''; };
+
+    const resolveAndOpen = (el: Element, preventDefault: () => void) => {
+      const tag = el.tagName;
+      const src = (el as HTMLElement).dataset.lightboxSrc
+        || (tag === 'IMG' ? (el as HTMLImageElement).src : '')
+        || (el.querySelector('img') as HTMLImageElement | null)?.src
+        || '';
+      if (!src) return;
+      preventDefault();
+      const alt = (el as HTMLElement).dataset.lightboxAlt
+        || (tag === 'IMG' ? (el as HTMLImageElement).alt : '')
+        || '';
+      const caption = (el as HTMLElement).dataset.lightboxCaption || '';
+      open(src, alt, caption);
+    };
+
+    // Click on any element flagged data-lightbox="true"
+    document.addEventListener('click', (e) => {
+      const el = (e.target as Element)?.closest?.('[data-lightbox="true"]');
+      if (!el) return;
+      // Don't hijack clicks inside an <a> — navigation wins.
+      if ((e.target as Element).closest?.('a')) return;
+      resolveAndOpen(el, () => e.preventDefault());
+    });
+
+    // Keyboard support for non-<img> triggers (e.g., role="button" divs)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const el = (e.target as Element)?.closest?.('[data-lightbox="true"][role="button"]');
+      if (!el) return;
+      resolveAndOpen(el, () => e.preventDefault());
+    });
+
+    // Keyboard support via native <dialog> (Esc closes automatically).
+    // Click outside image (on backdrop) closes too.
+    dialog.addEventListener('click', (e) => {
+      const tgt = e.target as Element;
+      if (tgt === dialog) close();
+    });
+    closeBtn.addEventListener('click', close);
+  })();
+</script>

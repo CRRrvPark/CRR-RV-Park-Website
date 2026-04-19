@@ -1,0 +1,86 @@
+---
+/**
+ * /dining — local restaurants, breweries, shops, and attractions.
+ * Pulled from Google Places (cached). Served at request time so Google
+ * data stays fresh without rebuilds.
+ */
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import LocalPlaceCard from '@components/LocalPlaceCard.astro';
+import { getLocalPlaces } from '@lib/area-guide';
+
+const places = await getLocalPlaces();
+
+// Public Maps key is safe to include (domain-restricted server-side config).
+const publicMapsKey =
+  import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
+  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
+  '';
+
+const title = 'Local Dining & Places near Crooked River Ranch RV Park';
+const description = 'Restaurants, breweries, coffee, and local shops near our Central Oregon RV park. Live hours, ratings, and directions from Google — no outdated lists to maintain.';
+const canonical = 'https://www.crookedriverranchrv.com/dining';
+
+const byCategory = {
+  restaurant: places.filter((p) => p.category === 'restaurant'),
+  brewery:    places.filter((p) => p.category === 'brewery'),
+  coffee:     places.filter((p) => p.category === 'coffee'),
+  shop:       places.filter((p) => p.category === 'shop'),
+  attraction: places.filter((p) => p.category === 'attraction'),
+  other:      places.filter((p) => p.category === 'other'),
+};
+
+const sections: { key: keyof typeof byCategory; label: string }[] = [
+  { key: 'restaurant', label: 'Restaurants' },
+  { key: 'brewery',    label: 'Breweries' },
+  { key: 'coffee',     label: 'Coffee' },
+  { key: 'shop',       label: 'Local shops' },
+  { key: 'attraction', label: 'Attractions' },
+  { key: 'other',      label: 'Other' },
+];
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:36vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#5A3D25 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">Local</div>
+      <h1 class="hero-hl">Dining &amp; local <em>favorites.</em></h1>
+      <p class="hero-sub">Restaurants, breweries, coffee, and shops — with live hours, ratings, and directions pulled from Google Maps.</p>
+    </div>
+  </section>
+
+  {places.length === 0 ? (
+    <section style="padding:4rem 3rem;">
+      <div class="container" style="max-width:640px;text-align:center;">
+        <div style="padding:2.5rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;color:var(--muted);">
+          <div style="font-family:var(--serif);color:var(--text);font-size:1.3rem;margin-bottom:.75rem;">No places configured yet</div>
+          Add restaurants, breweries, and local favorites at <code>/admin/places</code>. Each one just needs a Google Place ID; we handle the rest.
+        </div>
+      </div>
+    </section>
+  ) : (
+    sections.map((s) => (
+      byCategory[s.key].length > 0 && (
+        <section style="padding:3.5rem 3rem 1rem;">
+          <div class="container">
+            <span class="section-label">{s.label}</span>
+            <h2 class="st" style="margin-top:.4rem;">{s.label === 'Restaurants' ? 'Where to eat.' : s.label === 'Breweries' ? 'Where to drink.' : s.label === 'Coffee' ? 'Where to caffeinate.' : s.label === 'Local shops' ? 'Where to browse.' : s.label === 'Attractions' ? 'Where to wander.' : 'Other worth a stop.'}</h2>
+            <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
+              {byCategory[s.key].map((p) => <LocalPlaceCard place={p} apiKey={publicMapsKey} />)}
+            </div>
+          </div>
+        </section>
+      )
+    ))
+  )}
+
+  <section style="padding:3rem;background:var(--deep);color:#fff;text-align:center;margin-top:3rem;">
+    <div class="container" style="max-width:640px;">
+      <p style="color:rgba(255,255,255,.7);font-size:.85rem;">
+        Data pulled from Google Maps. Hours and ratings refresh automatically every 24 hours.
+      </p>
+    </div>
+  </section>
+</Base>

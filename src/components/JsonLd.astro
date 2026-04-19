@@ -1,0 +1,37 @@
+---
+/**
+ * JsonLd — renders one or more JSON-LD schema blocks.
+ *
+ * Pass `schemas` as an array of objects. Each becomes its own <script type="application/ld+json">.
+ * Output matches the original hand-coded schemas in HANDOFF.md §8.
+ *
+ * SECURITY (PT-1 in PEN-TEST-REPORT.md):
+ *   `JSON.stringify` does NOT escape '<', so a malicious string containing
+ *   '</script>' inside any schema field would break out of this <script>
+ *   context and execute as HTML. An editor who can PATCH pages.schemas
+ *   (which the field editor allows) could land stored XSS on every public
+ *   visitor to the page.
+ *
+ *   The fix: replace '<' with its unicode escape '\u003c'. JSON parsers
+ *   read this correctly; the browser's HTML tokenizer never sees a literal
+ *   '<' inside the script body and cannot close the tag. '\u2028' and
+ *   '\u2029' are escaped for JSONP-safety too — they're valid JS line
+ *   terminators that break inline scripts in some parsers.
+ */
+
+export interface Props {
+  schemas: Record<string, unknown>[];
+}
+
+const { schemas } = Astro.props;
+
+function safeStringify(v: unknown): string {
+  return JSON.stringify(v)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+---
+{schemas.map(schema => (
+  <script type="application/ld+json" set:html={safeStringify(schema)} />
+))}

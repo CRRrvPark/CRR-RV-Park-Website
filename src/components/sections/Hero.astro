@@ -1,0 +1,32 @@
+---
+import { blockText, blockHtml, blockUrl, blockImage, webpFor, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; full?: boolean; }
+const { blocks, full = true } = Astro.props;
+const eyebrow = blockText(blocks, 'eyebrow', 'Central Oregon · Open 365 Days');
+const line1 = blockText(blocks, 'headline_line1', 'Park near');
+const line2 = blockText(blocks, 'headline_line2_italic', 'the canyon.');
+const subtitle = blockHtml(blocks, 'subtitle', 'A subtitle paragraph.');
+const ctaPrimaryLabel = blockText(blocks, 'cta_primary_label', 'Reserve Your Site');
+const ctaPrimaryUrl = blockUrl(blocks, 'cta_primary_url', '#');
+const ctaSecondaryLabel = blockText(blocks, 'cta_secondary_label', 'Learn more');
+const ctaSecondaryUrl = blockUrl(blocks, 'cta_secondary_url', '#');
+const bg = blockImage(blocks, 'background_image', { url: '/images/hero.jpg', alt: 'Crooked River Ranch RV Park' });
+---
+<section class={full ? 'page-hero full' : 'page-hero'}>
+  <div class="hero-bg">
+    <picture>
+      <source srcset={webpFor(bg.url)} type="image/webp" />
+      <img src={bg.url} alt={bg.alt} width={bg.width} height={bg.height} fetchpriority="high" />
+    </picture>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">{eyebrow}</div>
+    <h1 class="hero-hl">{line1}<br /><em>{line2}</em></h1>
+    <p class="hero-sub" set:html={subtitle}></p>
+    <div class="hero-ctas">
+      {ctaPrimaryLabel && <a href={ctaPrimaryUrl} target="_blank" rel="noopener noreferrer" class="btn-p">{ctaPrimaryLabel}</a>}
+      {ctaSecondaryLabel && <a href={ctaSecondaryUrl} class="btn-g">{ctaSecondaryLabel}</a>}
+    </div>
+  </div>
+</section>

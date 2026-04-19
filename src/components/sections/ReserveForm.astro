@@ -1,0 +1,39 @@
+---
+import { blockText, blockHtml, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', 'Reservations');
+const headline = blockText(blocks, 'headline', 'Your site');
+const headlineItalic = blockText(blocks, 'headline_italic', 'is waiting.');
+const body = blockHtml(blocks, 'body', '');
+const formName = blockText(blocks, 'form_name', 'contact');
+---
+<section id="reserve" style="background:#fff;">
+  <div class="container">
+    <div class="rl">
+      <div class="reveal">
+        {label && <span class="section-label">{label}</span>}
+        <h2 class="st">{headline}{headlineItalic && <><br /><em>{headlineItalic}</em></>}</h2>
+        {body && <p class="section-body" set:html={body}></p>}
+      </div>
+      <form class="res-form reveal rd2" id="contact-form" name={formName} action="/" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value={formName} />
+        <p style="display:none;"><label>Don't fill this out: <input name="bot-field" /></label></p>
+        <h3>Send us a message</h3>
+        <div class="fr">
+          <div class="fg"><label for="contact_first_name">First Name</label><input id="contact_first_name" type="text" name="first_name" maxlength="60" required /></div>
+          <div class="fg"><label for="contact_last_name">Last Name</label><input id="contact_last_name" type="text" name="last_name" maxlength="60" required /></div>
+        </div>
+        <div class="fg"><label for="contact_email">Email</label><input id="contact_email" type="email" name="email" maxlength="120" required /></div>
+        <div class="fg"><label for="contact_phone">Phone</label><input id="contact_phone" type="tel" name="phone" maxlength="25" /></div>
+        <div class="fr">
+          <div class="fg"><label for="contact_arrival">Arrival Date</label><input id="contact_arrival" type="date" name="arrival_date" /></div>
+          <div class="fg"><label for="contact_departure">Departure Date</label><input id="contact_departure" type="date" name="departure_date" /></div>
+        </div>
+        <div class="fg"><label for="contact_message">Message or Questions</label><textarea id="contact_message" name="message" maxlength="2000"></textarea></div>
+        <button class="btn-sub" type="submit">Send Message</button>
+        <p class="form-disc">For immediate availability, call 541-923-1441. Check-in 2:00pm · Check-out 12:00pm.</p>
+      </form>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,95 @@
+---
+/**
+ * /park-map — clickable map of the 109 RV sites.
+ *
+ * Pulls ParkSite rows from Supabase and renders them as pins overlaid on
+ * an admin-uploaded park map image. Clicking a pin opens the site detail
+ * modal with specs + a "Book this site" button that deep-links to Firefly
+ * (if firefly_deep_link is set) or to Firefly's generic booking page.
+ */
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import { getParkSites } from '@lib/area-guide';
+import { ParkSiteMap } from '@components/react/ParkSiteMap.tsx';
+import { serverClient } from '@lib/supabase';
+
+const sites = await getParkSites();
+
+// Pull the admin-configured map image from runbook_content's settings blob
+// (a future migration could give this its own `site_config` table; for now
+// we piggyback on the existing pattern).
+let mapImageUrl: string | null = null;
+try {
+  const sb = serverClient();
+  const { data } = await sb
+    .from('pages')
+    .select('meta_description')
+    .eq('slug', '__park_map_config')
+    .maybeSingle();
+  // Admin stores the map image URL in this page's meta_description as a
+  // simple key=value string. Swap to a proper config table when we have
+  // more settings to store.
+  if (data?.meta_description?.startsWith('map_image_url=')) {
+    mapImageUrl = data.meta_description.slice('map_image_url='.length).trim() || null;
+  }
+} catch {}
+
+// Normalize rows to the shape ParkSiteMap expects (strip fields it doesn't need)
+const clientSites = sites.map((s) => ({
+  id: s.id,
+  site_number: s.site_number,
+  loop: s.loop,
+  length_feet: s.length_feet,
+  width_feet: s.width_feet,
+  pull_through: s.pull_through,
+  amp_service: s.amp_service,
+  site_type: s.site_type,
+  nightly_rate: s.nightly_rate,
+  hero_image_url: s.hero_image_url,
+  description: s.description,
+  features: s.features,
+  map_position_x: s.map_position_x,
+  map_position_y: s.map_position_y,
+  firefly_deep_link: s.firefly_deep_link,
+  is_available: s.is_available,
+}));
+
+const title = 'RV Park Site Map | Pick Your Site at Crooked River Ranch';
+const description = 'Interactive map of all 109 RV sites at Crooked River Ranch. Click any site to see dimensions, amp service, rate, and book directly.';
+const canonical = 'https://www.crookedriverranchrv.com/park-map';
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:36vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">Pick your site</div>
+      <h1 class="hero-hl">The full <em>park map.</em></h1>
+      <p class="hero-sub">109 sites across four loops. Click any pin for specs, rate, and a direct link to book.</p>
+    </div>
+  </section>
+
+  <section style="padding:3rem 3rem 4rem;">
+    <div class="container">
+      {sites.length === 0 ? (
+        <div style="padding:3rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
+          Park sites not configured yet. Admins can set them up at <code>/admin/site-map</code>.
+        </div>
+      ) : (
+        <ParkSiteMap client:load sites={clientSites} mapImageUrl={mapImageUrl} />
+      )}
+    </div>
+  </section>
+
+  <section style="padding:3rem;background:var(--sand);text-align:center;">
+    <div class="container" style="max-width:720px;">
+      <h2 class="st">Not sure which site?</h2>
+      <p class="section-body" style="margin:1rem 0 2rem;">
+        Call us at <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+        and we'll walk you through the options. Or <a href="/contact" style="color:var(--rust);">send us a message</a>
+        with your rig details.
+      </p>
+    </div>
+  </section>
+</Base>

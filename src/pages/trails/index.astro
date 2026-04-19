@@ -1,0 +1,143 @@
+---
+/**
+ * /trails — list of all hiking trails with an interactive map.
+ *
+ * Prerendered at build time. Re-renders on publish via the Netlify build
+ * hook (same mechanism as every other public page).
+ */
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
+import { getTrails, DIFFICULTY_LABELS, formatDistance, formatElevation } from '@lib/area-guide';
+
+const trails = await getTrails();
+const onProperty = trails.filter((t) => t.is_on_property);
+const nearby = trails.filter((t) => !t.is_on_property);
+
+// Only trails with coordinates show up on the map.
+const pins: Pin[] = trails
+  .filter((t) => t.trailhead_lat !== null && t.trailhead_lng !== null)
+  .map((t) => ({
+    lat: t.trailhead_lat!,
+    lng: t.trailhead_lng!,
+    title: t.name,
+    description: t.summary ?? undefined,
+    href: `/trails/${t.slug}`,
+    iconEmoji: '🥾',
+  }));
+
+const difficultyColor = {
+  easy: '#4A7C59',
+  moderate: '#D4A853',
+  hard: '#C4622D',
+  expert: '#8B1A1A',
+} as const;
+
+const title = 'Hiking Trails Near Crooked River Ranch RV Park | Central Oregon';
+const description = 'On-property canyon trail plus Smith Rock, Steelhead Falls, Misery Ridge, and more — with distance, difficulty, and hazards for every hike near our Terrebonne, Oregon RV park.';
+const canonical = 'https://www.crookedriverranchrv.com/trails';
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:40vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">Hikes · Central Oregon</div>
+      <h1 class="hero-hl">Trails from the<br /><em>canyon rim.</em></h1>
+      <p class="hero-sub">On-property walks and the best nearby hikes, with distance, difficulty, and hazards for each.</p>
+    </div>
+  </section>
+
+  <section style="padding:3rem 3rem 1rem;">
+    <div class="container">
+      <span class="section-label">All trails</span>
+      <h2 class="st" style="margin-top:.4rem;">Map of the region.</h2>
+      {trails.length === 0 ? (
+        <div style="margin-top:2rem;padding:2rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
+          No trails configured yet. Admins can add trails at <code>/admin/trails</code>.
+        </div>
+      ) : (
+        <div style="margin-top:1.5rem;">
+          <GoogleMap
+            id="trails-map"
+            pins={pins}
+            centerLat={44.3485}
+            centerLng={-121.2055}
+            zoom={11}
+            mapTypeId="terrain"
+            height="520px"
+          />
+        </div>
+      )}
+    </div>
+  </section>
+
+  {onProperty.length > 0 && (
+    <section style="padding:4rem 3rem 1rem;">
+      <div class="container">
+        <span class="section-label">On the property</span>
+        <h2 class="st" style="margin-top:.4rem;">Walk from your RV site.</h2>
+        <div class="ex-grid" style="margin-top:2.5rem;">
+          {onProperty.map((t) => (
+            <a class="ex-card ex-link" href={`/trails/${t.slug}`}>
+              <div class="ex-vis" style="min-height:240px;background:linear-gradient(135deg,#8B5A2B 0%,#2c1810 100%);">
+                {t.hero_image_url && (
+                  <img src={t.hero_image_url} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+                )}
+                {t.drive_time_from_park && <div class="ex-dist">{t.drive_time_from_park}</div>}
+              </div>
+              <div class="ex-body">
+                <div class="ex-title">{t.name}</div>
+                {t.summary && <div class="ex-desc">{t.summary}</div>}
+                <div style="display:flex;gap:.6rem;margin-top:.6rem;flex-wrap:wrap;align-items:center;font-size:.78rem;">
+                  {t.difficulty && (
+                    <span style={`background:${difficultyColor[t.difficulty]};color:#fff;padding:.15rem .6rem;border-radius:999px;font-weight:500;`}>{DIFFICULTY_LABELS[t.difficulty]}</span>
+                  )}
+                  {formatDistance(t) && <span style="color:var(--muted);">{formatDistance(t)}</span>}
+                  {formatElevation(t) && <span style="color:var(--muted);">{formatElevation(t)}</span>}
+                  {t.pet_friendly && <span title="Pet-friendly">🐕</span>}
+                  {t.kid_friendly && <span title="Kid-friendly">👶</span>}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {nearby.length > 0 && (
+    <section style="padding:4rem 3rem 6.5rem;">
+      <div class="container">
+        <span class="section-label">Nearby</span>
+        <h2 class="st" style="margin-top:.4rem;">Central Oregon classics.</h2>
+        <div class="ex-grid" style="margin-top:2.5rem;">
+          {nearby.map((t) => (
+            <a class="ex-card ex-link" href={`/trails/${t.slug}`}>
+              <div class="ex-vis" style="min-height:240px;background:linear-gradient(135deg,#5A7F2B 0%,#2c2810 100%);">
+                {t.hero_image_url && (
+                  <img src={t.hero_image_url} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+                )}
+                {t.drive_time_from_park && <div class="ex-dist">{t.drive_time_from_park}</div>}
+              </div>
+              <div class="ex-body">
+                <div class="ex-title">{t.name}</div>
+                {t.summary && <div class="ex-desc">{t.summary}</div>}
+                <div style="display:flex;gap:.6rem;margin-top:.6rem;flex-wrap:wrap;align-items:center;font-size:.78rem;">
+                  {t.difficulty && (
+                    <span style={`background:${difficultyColor[t.difficulty]};color:#fff;padding:.15rem .6rem;border-radius:999px;font-weight:500;`}>{DIFFICULTY_LABELS[t.difficulty]}</span>
+                  )}
+                  {formatDistance(t) && <span style="color:var(--muted);">{formatDistance(t)}</span>}
+                  {formatElevation(t) && <span style="color:var(--muted);">{formatElevation(t)}</span>}
+                  {t.pet_friendly && <span title="Pet-friendly">🐕</span>}
+                  {t.kid_friendly && <span title="Kid-friendly">👶</span>}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>

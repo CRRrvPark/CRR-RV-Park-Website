@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { CodeEditor } from '@components/react/CodeEditor.tsx';
+---
+<AdminBase
+  title="Code Editor"
+  subtitle="Advanced — edit the raw source of pages, templates, and config. Owner only."
+  active="code"
+>
+  <div class="alert alert-danger" style="margin-bottom: var(--sp-4);">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <div>
+      <div class="alert-title">Dangerous territory — read before you dive in</div>
+      <div class="alert-body" style="margin-top: 6px;">
+        Mistakes in the code editor can break the entire website. Safeguards:
+        <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+          <li>All edits start as a draft (not live)</li>
+          <li>Preview deploy required before publishing — you see the change in a sandbox first</li>
+          <li>If a publish fails the build, the site automatically rolls back</li>
+          <li>Every edit is logged with your name + timestamp</li>
+          <li>Use the <a href="/admin/versions">Versions</a> page to restore any previous snapshot</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--sp-4);">
+    <label style="display: flex; align-items: center; gap: 0.7rem; cursor: pointer; font-size: var(--fs-md);">
+      <input type="checkbox" id="devModeToggle">
+      <span><strong>I understand the risks.</strong> Show me the code editor.</span>
+    </label>
+  </div>
+
+  <div id="codeEditorMount" style="display: none;">
+    <CodeEditor client:only="react" />
+  </div>
+
+  <script is:inline>
+    document.getElementById('devModeToggle')?.addEventListener('change', (e) => {
+      const mount = document.getElementById('codeEditorMount');
+      if (mount) mount.style.display = e.target.checked ? 'block' : 'none';
+    });
+  </script>
+</AdminBase>

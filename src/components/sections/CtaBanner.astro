@@ -1,0 +1,21 @@
+---
+import { blockText, blockHtml, blockUrl, blockBool, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const headline = blockText(blocks, 'headline', '');
+const body = blockHtml(blocks, 'body', '');
+const ctaLabel = blockText(blocks, 'cta_label', '');
+const ctaUrl = blockUrl(blocks, 'cta_url', '#');
+const dark = blockBool(blocks, 'dark_background', true);
+---
+<section class={dark ? 'sec-dark' : ''} style={dark ? 'padding:3rem 0;' : 'padding:3rem 0;background:#fff;'}>
+  <div class="container" style="text-align:center;">
+    <h2 class="st" style={dark ? 'color:#fff;' : ''}>{headline}</h2>
+    {body && <p class="section-body" style={dark ? 'color:rgba(255,255,255,0.8);margin:1rem auto;' : 'margin:1rem auto;'} set:html={body}></p>}
+    {ctaLabel && (
+      <div class={dark ? 'section-cta section-cta-dark' : 'section-cta'} style="margin-top:1.5rem;justify-content:center;">
+        <a href={ctaUrl} target={ctaUrl.startsWith('http') ? '_blank' : undefined} rel={ctaUrl.startsWith('http') ? 'noopener noreferrer' : undefined} class="btn-p">{ctaLabel}</a>
+      </div>
+    )}
+  </div>
+</section>

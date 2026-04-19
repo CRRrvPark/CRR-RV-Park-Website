@@ -1,0 +1,86 @@
+---
+/**
+ * Base — the shared layout wrapping every public page.
+ *
+ * Composes: HeadMeta + JSON-LD + Nav + <slot /> + Footer + Clarity
+ *
+ * Pass page-specific props (title, description, canonical, hero preload,
+ * JSON-LD schema). The <slot /> receives the page's body content.
+ *
+ * Admin pages use a separate AdminBase layout (see /admin routes).
+ */
+
+import HeadMeta from '@components/HeadMeta.astro';
+import Nav from '@components/Nav.astro';
+import Footer from '@components/Footer.astro';
+import JsonLd from '@components/JsonLd.astro';
+import ClarityScript from '@components/ClarityScript.astro';
+import Lightbox from '@components/Lightbox.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+  heroImagePreload?: string;
+  schemas?: Record<string, unknown>[];
+  /** Set to true to suppress Microsoft Clarity on this page (rarely needed). */
+  noAnalytics?: boolean;
+  /** Set to 'noindex, nofollow' to keep this page out of search engines. */
+  robots?: string;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage,
+  heroImagePreload,
+  schemas = [],
+  noAnalytics = false,
+  robots,
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <HeadMeta
+    title={title}
+    description={description}
+    canonical={canonical}
+    ogImage={ogImage}
+    heroImagePreload={heroImagePreload}
+    robots={robots}
+  />
+  {schemas.length > 0 && <JsonLd schemas={schemas} />}
+  {!noAnalytics && <ClarityScript />}
+</head>
+<body>
+  <!--
+    Auth-hash fallback: if a user arrives on a public page with
+    `#type=invite` or `#type=recovery` in the URL hash (e.g., they clicked
+    a link whose `redirect_to` defaulted to Site URL instead of /admin/login —
+    common when the link was generated from the Supabase dashboard), redirect
+    to /admin/login so the LoginForm's set-password mode can consume the tokens.
+
+    Runs inline before React or Supabase has a chance to touch the hash.
+  -->
+  <script is:inline>
+    (function () {
+      try {
+        var hash = window.location.hash;
+        if (!hash || hash.length < 2) return;
+        var params = new URLSearchParams(hash.slice(1));
+        var t = params.get('type');
+        if (t !== 'invite' && t !== 'recovery') return;
+        if (window.location.pathname.indexOf('/admin/login') === 0) return;
+        window.location.replace('/admin/login' + hash);
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+  <Nav />
+  <slot />
+  <Footer />
+  <Lightbox />
+</body>
+</html>

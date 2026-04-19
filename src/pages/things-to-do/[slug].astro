@@ -1,0 +1,110 @@
+---
+/**
+ * /things-to-do/[slug] — single activity detail page.
+ *
+ * Server-rendered (prerender = false) because the number of activities is
+ * small (60-ish) but the slug set grows with new entries; we skip the
+ * build-time explosion.
+ */
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
+import { getThingBySlug, CATEGORY_LABELS } from '@lib/area-guide';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/things-to-do', 302);
+
+const thing = await getThingBySlug(slug);
+if (!thing) return Astro.redirect('/things-to-do?not-found=1', 302);
+
+const pins: Pin[] =
+  thing.lat !== null && thing.lng !== null
+    ? [{
+        lat: thing.lat,
+        lng: thing.lng,
+        title: thing.title,
+        description: thing.summary ?? undefined,
+        iconEmoji: thing.icon || '📍',
+      }]
+    : [];
+
+const title = `${thing.title} | Things to Do near Crooked River Ranch RV Park`;
+const description = thing.summary ?? `${thing.title} in Central Oregon, near Crooked River Ranch RV Park.`;
+const canonical = `https://www.crookedriverranchrv.com/things-to-do/${thing.slug}`;
+---
+<Base title={title} description={description} canonical={canonical} ogImage={thing.hero_image_url ?? undefined}>
+  <section class="page-hero" style="min-height:40vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#5A3D25 100%);">
+      {thing.hero_image_url && (
+        <img src={thing.hero_image_url} alt={thing.title} style="width:100%;height:100%;object-fit:cover;" />
+      )}
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">
+        {CATEGORY_LABELS[thing.category]}
+        {thing.distance_from_park && <> · {thing.distance_from_park}</>}
+      </div>
+      <h1 class="hero-hl">
+        {thing.icon && <span style="margin-right:.4rem;">{thing.icon}</span>}
+        {thing.title}
+      </h1>
+      {thing.summary && <p class="hero-sub">{thing.summary}</p>}
+    </div>
+  </section>
+
+  {(thing.description || thing.details_html) && (
+    <section style="padding:3.5rem 3rem;">
+      <div class="container" style="max-width:780px;">
+        <div class="section-body" style="max-width:none;" set:html={thing.details_html || thing.description}></div>
+      </div>
+    </section>
+  )}
+
+  {thing.location_name && (
+    <section style="padding:2rem 3rem;">
+      <div class="container">
+        <span class="section-label">Where</span>
+        <h2 class="st" style="margin-top:.4rem;">{thing.location_name}</h2>
+        {pins.length > 0 && (
+          <div style="margin-top:1.5rem;">
+            <GoogleMap
+              id={`thing-map-${thing.slug}`}
+              pins={pins}
+              centerLat={thing.lat!}
+              centerLng={thing.lng!}
+              zoom={13}
+              mapTypeId="roadmap"
+              height="380px"
+              fitBounds={false}
+            />
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  {thing.external_link && (
+    <section style="padding:1rem 3rem;text-align:center;">
+      <a href={thing.external_link} target="_blank" rel="noopener noreferrer" style="color:var(--rust);text-decoration:none;font-size:.95rem;">
+        More info &rarr;
+      </a>
+    </section>
+  )}
+
+  <section style="padding:3rem;background:var(--deep);color:#fff;text-align:center;">
+    <div class="container" style="max-width:640px;">
+      <h2 class="st" style="color:#fff;">Stay close to everything.</h2>
+      <p style="color:rgba(255,255,255,.7);margin:1rem 0 2rem;">
+        Crooked River Ranch RV Park puts you within a short drive of Smith Rock, Bend, Sisters, and the Deschutes — all 60 things on our list.
+      </p>
+      <div class="section-cta section-cta-dark">
+        <a href="/book-now">Reserve Your Site</a>
+      </div>
+      <div style="margin-top:1rem;">
+        <a href="/things-to-do" style="color:rgba(255,255,255,.7);font-size:.85rem;">&larr; Back to all activities</a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,35 @@
+---
+import { blockText, blockJson, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', '');
+const headline = blockText(blocks, 'headline', '');
+const headlineItalic = blockText(blocks, 'headline_italic', '');
+const cards = blockJson<{ icon: string; name: string; desc: string; href?: string }[]>(blocks, 'cards', []);
+---
+<section>
+  <div class="container">
+    <div class="am-intro reveal">
+      {label && <span class="section-label">{label}</span>}
+      <h2 class="st">{headline}{headlineItalic && <><br /><em>{headlineItalic}</em></>}</h2>
+    </div>
+    <div class="am-grid">
+      {cards.map((c, i) => {
+        const rd = i % 3 === 1 ? ' rd1' : i % 3 === 2 ? ' rd2' : '';
+        const ext = typeof c.href === 'string' && c.href.startsWith('http');
+        const body = (
+          <>
+            <span class="am-icon">{c.icon}</span>
+            <div class="am-name">{c.name}</div>
+            <div class="am-desc">{c.desc}</div>
+          </>
+        );
+        return c.href ? (
+          <a class={`am-card am-card-link reveal${rd}`} href={c.href} target={ext ? '_blank' : undefined} rel={ext ? 'noopener noreferrer' : undefined}>{body}</a>
+        ) : (
+          <div class={`am-card reveal${rd}`}>{body}</div>
+        );
+      })}
+    </div>
+  </div>
+</section>

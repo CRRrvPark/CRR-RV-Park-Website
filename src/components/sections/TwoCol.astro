@@ -1,0 +1,115 @@
+---
+import { blockText, blockHtml, blockJson, blockImage, blockBool, blockUrl, webpFor, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; sectionId?: string; }
+const { blocks, sectionId } = Astro.props;
+const label = blockText(blocks, 'label', '');
+const headline = blockText(blocks, 'headline', '');
+const headlineItalic = blockText(blocks, 'headline_italic', '');
+const body = blockHtml(blocks, 'body', '');
+const features = blockJson<{ num: string; title: string; body: string }[]>(blocks, 'feature_list', []);
+const image = blockImage(blocks, 'image', { url: '/images/canyon_day.jpg', alt: '' });
+const caption = blockText(blocks, 'image_caption', '');
+const ctaLabel = blockText(blocks, 'cta_label', '');
+const ctaUrl = blockUrl(blocks, 'cta_url', '#');
+const imageLeft = blockBool(blocks, 'image_left', false);
+const imageLinkUrl = blockUrl(blocks, 'image_link_url', '');
+const ctaExternal = ctaUrl.startsWith('http');
+const imageLinkExternal = imageLinkUrl.startsWith('http');
+// Lightbox opens the image at full size unless it's wired to navigate somewhere.
+const lightbox = !imageLinkUrl;
+---
+<section id={sectionId}>
+  <div class="container">
+    <div class="sl">
+      {imageLeft && (
+        <div class="reveal rd2">
+          <div class="sv">
+            {imageLinkUrl ? (
+              <a href={imageLinkUrl} target={imageLinkExternal ? '_blank' : undefined} rel={imageLinkExternal ? 'noopener noreferrer' : undefined}>
+                <picture>
+                  <source srcset={webpFor(image.url)} type="image/webp" />
+                  <img src={image.url} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
+                </picture>
+              </a>
+            ) : (
+              <picture>
+                <source srcset={webpFor(image.url)} type="image/webp" />
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  width={image.width}
+                  height={image.height}
+                  loading="lazy"
+                  data-lightbox={lightbox ? 'true' : undefined}
+                  data-lightbox-caption={lightbox && caption ? caption : undefined}
+                />
+              </picture>
+            )}
+            {caption && <div class="sv-tag">"{caption}"</div>}
+          </div>
+        </div>
+      )}
+
+      <div class="reveal">
+        {label && <span class="section-label">{label}</span>}
+        <h2 class="st">
+          {headline}
+          {headlineItalic && (
+            <>
+              <br />
+              <em>{headlineItalic}</em>
+            </>
+          )}
+        </h2>
+        {body && <p class="section-body" set:html={body}></p>}
+        {features.length > 0 && (
+          <div class="fl">
+            {features.map((item) => (
+              <div class="fi">
+                <div class="fn">{item.num}</div>
+                <div class="ft">
+                  <strong>{item.title}</strong>
+                  <span>{item.body}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {ctaLabel && (
+          <div class="section-cta reveal">
+            <a href={ctaUrl} target={ctaExternal ? '_blank' : undefined} rel={ctaExternal ? 'noopener noreferrer' : undefined}>{ctaLabel}</a>
+          </div>
+        )}
+      </div>
+
+      {!imageLeft && (
+        <div class="reveal rd2">
+          <div class="sv">
+            {imageLinkUrl ? (
+              <a href={imageLinkUrl} target={imageLinkExternal ? '_blank' : undefined} rel={imageLinkExternal ? 'noopener noreferrer' : undefined}>
+                <picture>
+                  <source srcset={webpFor(image.url)} type="image/webp" />
+                  <img src={image.url} alt={image.alt} width={image.width} height={image.height} loading="lazy" />
+                </picture>
+              </a>
+            ) : (
+              <picture>
+                <source srcset={webpFor(image.url)} type="image/webp" />
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  width={image.width}
+                  height={image.height}
+                  loading="lazy"
+                  data-lightbox={lightbox ? 'true' : undefined}
+                  data-lightbox-caption={lightbox && caption ? caption : undefined}
+                />
+              </picture>
+            )}
+            {caption && <div class="sv-tag">"{caption}"</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</section>

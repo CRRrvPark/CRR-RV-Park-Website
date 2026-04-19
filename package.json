@@ -1,0 +1,52 @@
+{
+  "name": "crr-rv-park-platform",
+  "version": "0.1.0",
+  "description": "Crooked River Ranch RV Park — website + admin platform (Astro + Supabase + Netlify)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "db:migrate": "node scripts/supabase-migrate.mjs",
+    "seed:legacy-pages": "node scripts/seed-legacy-pages.mjs",
+    "bootstrap:first-owner": "node scripts/bootstrap-first-owner.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/netlify": "^6.0.0",
+    "@astrojs/react": "^4.0.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@puckeditor/core": "^0.21.2",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tiptap/extension-color": "^2.27.2",
+    "@tiptap/extension-font-family": "^2.27.2",
+    "@tiptap/extension-highlight": "^2.27.2",
+    "@tiptap/extension-image": "^2.10.0",
+    "@tiptap/extension-link": "^2.10.0",
+    "@tiptap/extension-text-align": "^2.27.2",
+    "@tiptap/extension-text-style": "^2.27.2",
+    "@tiptap/extension-underline": "^2.27.2",
+    "@tiptap/pm": "^2.10.0",
+    "@tiptap/react": "^2.10.0",
+    "@tiptap/starter-kit": "^2.10.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "astro": "^5.0.0",
+    "monaco-editor": "^0.52.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "rrule": "^2.8.1",
+    "sharp": "^0.33.5",
+    "typescript": "^5.6.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

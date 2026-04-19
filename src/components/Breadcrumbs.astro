@@ -1,0 +1,24 @@
+---
+/**
+ * Breadcrumbs — appears on every page EXCEPT the home page.
+ *
+ * Format (from HANDOFF.md §4.4):
+ *   <div class="breadcrumbs"><a href="/index.html">Home</a><span>›</span> [Page Name]</div>
+ */
+
+export interface Props {
+  pageName: string;
+  parents?: { name: string; href: string }[];
+}
+
+const { pageName, parents = [] } = Astro.props;
+---
+<div class="breadcrumbs">
+  <a href="/index.html">Home</a><span>›</span>
+  {parents.map(p => (
+    <>
+      <a href={p.href}>{p.name}</a><span>›</span>
+    </>
+  ))}
+  {pageName}
+</div>

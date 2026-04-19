@@ -1,0 +1,114 @@
+/* ==========================================================================
+   Puck Editor — CRR Admin Brand Overrides
+   --------------------------------------------------------------------------
+   Layers on top of @puckeditor/core/puck.css to align the built-in editor
+   UI with the admin design system. Import AFTER puck.css.
+
+   We keep this minimal — only brand alignment, not a full reskin. Puck's
+   internal class names are prefixed with "Puck-" or start with "_".
+   ========================================================================== */
+
+/* ---- Typography: use the admin sans font ---- */
+[class*="Puck"],
+[class*="Puck"] * {
+  font-family: var(--font-sans, 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif);
+}
+
+/* ---- Sidebar background ---- */
+[class*="Puck-rightSideBar"],
+[class*="Puck-leftSideBar"],
+[class*="leftSideBar"],
+[class*="rightSideBar"] {
+  background: var(--c-surface, #ffffff);
+  border-color: var(--c-border, #E2DCCF);
+}
+
+/* ---- Header / toolbar area ---- */
+[class*="Puck-header"],
+[class*="PuckHeader"] {
+  background: var(--c-surface, #ffffff);
+  border-bottom-color: var(--c-border, #E2DCCF);
+}
+
+/* ---- Primary action buttons (Publish, etc.) ---- */
+[class*="Puck"] button[class*="primary"],
+[class*="Puck"] button[class*="Primary"] {
+  background: var(--c-rust, #C4622D);
+  border-color: var(--c-rust, #C4622D);
+  color: #fff;
+}
+
+[class*="Puck"] button[class*="primary"]:hover,
+[class*="Puck"] button[class*="Primary"]:hover {
+  background: var(--c-rust-dark, #9A4A20);
+  border-color: var(--c-rust-dark, #9A4A20);
+}
+
+/* ---- Component list items in the sidebar ---- */
+[class*="ComponentList-"] button:hover,
+[class*="ComponentList"] [class*="item"]:hover {
+  background: var(--c-rust-soft, rgba(196, 98, 45, 0.12));
+}
+
+/* ---- Selected / active component outline ---- */
+[class*="Puck"] [class*="overlay--isSelected"],
+[class*="Puck"] [class*="isSelected"] {
+  outline-color: var(--c-rust, #C4622D);
+}
+
+/* ---- Drop zone indicator ---- */
+[class*="Puck"] [class*="DropZone"][class*="isActive"],
+[class*="Puck"] [class*="dropzone"][class*="active"] {
+  border-color: var(--c-rust, #C4622D);
+  background: var(--c-rust-soft, rgba(196, 98, 45, 0.12));
+}
+
+/* ---- Field labels ---- */
+[class*="Puck"] label,
+[class*="Puck"] [class*="label"] {
+  color: var(--c-text-soft, #4A372C);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+/* ---- Input focus rings ---- */
+[class*="Puck"] input:focus,
+[class*="Puck"] textarea:focus,
+[class*="Puck"] select:focus {
+  outline-color: var(--c-rust, #C4622D);
+  border-color: var(--c-rust, #C4622D);
+  box-shadow: 0 0 0 2px var(--c-rust-soft, rgba(196, 98, 45, 0.12));
+}
+
+/* ---- Category headings in the component palette ---- */
+[class*="Puck"] [class*="SidebarSection"] > [class*="title"],
+[class*="Puck"] [class*="sidebarSection"] > [class*="title"] {
+  color: var(--c-text, #2C1810);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---- Scrollbar styling for sidebar ---- */
+[class*="Puck-rightSideBar"]::-webkit-scrollbar,
+[class*="Puck-leftSideBar"]::-webkit-scrollbar,
+[class*="leftSideBar"]::-webkit-scrollbar,
+[class*="rightSideBar"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[class*="Puck-rightSideBar"]::-webkit-scrollbar-track,
+[class*="Puck-leftSideBar"]::-webkit-scrollbar-track,
+[class*="leftSideBar"]::-webkit-scrollbar-track,
+[class*="rightSideBar"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[class*="Puck-rightSideBar"]::-webkit-scrollbar-thumb,
+[class*="Puck-leftSideBar"]::-webkit-scrollbar-thumb,
+[class*="leftSideBar"]::-webkit-scrollbar-thumb,
+[class*="rightSideBar"]::-webkit-scrollbar-thumb {
+  background: var(--c-border-strong, #C9C0AC);
+  border-radius: 3px;
+}

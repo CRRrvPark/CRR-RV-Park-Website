@@ -1,0 +1,21 @@
+---
+/**
+ * /admin/builder/[slug] — Visual page builder route.
+ *
+ * Mounts the Puck-powered PageBuilder React island with full-width layout.
+ * The builder has its own toolbar so we use AdminBase but with minimal chrome.
+ *
+ * puck-overrides.css is loaded here (after Puck's own CSS) to align the
+ * editor UI with the admin design system.
+ */
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { PageBuilder } from '@components/react/PageBuilder.tsx';
+
+const { slug } = Astro.params;
+---
+<AdminBase title={`Visual Editor · ${slug}`} active="builder">
+  <link rel="stylesheet" href="/styles/puck-overrides.css" slot="head" />
+  <PageBuilder client:only="react" slug={slug as string} />
+</AdminBase>

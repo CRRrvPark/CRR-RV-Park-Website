@@ -1,0 +1,38 @@
+---
+import { blockText, blockHtml, blockUrl, blockImage, blockBool, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const eyebrow = blockText(blocks, 'eyebrow', '');
+const headline = blockHtml(blocks, 'headline', '');
+const body = blockHtml(blocks, 'body', '');
+const credit = blockText(blocks, 'credit', '');
+const bg = blockImage(blocks, 'background_image', { url: '/images/stars.jpg', alt: '' });
+const ctaLabel = blockText(blocks, 'cta_label', '');
+const ctaUrl = blockUrl(blocks, 'cta_url', '#');
+const enableLightbox = blockBool(blocks, 'image_lightbox', false);
+---
+<section class="interlude">
+  <div
+    class={`interlude-bg${enableLightbox ? ' interlude-bg-clickable' : ''}`}
+    style={`background-image:url('${bg.url}');`}
+    data-lightbox={enableLightbox ? 'true' : undefined}
+    data-lightbox-src={enableLightbox ? bg.url : undefined}
+    data-lightbox-alt={enableLightbox ? bg.alt : undefined}
+    data-lightbox-caption={enableLightbox ? credit : undefined}
+    role={enableLightbox ? 'button' : undefined}
+    tabindex={enableLightbox ? '0' : undefined}
+    aria-label={enableLightbox ? `View larger image${bg.alt ? `: ${bg.alt}` : ''}` : undefined}
+  ></div>
+  <div class="interlude-overlay"></div>
+  <div class="interlude-content reveal">
+    {eyebrow && <div class="interlude-eyebrow">{eyebrow}</div>}
+    <h2 class="interlude-headline" set:html={headline}></h2>
+    {body && <p class="interlude-body" set:html={body}></p>}
+    {credit && <p class="interlude-credit">{credit}</p>}
+    {ctaLabel && (
+      <div class="section-cta section-cta-dark" style="margin-top:2rem;">
+        <a href={ctaUrl} target={ctaUrl.startsWith('http') ? '_blank' : undefined} rel={ctaUrl.startsWith('http') ? 'noopener noreferrer' : undefined}>{ctaLabel}</a>
+      </div>
+    )}
+  </div>
+</section>

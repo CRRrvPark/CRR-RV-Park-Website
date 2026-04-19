@@ -1,0 +1,222 @@
+---
+/**
+ * GoogleMap.astro — reusable interactive Google Map with pinned locations.
+ *
+ * Usage:
+ *   <GoogleMap
+ *     id="area-map"
+ *     pins={pinsArray}
+ *     centerLat={44.3485}
+ *     centerLng={-121.2055}
+ *     zoom={10}
+ *     height="520px"
+ *   />
+ *
+ * Pins:
+ *   { lat, lng, title, category?, href?, iconEmoji?, description? }
+ *
+ * Behavior:
+ *   • Loads the Maps JavaScript API on demand (lazy; only when this
+ *     component's map element is in view).
+ *   • If the PUBLIC_GOOGLE_MAPS_API_KEY env var is not set (or not
+ *     exposed to the client), renders a graceful fallback that tells
+ *     the owner what to do, rather than a broken map.
+ *   • Pin clicks open an InfoWindow with the pin's title + description
+ *     + (if href) a "Learn more" link.
+ *   • Zero dependency on any 3rd-party wrapper — just the Google SDK.
+ */
+
+export interface Pin {
+  lat: number;
+  lng: number;
+  title: string;
+  category?: string;
+  href?: string;
+  iconEmoji?: string;
+  description?: string;
+}
+
+export interface Props {
+  id: string;
+  pins: Pin[];
+  centerLat: number;
+  centerLng: number;
+  zoom?: number;
+  height?: string;
+  mapTypeId?: 'roadmap' | 'terrain' | 'satellite' | 'hybrid';
+  /** When true, fits the map bounds to include all pins instead of using centerLat/Lng/zoom. */
+  fitBounds?: boolean;
+}
+
+const {
+  id,
+  pins,
+  centerLat,
+  centerLng,
+  zoom = 10,
+  height = '520px',
+  mapTypeId = 'terrain',
+  fitBounds = true,
+} = Astro.props;
+
+const apiKey =
+  import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
+  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
+  '';
+
+const hasKey = Boolean(apiKey);
+// JSON-stringify pins for the inline script; server-sanitized against
+// </script> breakout the same way JsonLd.astro does.
+const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
+---
+
+{hasKey ? (
+  <div
+    class="crr-map-wrap"
+    style={`position:relative;width:100%;height:${height};background:#e8e3d8;border-radius:4px;overflow:hidden;`}
+    data-map-id={id}
+    data-map-center-lat={centerLat}
+    data-map-center-lng={centerLng}
+    data-map-zoom={zoom}
+    data-map-type={mapTypeId}
+    data-map-fit-bounds={fitBounds ? 'true' : 'false'}
+  >
+    <div id={id} style="position:absolute;inset:0;"></div>
+    <div class="crr-map-loading" aria-live="polite" style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(232,227,216,0.85);font-size:.9rem;color:var(--muted,#665040);pointer-events:none;">
+      Loading map…
+    </div>
+    <script
+      type="application/json"
+      id={`${id}-pins`}
+      is:inline
+      set:html={safePins}
+    ></script>
+  </div>
+) : (
+  <div
+    class="crr-map-fallback"
+    style={`width:100%;height:${height};background:var(--sand,#f5efe3);border:1px dashed var(--rust,#C4622D);border-radius:4px;padding:2.5rem;display:grid;place-items:center;text-align:center;`}
+  >
+    <div style="max-width:480px;">
+      <div style="font-family:var(--serif,serif);font-size:1.4rem;color:var(--text,#1f1712);margin-bottom:.75rem;">Map will appear here</div>
+      <div style="color:var(--muted,#665040);line-height:1.55;font-size:.95rem;">
+        The map is disabled until <code>PUBLIC_GOOGLE_MAPS_API_KEY</code> is set
+        in your Netlify environment variables. See <code>AREA-GUIDE-SETUP.md</code>
+        for the 5-minute setup.
+      </div>
+    </div>
+  </div>
+)}
+
+{hasKey && (
+  <script is:inline define:vars={{ apiKey }}>
+    // Load the Google Maps JS SDK once per page, lazily when any map enters
+    // the viewport. Subsequent maps on the same page reuse the same script.
+    (function () {
+      if (window.__crrMapsLoader) return void initAllMaps();
+      window.__crrMapsLoader = new Promise(function (resolve) {
+        window.__crrMapsReady = resolve;
+      });
+      window.__crrInitMaps = function () { window.__crrMapsReady(); };
+
+      // IntersectionObserver — only inject the SDK when a map scrolls into view.
+      var mapWraps = document.querySelectorAll('[data-map-id]');
+      if (!mapWraps.length) return;
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            injectSdk();
+            io.disconnect();
+            return;
+          }
+        }
+      }, { rootMargin: '200px' });
+      mapWraps.forEach(function (el) { io.observe(el); });
+
+      function injectSdk() {
+        if (document.getElementById('crr-gmaps-sdk')) return initAllMaps();
+        var s = document.createElement('script');
+        s.id = 'crr-gmaps-sdk';
+        s.async = true;
+        s.defer = true;
+        s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(apiKey) + '&callback=__crrInitMaps&libraries=marker&v=weekly&loading=async';
+        document.head.appendChild(s);
+        window.__crrMapsLoader.then(initAllMaps);
+      }
+
+      function initAllMaps() {
+        document.querySelectorAll('[data-map-id]').forEach(function (wrap) {
+          if (wrap.dataset.mapInit === 'true') return;
+          wrap.dataset.mapInit = 'true';
+          var id = wrap.dataset.mapId;
+          var el = document.getElementById(id);
+          var pinsEl = document.getElementById(id + '-pins');
+          if (!el || !pinsEl) return;
+          var pins = [];
+          try { pins = JSON.parse(pinsEl.textContent || '[]'); } catch (e) {}
+          var loading = wrap.querySelector('.crr-map-loading');
+          if (loading) loading.remove();
+          var map = new google.maps.Map(el, {
+            center: { lat: parseFloat(wrap.dataset.mapCenterLat), lng: parseFloat(wrap.dataset.mapCenterLng) },
+            zoom: parseInt(wrap.dataset.mapZoom || '10', 10),
+            mapTypeId: wrap.dataset.mapType || 'terrain',
+            mapId: 'CRR_AREA_GUIDE',
+            gestureHandling: 'cooperative',
+            fullscreenControl: true,
+            streetViewControl: false,
+          });
+
+          var info = new google.maps.InfoWindow();
+          var bounds = new google.maps.LatLngBounds();
+
+          pins.forEach(function (p) {
+            if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+            var position = { lat: p.lat, lng: p.lng };
+            var marker;
+            if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+              var label = document.createElement('div');
+              label.style.cssText = 'background:#C4622D;color:#fff;border:2px solid #fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;';
+              label.textContent = p.iconEmoji || '📍';
+              label.setAttribute('aria-label', p.title);
+              marker = new google.maps.marker.AdvancedMarkerElement({
+                map: map, position: position, title: p.title, content: label,
+              });
+            } else {
+              marker = new google.maps.Marker({ map: map, position: position, title: p.title });
+            }
+            marker.addListener('click', function () {
+              var html = buildInfoHtml(p);
+              info.setContent(html);
+              info.open({ anchor: marker, map: map });
+            });
+            bounds.extend(position);
+          });
+
+          if (wrap.dataset.mapFitBounds === 'true' && pins.length > 1) {
+            map.fitBounds(bounds, 60);
+          }
+        });
+      }
+
+      function escHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function isSafeHref(h) {
+        if (typeof h !== 'string' || !h) return false;
+        if (h.startsWith('/') && !h.startsWith('//')) return true;
+        if (h.startsWith('https://') || h.startsWith('mailto:') || h.startsWith('tel:')) return true;
+        return false;
+      }
+      function buildInfoHtml(p) {
+        var title = escHtml(p.title);
+        var desc = p.description ? '<div style="margin-top:.3rem;color:#4a3f38;font-size:.85rem;line-height:1.5;">' + escHtml(p.description) + '</div>' : '';
+        var link = isSafeHref(p.href)
+          ? '<div style="margin-top:.5rem;"><a href="' + escHtml(p.href) + '" style="color:#C4622D;font-size:.85rem;text-decoration:none;font-weight:500;">Learn more &rarr;</a></div>'
+          : '';
+        return '<div style="max-width:260px;"><div style="font-family:Cormorant Garamond, Georgia, serif;font-size:1.1rem;color:#1f1712;">' + title + '</div>' + desc + link + '</div>';
+      }
+    })();
+  </script>
+)}

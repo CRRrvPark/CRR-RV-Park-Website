@@ -1,0 +1,22 @@
+# Files Netlify should NOT include in the build or deploy.
+#
+# CRITICAL: keep .env on this list. It holds real secrets (service role key,
+# Netlify auth token, Zoho client secret, Zoho refresh token,
+# SCHEDULED_FN_SECRET). Netlify already has these in its dashboard — the
+# .env file should live only on local dev machines.
+
+.env
+.env.*
+!.env.example
+
+# Build artifacts — Netlify regenerates these from source.
+node_modules/
+dist/
+.astro/
+.netlify/
+.vite/
+
+# Editor + OS noise.
+.DS_Store
+Thumbs.db
+*.log

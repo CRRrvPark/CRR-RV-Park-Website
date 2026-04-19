@@ -1,0 +1,32 @@
+# ============================================================================
+# .gitignore — files and folders git should never track
+# ============================================================================
+
+# ---- Secrets (critical — never commit) ----
+.env
+.env.local
+.env.*.local
+
+# ---- Dependencies + build artifacts ----
+node_modules/
+dist/
+.astro/
+.netlify/
+.vite/
+
+# ---- Logs + temp ----
+*.log
+*.tmp
+
+# ---- OS noise ----
+.DS_Store
+Thumbs.db
+
+# ---- Editor settings (personal, not project-wide) ----
+.vscode/
+.idea/
+
+# ---- Claude Code: commit the shared dev config, ignore local/runtime files ----
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/session/

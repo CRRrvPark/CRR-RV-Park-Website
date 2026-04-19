@@ -1,0 +1,17 @@
+---
+import { blockText, blockMultiHtml, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', '');
+const headline = blockText(blocks, 'headline', '');
+const body = blockMultiHtml(blocks, 'body', '');
+---
+<section>
+  <div class="container">
+    <div class="reveal" style="max-width:720px;">
+      {label && <span class="section-label">{label}</span>}
+      {headline && <h2 class="st">{headline}</h2>}
+      <div class="section-body" style="max-width:none;" set:html={body}></div>
+    </div>
+  </div>
+</section>

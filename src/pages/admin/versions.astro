@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { Versions } from '@components/react/Versions.tsx';
+---
+<AdminBase
+  title="Versions"
+  subtitle="Restore the site to a prior snapshot — your safety net if something goes wrong."
+  active="versions"
+>
+  <Versions client:only="react" />
+</AdminBase>

@@ -1,0 +1,52 @@
+---
+/**
+ * Footer — the site's global footer. Identical on every page.
+ *
+ * Rules (from HANDOFF.md §4.6, §10):
+ *   - Park Rules button (.fb-rules) is gold-outlined in the .fb block
+ *   - Park Map links go to /book-now.html#park-map
+ *   - Copyright year is dynamic
+ */
+
+const currentYear = new Date().getFullYear();
+---
+<footer>
+  <div class="container">
+    <div class="fg-grid">
+      <div class="fb">
+        <a href="/index.html" class="nav-logo">Crooked River Ranch<span>RV Park · Central Oregon</span></a>
+        <p>Canyon rim RV park in Terrebonne, Oregon. Open 365 days a year. Full hookups, pull-throughs to 65', golf course adjacent, local dining nearby. 15 minutes from Smith Rock State Park.</p>
+        <a href="/park-policies.html" class="fb-rules">Park Rules &amp; Policies →</a>
+      </div>
+      <div class="fc">
+        <h4>Stay</h4>
+        <a href="/golf-stays.html">Golf Stays</a>
+        <a href="/golf-course.html">Golf Course</a>
+        <a href="/book-now.html#park-map">Park Map</a>
+        <a href="/group-sites.html">Group Sites</a>
+        <a href="/extended-stays.html">Extended Stays</a>
+        <a href="/amenities.html">Amenities</a>
+        <a href="/book-now.html">Reserve Your Site</a>
+      </div>
+      <div class="fc">
+        <h4>Explore</h4>
+        <a href="/area-guide.html">Area Guide</a>
+        <a href="/golf-course.html">Golf Course</a>
+        <a href="/events.html">Events</a>
+      </div>
+      <div class="fc">
+        <h4>Contact</h4>
+        <a href="tel:5419231441">541-923-1441</a>
+        <a href="/park-policies.html">Park Rules &amp; Policies</a>
+        <p style="margin-top:.4rem;">14875 SW Hays Lane<br>Terrebonne, OR 97760</p>
+        <p style="margin-top:.6rem;">Check-in: 2:00 pm<br>Check-out: 12:00 pm</p>
+      </div>
+    </div>
+    <div class="fbot">
+      <p>© {currentYear} Crooked River Ranch RV Park · Terrebonne, Oregon · <a href="/privacy.html" style="color:rgba(255,255,255,.4);">Privacy Policy</a> · <a href="/terms.html" style="color:rgba(255,255,255,.4);">Terms of Use</a> · <a href="/park-policies.html" style="color:rgba(255,255,255,.4);">Park Rules</a> · <a href="/admin/login" rel="nofollow" style="color:rgba(255,255,255,.4);" title="Sign in to admin (staff only)">Staff Login</a></p>
+      <div class="fbadge">Open Year-Round · 365 Days</div>
+    </div>
+  </div>
+</footer>
+
+<script src="/scripts/site.js" is:inline defer></script>

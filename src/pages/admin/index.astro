@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { Dashboard } from '@components/react/Dashboard.tsx';
+---
+<AdminBase title="Dashboard" active="dashboard">
+  <Dashboard client:only="react" />
+</AdminBase>

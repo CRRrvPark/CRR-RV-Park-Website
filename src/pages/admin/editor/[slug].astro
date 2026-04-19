@@ -1,0 +1,16 @@
+---
+/**
+ * Per-page editor route. SSR — accepts any slug (including newly-created
+ * pages that didn't exist at build time). The React PageEditor handles the
+ * case where the slug doesn't correspond to an existing page.
+ */
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { PageEditor } from '@components/react/PageEditor.tsx';
+
+const { slug } = Astro.params;
+---
+<AdminBase title={`Edit · ${slug}`} active="editor">
+  <PageEditor client:only="react" slug={slug as string} />
+</AdminBase>

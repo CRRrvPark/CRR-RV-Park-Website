@@ -1,0 +1,178 @@
+---
+/**
+ * LocalPlaceCard — renders a local place from a local_places row.
+ *
+ * Uses Google's cached_data for name, rating, address, photo, hours, and
+ * link to Maps. Falls back to name_override when Google data is missing.
+ *
+ * For photos we don't proxy the bytes — we render Google's photo reference
+ * URL directly. Photos auto-refresh when cached_data is refreshed.
+ */
+import type { LocalPlace } from '@lib/area-guide';
+
+export interface Props {
+  place: LocalPlace;
+  /** Optional API key exposed to the browser for rendering Places photos. */
+  apiKey?: string;
+}
+
+const { place, apiKey } = Astro.props;
+const g = place.cached_data ?? {};
+
+// Google's photo reference is a `photos[].name` string; we compose the media URL.
+// If no API key is provided we fall back to the Google Maps listing.
+const photo = g.photos?.[0];
+const photoUrl = photo?.name && apiKey
+  ? `https://places.googleapis.com/v1/${photo.name}/media?maxHeightPx=420&key=${apiKey}`
+  : null;
+
+const displayName = g.displayName?.text ?? place.name_override ?? '(Unnamed place)';
+const mapsHref = g.googleMapsUri ?? place.cached_data?.googleMapsUri ?? null;
+const rating = g.rating;
+const ratingCount = g.userRatingCount;
+const address = g.formattedAddress;
+const blurb = place.our_description ?? g.editorialSummary?.text ?? null;
+const openNow = g.regularOpeningHours?.openNow;
+---
+<div class="lp-card">
+  <div class="lp-card-vis">
+    {photoUrl ? (
+      <img src={photoUrl} alt={displayName} loading="lazy" />
+    ) : (
+      <div class="lp-card-fallback">
+        <span>{place.category === 'restaurant' ? '🍽' : place.category === 'brewery' ? '🍺' : place.category === 'coffee' ? '☕' : place.category === 'attraction' ? '🏞' : '📍'}</span>
+      </div>
+    )}
+    {place.featured && <div class="lp-card-badge">Editor's pick</div>}
+  </div>
+  <div class="lp-card-body">
+    <div class="lp-card-cat">{place.category.replace('_', ' ')}</div>
+    <div class="lp-card-title">{displayName}</div>
+    {rating && (
+      <div class="lp-card-rating">
+        <span style="color:#F59E0B;">{'★'.repeat(Math.round(rating))}{'☆'.repeat(5 - Math.round(rating))}</span>
+        <span style="color:var(--muted);">{rating.toFixed(1)}{ratingCount ? ` (${ratingCount.toLocaleString()})` : ''}</span>
+      </div>
+    )}
+    {address && <div class="lp-card-address">{address}</div>}
+    {blurb && <p class="lp-card-blurb">{blurb}</p>}
+    {openNow !== undefined && (
+      <div class={`lp-card-hours ${openNow ? 'is-open' : 'is-closed'}`}>
+        {openNow ? 'Open now' : 'Closed'}
+      </div>
+    )}
+    <div class="lp-card-actions">
+      {mapsHref && (
+        <a href={mapsHref} target="_blank" rel="noopener noreferrer" class="lp-card-link">
+          Directions &rarr;
+        </a>
+      )}
+      {g.websiteUri && (
+        <a href={g.websiteUri} target="_blank" rel="noopener noreferrer" class="lp-card-link">
+          Website &rarr;
+        </a>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .lp-card {
+    background: #fff;
+    border: 1px solid #e8e3d8;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .lp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    border-color: var(--rust);
+  }
+  .lp-card-vis {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, #f5efe3, #e8d8b3);
+    overflow: hidden;
+  }
+  .lp-card-vis img { width: 100%; height: 100%; object-fit: cover; }
+  .lp-card-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 3rem;
+  }
+  .lp-card-badge {
+    position: absolute;
+    top: .7rem;
+    left: .7rem;
+    background: var(--gold, #D4A853);
+    color: #1f1712;
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .22rem .55rem;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .lp-card-body {
+    padding: 1rem 1.15rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    flex: 1;
+  }
+  .lp-card-cat {
+    font-size: .66rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--rust);
+    font-weight: 500;
+  }
+  .lp-card-title {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .lp-card-rating {
+    font-size: .8rem;
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+  }
+  .lp-card-address {
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .lp-card-blurb {
+    color: var(--muted);
+    font-size: .87rem;
+    line-height: 1.5;
+    margin: .3rem 0 0;
+  }
+  .lp-card-hours {
+    font-size: .78rem;
+    margin-top: .35rem;
+    font-weight: 500;
+  }
+  .lp-card-hours.is-open { color: #4A7C59; }
+  .lp-card-hours.is-closed { color: #8B1A1A; }
+  .lp-card-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: .6rem;
+  }
+  .lp-card-link {
+    font-size: .82rem;
+    color: var(--rust);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .lp-card-link:hover { text-decoration: underline; }
+</style>

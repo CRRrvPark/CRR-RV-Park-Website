@@ -1,0 +1,44 @@
+---
+import { blockText, blockJson, blockUrl, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', 'Google Reviews');
+const headline = blockText(blocks, 'headline', '');
+const headlineItalic = blockText(blocks, 'headline_italic', '');
+const rating = blockText(blocks, 'rating', '5.0');
+const reviewsLink = blockUrl(blocks, 'reviews_link', '#');
+interface Review { stars: number; quote: string; author: string; meta?: string; }
+const reviews = blockJson<Review[]>(blocks, 'reviews', []);
+const stars = (n: number) => '★'.repeat(Math.max(0, Math.min(5, Math.round(n))));
+---
+<section>
+  <div class="container">
+    <div class="rev-header reveal">
+      <div>
+        {label && <span class="section-label">{label}</span>}
+        <h2 class="st">{headline}{headlineItalic && <><br /><em>{headlineItalic}</em></>}</h2>
+      </div>
+      <div class="rev-overall">
+        <div class="rev-big-score">{rating}</div>
+        <div style="color:#F59E0B;font-size:1rem;margin:.3rem 0;">★★★★★</div>
+        <div class="rev-big-label">{label}</div>
+      </div>
+    </div>
+    <div class="rev-grid">
+      {reviews.map((r, i) => (
+        <div class={`rev-card reveal${i % 3 === 1 ? ' rd1' : i % 3 === 2 ? ' rd2' : ''}`}>
+          <div class="rev-stars">{stars(r.stars)}</div>
+          <div class="rev-quote">{r.quote}</div>
+          <div class="rev-author">{r.author}</div>
+          {r.meta && <div class="rev-meta">{r.meta}</div>}
+          <div class="rev-source"><span class="rev-badge">✓ Verified Google Review</span></div>
+        </div>
+      ))}
+    </div>
+    {reviewsLink && reviewsLink !== '#' && (
+      <div style="margin-top:1.5rem;text-align:center;" class="reveal">
+        <p style="font-size:.85rem;color:var(--muted);">See all reviews on <a href={reviewsLink} target="_blank" rel="noopener noreferrer" style="color:var(--rust);text-decoration:none;font-weight:500;">Google Maps →</a></p>
+      </div>
+    )}
+  </div>
+</section>

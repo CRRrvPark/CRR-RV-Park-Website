@@ -1,0 +1,68 @@
+---
+// Prerendered at build time for fast TTFB/FCP. Content updates trigger a
+// Netlify rebuild via /api/publish → triggerBuildHook().
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageRenderer from '@components/PageRenderer.astro';
+
+const title = "Campground Near Smith Rock Oregon | Crooked River Ranch RV Park";
+const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock. Golf course adjacent, local dining nearby, open year-round. Big rig pull-throughs up to 65 feet. Book direct.";
+const canonical = "https://www.crookedriverranchrv.com/";
+const ogImage = "https://www.crookedriverranchrv.com/images/hero.jpg";
+const heroImagePreload = "/images/hero.webp";
+
+const schemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Campground",
+    "name": "Crooked River Ranch RV Park",
+    "description": "113-site RV park on the canyon rim of the Crooked River Gorge in Central Oregon. Full hookups, pull-throughs to 65 feet, adjacent golf course, local dining nearby. 15 minutes from Smith Rock State Park. Open year-round.",
+    "url": "https://www.crookedriverranchrv.com",
+    "telephone": "+1-541-923-1441",
+    "address": { "@type": "PostalAddress", "streetAddress": "14875 SW Hays Lane", "addressLocality": "Terrebonne", "addressRegion": "OR", "postalCode": "97760", "addressCountry": "US" },
+    "geo": { "@type": "GeoCoordinates", "latitude": 44.3485, "longitude": -121.2055 },
+    "checkinTime": "14:00", "checkoutTime": "12:00",
+    "amenityFeature": [
+      {"@type": "LocationFeatureSpecification", "name": "Full Hookups", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Pull-Through Sites", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Swimming Pool", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Golf Course Adjacent", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Pet Friendly", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Local Dining Nearby", "value": true},
+      {"@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true}
+    ],
+    "priceRange": "$36-$62/night",
+    "image": "https://www.crookedriverranchrv.com/images/hero.jpg",
+    "aggregateRating": {"@type": "AggregateRating", "ratingValue": "5.0", "reviewCount": "200", "bestRating": "5"}
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Crooked River Ranch RV Park",
+    "url": "https://www.crookedriverranchrv.com",
+    "logo": "https://www.crookedriverranchrv.com/images/hero.jpg",
+    "telephone": "+1-541-923-1441",
+    "address": { "@type": "PostalAddress", "streetAddress": "14875 SW Hays Lane", "addressLocality": "Terrebonne", "addressRegion": "OR", "postalCode": "97760", "addressCountry": "US" },
+    "geo": { "@type": "GeoCoordinates", "latitude": 44.3485, "longitude": -121.2055 }
+  }
+];
+---
+<Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
+  <PageRenderer pageSlug="index">
+    <!-- Fallback rendered only when Supabase has no sections (DB empty / unconfigured).
+         Once migrations have run + seed content is in place, this fallback never displays. -->
+    <section class="page-hero full">
+      <div class="hero-bg"><picture><source srcset="/images/hero.webp" type="image/webp"><img src="/images/hero.jpg" alt="Crooked River Ranch RV Park" width="1400" height="933" fetchpriority="high"></picture></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">Central Oregon · Open 365 Days</div>
+        <h1 class="hero-hl">Park near<br><em>the canyon.</em></h1>
+        <p class="hero-sub">Full hookup RV sites among juniper trees on the rim of the Crooked River Gorge.</p>
+        <div class="hero-ctas">
+          <a href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noopener noreferrer" class="btn-p">Reserve Your Site</a>
+        </div>
+      </div>
+    </section>
+  </PageRenderer>
+</Base>

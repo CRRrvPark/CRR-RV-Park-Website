@@ -1,0 +1,12 @@
+---
+export const prerender = false;
+import AdminBase from '@layouts/AdminBase.astro';
+import { AreaGuideAdmin } from '@components/react/AreaGuideAdmin.tsx';
+---
+<AdminBase
+  title="Area Guide"
+  subtitle="Trails, things to do, local places, and the park site map"
+  active="area-guide"
+>
+  <AreaGuideAdmin client:load />
+</AdminBase>

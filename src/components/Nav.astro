@@ -1,0 +1,93 @@
+---
+/**
+ * Nav — the site's global navigation bar. Identical on every page.
+ *
+ * Rules (from HANDOFF.md §4.2, §10):
+ *   - "Reservations" is a gold-outlined CTA button (.nav-cta) — NEVER "Book Now"
+ *   - Golf dropdown contains only: Golf Stays, Golf Course
+ *   - Park Map is NEVER in the nav — it lives at /book-now.html#park-map
+ *   - Mobile breakpoint at 980px (hamburger menu)
+ *
+ * Dynamic pages with show_in_main_nav=true are inserted between the
+ * static links and the Reservations CTA, ordered by nav_order ascending
+ * (then title alphabetically as a tiebreaker). Drafts never appear.
+ */
+
+import { serverClient } from '@lib/supabase';
+
+interface NavPage { slug: string; title: string; nav_order: number | null; }
+let dynamicPages: NavPage[] = [];
+
+// /dining only appears in the nav once at least one local_place has a real
+// google_place_id (not a seeded placeholder). Keeps the link hidden until
+// the admin fills in real data so guests don't click into an empty/broken
+// page. Auto-reveals the moment a real place is saved.
+let showDining = false;
+
+const hasUrl = Boolean(import.meta.env.PUBLIC_SUPABASE_URL ?? (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined));
+const hasKey = Boolean((import.meta.env as any).SUPABASE_SERVICE_ROLE_KEY ?? (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined));
+
+if (hasUrl && hasKey) {
+  try {
+    const sb = serverClient();
+    const { data } = await sb
+      .from('pages')
+      .select('slug, title, nav_order')
+      .eq('show_in_main_nav', true)
+      .eq('is_draft', false)
+      .order('nav_order', { ascending: true, nullsFirst: false })
+      .order('title', { ascending: true });
+    dynamicPages = (data ?? []).filter(p =>
+      // Don't duplicate slugs that are already in the static nav
+      !['index', 'golf-stays', 'golf-course', 'group-sites', 'extended-stays', 'amenities', 'area-guide', 'book-now'].includes(p.slug)
+    );
+
+    // Probe for at least one real (non-placeholder) published local_place.
+    // Fails silently if the table doesn't exist yet (migrations not run).
+    try {
+      const { data: dining } = await sb
+        .from('local_places')
+        .select('id')
+        .eq('is_published', true)
+        .not('google_place_id', 'ilike', 'TODO_%')
+        .limit(1);
+      showDining = Boolean(dining && dining.length > 0);
+    } catch {
+      showDining = false;
+    }
+  } catch {
+    dynamicPages = [];
+  }
+}
+---
+<nav id="mainNav">
+  <a href="/index.html" class="nav-logo">Crooked River Ranch<span>RV Park · Terrebonne, Oregon</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="/index.html">Home</a>
+    <div class="nav-dd">
+      <a href="/golf-stays.html">Golf</a>
+      <div class="nav-dd-menu">
+        <a href="/golf-stays.html">Golf Stays</a>
+        <a href="/golf-course.html">Golf Course</a>
+      </div>
+    </div>
+    <a href="/group-sites.html">Group Sites</a>
+    <a href="/extended-stays.html">Extended Stays</a>
+    <a href="/amenities.html">Amenities</a>
+    <div class="nav-dd">
+      <a href="/area-guide">Area Guide</a>
+      <div class="nav-dd-menu">
+        <a href="/area-guide">Region Map &amp; Overview</a>
+        <a href="/trails">Hiking Trails</a>
+        <a href="/things-to-do">60 Things to Do</a>
+        {showDining && <a href="/dining">Dining &amp; Local</a>}
+        <a href="/events">Events</a>
+      </div>
+    </div>
+    {dynamicPages.map((p) => (
+      <a href={`/${p.slug}`}>{p.title}</a>
+    ))}
+    <a href="/book-now.html" class="nav-cta">Reservations</a>
+  </div>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>

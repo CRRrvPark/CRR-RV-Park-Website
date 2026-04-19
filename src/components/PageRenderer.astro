@@ -1,0 +1,140 @@
+---
+/**
+ * PageRenderer — renders a page from its sections data.
+ *
+ * DUAL RENDERING: checks `use_page_builder` first. If the page uses the
+ * visual builder (Puck), delegates to PuckRenderer.astro. Otherwise,
+ * falls through to the legacy section/block flow.
+ *
+ * Given the page slug, fetches all sections for that page from Supabase
+ * (with their content_blocks), iterates them in display_order, and
+ * dispatches each section to its corresponding Astro component based on
+ * its `type` column.
+ *
+ * Adding a new section type:
+ *   1. Add an entry to src/lib/section-types.ts
+ *   2. Create the matching .astro component in src/components/sections/
+ *   3. Register it in the COMPONENTS map below
+ *
+ * Renders nothing if Supabase isn't configured (caller is expected to
+ * provide hardcoded fallback sections in that case — see index.astro).
+ */
+
+import { serverClient } from '@lib/supabase';
+import type { BlockMap, SectionBlock } from '@lib/section-blocks';
+import PuckRenderer from '@components/sections/PuckRenderer.astro';
+
+import Hero from '@components/sections/Hero.astro';
+import TrustBar from '@components/sections/TrustBar.astro';
+import TwoCol from '@components/sections/TwoCol.astro';
+import Interlude from '@components/sections/Interlude.astro';
+import CardGrid from '@components/sections/CardGrid.astro';
+import AmenityGrid from '@components/sections/AmenityGrid.astro';
+import ExploreGrid from '@components/sections/ExploreGrid.astro';
+import SiteCards from '@components/sections/SiteCards.astro';
+import Reviews from '@components/sections/Reviews.astro';
+import CtaBanner from '@components/sections/CtaBanner.astro';
+import TextBlock from '@components/sections/TextBlock.astro';
+import EventsWidget from '@components/sections/EventsWidget.astro';
+import ReserveForm from '@components/sections/ReserveForm.astro';
+import RatesTable from '@components/sections/RatesTable.astro';
+import FeatureList from '@components/sections/FeatureList.astro';
+
+const COMPONENTS: Record<string, any> = {
+  hero: Hero,
+  trust_bar: TrustBar,
+  two_col: TwoCol,
+  interlude: Interlude,
+  card_grid: CardGrid,
+  amenity_grid: AmenityGrid,
+  explore_grid: ExploreGrid,
+  site_cards: SiteCards,
+  reviews: Reviews,
+  cta_banner: CtaBanner,
+  text_block: TextBlock,
+  events_widget: EventsWidget,
+  reserve_form: ReserveForm,
+  rates_table: RatesTable,
+  feature_list: FeatureList,
+};
+
+export interface Props {
+  pageSlug: string;
+}
+
+const { pageSlug } = Astro.props;
+
+interface Section {
+  id: string;
+  key: string;
+  type: string;
+  display_name: string;
+  display_order: number;
+  is_visible: boolean;
+}
+interface SectionWithBlocks extends Section {
+  content_blocks: SectionBlock[];
+}
+
+let sections: SectionWithBlocks[] = [];
+let canRender = false;
+let usePageBuilder = false;
+
+const hasUrl = Boolean(import.meta.env.PUBLIC_SUPABASE_URL ?? (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined));
+const hasKey = Boolean((import.meta.env as any).SUPABASE_SERVICE_ROLE_KEY ?? (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined));
+
+if (hasUrl && hasKey) {
+  try {
+    const sb = serverClient();
+    const { data: page } = await sb
+      .from('pages')
+      .select('id, use_page_builder, page_builder_data')
+      .eq('slug', pageSlug)
+      .maybeSingle();
+    if (page) {
+      // Check if this page uses the visual builder
+      if (page.use_page_builder && page.page_builder_data) {
+        usePageBuilder = true;
+      } else {
+        // Legacy section/block flow
+        const { data } = await sb
+          .from('sections')
+          .select('*, content_blocks(*)')
+          .eq('page_id', page.id)
+          .eq('is_visible', true)
+          .order('display_order', { ascending: true });
+        sections = (data ?? []) as SectionWithBlocks[];
+        canRender = sections.length > 0;
+      }
+    }
+  } catch (err) {
+    console.warn(`[PageRenderer] could not fetch sections for "${pageSlug}":`, err);
+  }
+}
+
+function blocksMap(section: SectionWithBlocks): BlockMap {
+  const m: BlockMap = {};
+  for (const b of section.content_blocks ?? []) m[b.key] = b;
+  return m;
+}
+---
+{usePageBuilder ? (
+  /* Page uses the visual builder — delegate to PuckRenderer */
+  <PuckRenderer pageSlug={pageSlug}>
+    <slot />
+  </PuckRenderer>
+) : canRender ? (
+  sections.map((section) => {
+    const Component = COMPONENTS[section.type];
+    if (!Component) {
+      // Unknown type — skip, log to console (visible in dev server logs)
+      console.warn(`[PageRenderer] No component for section type "${section.type}" (section ${section.id})`);
+      return null;
+    }
+    return <Component blocks={blocksMap(section)} sectionId={section.key} />;
+  })
+) : (
+  // No DB content — caller renders fallback. Use a slot to allow
+  // composition like: <PageRenderer pageSlug="..."><FallbackContent /></PageRenderer>
+  <slot />
+)}

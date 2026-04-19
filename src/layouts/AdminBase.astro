@@ -1,0 +1,48 @@
+---
+/**
+ * AdminBase — shell layout for every /admin/* page.
+ *
+ * Wraps the page in a sidebar + topbar with a <slot /> for the body. The
+ * sidebar lives in its own React island so it can show unread counts, a
+ * collapsible mobile menu, and keyboard shortcuts without a full page
+ * reload. Auth enforcement still happens per-page via AuthGuard because
+ * the sidebar only shows AFTER a successful login.
+ */
+
+import HeadMeta from '@components/HeadMeta.astro';
+import { AdminShell } from '@components/react/AdminShell';
+
+export interface Props {
+  title: string;
+  subtitle?: string;
+  /** Slug for the active sidebar item, e.g. 'editor', 'media', 'users' */
+  active?: string;
+  /** Show the top "you're an admin" bar? Set false for login page. */
+  chrome?: boolean;
+}
+
+const { title, subtitle, active, chrome = true } = Astro.props;
+const fullTitle = `${title} · CRR Admin`;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <HeadMeta
+    title={fullTitle}
+    description="Crooked River Ranch RV Park admin"
+    canonical="https://www.crookedriverranchrv.com/admin"
+    robots="noindex, nofollow"
+  />
+  <link rel="stylesheet" href="/styles/admin.css">
+  <slot name="head" />
+</head>
+<body class="admin-body">
+  {chrome ? (
+    <AdminShell client:load active={active} title={title} subtitle={subtitle}>
+      <slot />
+    </AdminShell>
+  ) : (
+    <slot />
+  )}
+</body>
+</html>

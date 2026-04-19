@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { EventsAdmin } from '@components/react/EventsAdmin.tsx';
+---
+<AdminBase
+  title="Events"
+  subtitle="Events edited in Zoho Calendar appear here hourly. Toggle public visibility per event."
+  active="events"
+>
+  <EventsAdmin client:only="react" />
+</AdminBase>

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "astro-dev-patched",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 4321,
+      "cwd": "C:/Users/mathe/Documents/RV Park/crr-rv-park-platform-DEV"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+---
+/**
+ * UpcomingEvents — small widget showing next N events. Renders nothing if
+ * there are no events (or if Supabase isn't configured).
+ *
+ * Usage:
+ *   <UpcomingEvents limit={3} heading="Upcoming at the park" />
+ */
+
+import { serverClient } from '@lib/supabase';
+
+export interface Props {
+  limit?: number;
+  heading?: string;
+}
+
+const { limit = 3, heading = 'Upcoming events' } = Astro.props;
+
+interface EventRow {
+  id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  is_all_day: boolean;
+  location: string | null;
+}
+
+let events: EventRow[] = [];
+if (import.meta.env.PUBLIC_SUPABASE_URL) {
+  try {
+    const sb = serverClient();
+    const { data } = await sb
+      .from('events')
+      .select('id, title, starts_at, ends_at, is_all_day, location')
+      .eq('is_published', true)
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(limit);
+    events = data ?? [];
+  } catch {
+    events = [];
+  }
+}
+
+function fmtDate(iso: string, allDay: boolean): string {
+  const d = new Date(iso);
+  if (allDay) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+---
+{events.length > 0 && (
+  <section class="upcoming-events" style="padding:2rem 0;background:#fafaf7;">
+    <div class="container">
+      <div class="reveal" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.2rem;">
+        <div>
+          <span class="section-label">What's Happening</span>
+          <h2 class="st" style="margin-top:.4rem;font-size:clamp(1.6rem, 3vw, 2.4rem);">{heading}</h2>
+        </div>
+        <a href="/events.html" style="color:var(--rust);font-size:.9rem;">All events →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;">
+        {events.map((ev) => (
+          <a href="/events.html" style="text-decoration:none;color:inherit;display:block;background:white;padding:1rem 1.2rem;border-left:3px solid var(--rust);border-radius:2px;">
+            <div style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);font-weight:500;">
+              {fmtDate(ev.starts_at, ev.is_all_day)}
+            </div>
+            <div style="font-family:var(--serif);font-weight:400;font-size:1.15rem;margin-top:.3rem;color:var(--text);">
+              {ev.title}
+            </div>
+            {ev.location && <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem;">📍 {ev.location}</div>}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

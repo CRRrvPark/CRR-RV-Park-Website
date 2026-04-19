@@ -1,0 +1,22 @@
+---
+import { blockText, blockJson, type BlockMap } from '@lib/section-blocks';
+export interface Props { blocks: BlockMap; }
+const { blocks } = Astro.props;
+const label = blockText(blocks, 'label', '');
+const headline = blockText(blocks, 'headline', '');
+interface Feature { num: string; title: string; body: string; }
+const features = blockJson<Feature[]>(blocks, 'features', []);
+---
+<section>
+  <div class="container">
+    <div class="reveal" style="margin-bottom:1.5rem;">
+      {label && <span class="section-label">{label}</span>}
+      {headline && <h2 class="st">{headline}</h2>}
+    </div>
+    <div class="fl">
+      {features.map((f) => (
+        <div class="fi"><div class="fn">{f.num}</div><div class="ft"><strong>{f.title}</strong><span>{f.body}</span></div></div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { RunbookEditor } from '@components/react/RunbookEditor.tsx';
+---
+<AdminBase
+  title="Runbook"
+  subtitle="Operations manual for the whole system. If you need to train a new admin, start here."
+  active="runbook"
+>
+  <RunbookEditor client:only="react" />
+</AdminBase>

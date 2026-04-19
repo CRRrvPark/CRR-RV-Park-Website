@@ -1,0 +1,76 @@
+<!--
+  Netlify Forms build-time detection.
+
+  Because this site is rendered with SSR (output:'server'), Netlify cannot
+  scan SSR-generated HTML at build time for <form data-netlify="true">
+  elements. To register forms anyway, we serve this static file at build
+  time — Netlify scans it, picks up the form names + fields, and creates
+  the form endpoints.
+
+  Whenever a new <form name="..."> is added to any page (including via the
+  Visual Builder's ReserveFormSection), add a matching stub here. The
+  visible page will continue to POST to "/", and Netlify will correlate
+  the form-name hidden input with the definition below.
+
+  See: https://docs.netlify.com/forms/setup/#javascript-forms
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Netlify Forms (build-time detection only)</title>
+</head>
+<body>
+
+<!-- Home page + legacy contact form -->
+<form name="contact" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="first_name" />
+  <input type="text" name="last_name" />
+  <input type="email" name="email" />
+  <input type="tel" name="phone" />
+  <input type="date" name="arrival_date" />
+  <input type="date" name="departure_date" />
+  <input type="text" name="rig_size" />
+  <textarea name="message"></textarea>
+  <input type="text" name="bot-field" />
+</form>
+
+<!-- Book-now inquiry form -->
+<form name="inquiry" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="first_name" />
+  <input type="text" name="last_name" />
+  <input type="email" name="email" />
+  <input type="tel" name="phone" />
+  <input type="text" name="preferred_dates" />
+  <input type="text" name="rig_size" />
+  <textarea name="message"></textarea>
+  <input type="text" name="bot-field" />
+</form>
+
+<!-- Group sites form -->
+<form name="group-inquiry" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="first_name" />
+  <input type="text" name="last_name" />
+  <input type="email" name="email" />
+  <input type="tel" name="phone" />
+  <input type="text" name="group_size" />
+  <input type="text" name="preferred_dates" />
+  <textarea name="message"></textarea>
+  <input type="text" name="bot-field" />
+</form>
+
+<!-- Extended stays form -->
+<form name="extended-stay-inquiry" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="first_name" />
+  <input type="text" name="last_name" />
+  <input type="email" name="email" />
+  <input type="tel" name="phone" />
+  <input type="text" name="stay_length" />
+  <input type="text" name="preferred_dates" />
+  <input type="text" name="rig_size" />
+  <textarea name="message"></textarea>
+  <input type="text" name="bot-field" />
+</form>
+
+</body>
+</html>

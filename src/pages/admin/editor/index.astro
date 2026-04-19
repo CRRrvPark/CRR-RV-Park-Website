@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+import AdminBase from '@layouts/AdminBase.astro';
+import { PagesAdmin } from '@components/react/PagesAdmin.tsx';
+---
+<AdminBase
+  title="Pages"
+  subtitle="Every page on the public site. Click a page to edit its content, or create a new one."
+  active="editor"
+>
+  <PagesAdmin client:only="react" />
+</AdminBase>

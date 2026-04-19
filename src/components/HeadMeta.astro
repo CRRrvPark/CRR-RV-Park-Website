@@ -1,0 +1,86 @@
+---
+/**
+ * HeadMeta — renders all <head> tags that every public page needs.
+ * Each page provides its own title/description/OG image via props.
+ *
+ * This component is the single source of truth for:
+ *   - SEO meta tags
+ *   - OpenGraph + Twitter cards
+ *   - Canonical URL
+ *   - Font preload (Cormorant Garamond + DM Sans)
+ *   - Hero image preload (per-page)
+ *   - Microsoft Clarity analytics (deferred)
+ *
+ * DO NOT deviate from the font-loading pattern — it's tuned for LCP.
+ */
+
+export interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;           // Absolute URL; defaults to /images/hero.jpg
+  canonical: string;           // Absolute URL for this page
+  heroImagePreload?: string;   // Path like "/images/hero.webp" for LCP preload
+  robots?: string;             // Override (e.g., "noindex, nofollow" for admin)
+}
+
+const {
+  title,
+  description,
+  ogImage = 'https://www.crookedriverranchrv.com/images/hero.jpg',
+  canonical,
+  heroImagePreload,
+  robots = 'index, follow',
+} = Astro.props;
+
+const fontHref = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap';
+
+// Derive the Supabase hostname for DNS/preconnect hints. We do this at
+// build time so it's always correct per environment (dev / staging / prod).
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
+  ?? (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined);
+let supabaseOrigin: string | null = null;
+try { if (supabaseUrl) supabaseOrigin = new URL(supabaseUrl).origin; } catch {}
+---
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<meta name="description" content={description}>
+<meta name="robots" content={robots}>
+
+<meta property="og:title" content={title}>
+<meta property="og:description" content={description}>
+<meta property="og:image" content={ogImage}>
+<meta property="og:url" content={canonical}>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crooked River Ranch RV Park">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={title}>
+<meta name="twitter:description" content={description}>
+<meta name="twitter:image" content={ogImage}>
+
+<link rel="canonical" href={canonical}>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{supabaseOrigin && (
+  <>
+    {/* Supabase storage serves the synced WorkDrive images; preconnect so
+        the TCP + TLS handshake starts before the first <img> request.
+        Clarity preconnect is intentionally skipped — it loads deferred
+        on window-load. */}
+    <link rel="dns-prefetch" href={supabaseOrigin} />
+    <link rel="preconnect" href={supabaseOrigin} crossorigin />
+  </>
+)}
+
+{heroImagePreload && (
+  <link rel="preload" as="image" href={heroImagePreload} type="image/webp">
+)}
+
+<link rel="preload" as="style" href={fontHref}>
+<link rel="stylesheet" href={fontHref} media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href={fontHref}></noscript>
+
+<link rel="stylesheet" href="/styles/global.css">

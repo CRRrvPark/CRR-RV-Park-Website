@@ -1,0 +1,1067 @@
+---
+/**
+ * PuckRenderer — renders a page from its Puck JSON (page_builder_data).
+ *
+ * This is the PUBLIC SITE counterpart to the editor's live preview. It
+ * reads the published Puck JSON from the `pages` table and emits plain
+ * HTML that uses the same CSS classes as the existing Astro section
+ * components.
+ *
+ * If `use_page_builder` is false or data is null, renders <slot /> so
+ * the caller can provide a legacy fallback.
+ *
+ * Supports all 19 component types registered in puck-config.tsx:
+ *   15 sections + Spacer, Divider, HtmlEmbed, VideoEmbed
+ */
+
+import { serverClient } from '@lib/supabase';
+import { pushStyleProps, renderChildBlock, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
+
+export interface Props {
+  pageSlug: string;
+  /** Optional — supply builder data directly (e.g. from a draft). When
+   * provided, the DB lookup is skipped. Used by the live-preview route
+   * so editors see their in-progress draft rendered with real site CSS. */
+  pageBuilderData?: PuckData | null;
+}
+
+const { pageSlug, pageBuilderData } = Astro.props;
+
+/* ── Fetch page data ── */
+
+interface PuckItem {
+  type: string;
+  props: Record<string, any>;
+}
+interface PuckData {
+  content: PuckItem[];
+  root?: { props?: Record<string, any> };
+  zones?: Record<string, any>;
+}
+
+let puckData: PuckData | null = null;
+let usePageBuilder = false;
+
+const hasUrl = Boolean(
+  import.meta.env.PUBLIC_SUPABASE_URL ??
+    (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined)
+);
+const hasKey = Boolean(
+  (import.meta.env as any).SUPABASE_SERVICE_ROLE_KEY ??
+    (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined)
+);
+
+// If caller supplied data directly (live-preview route), use it verbatim and
+// skip the DB lookup. Otherwise fall back to reading the published
+// page_builder_data from the pages table.
+if (pageBuilderData) {
+  usePageBuilder = true;
+  puckData = pageBuilderData;
+} else if (hasUrl && hasKey) {
+  try {
+    const sb = serverClient();
+    const { data: page } = await sb
+      .from('pages')
+      .select('id, use_page_builder, page_builder_data')
+      .eq('slug', pageSlug)
+      .maybeSingle();
+
+    if (page && page.use_page_builder && page.page_builder_data) {
+      usePageBuilder = true;
+      puckData = page.page_builder_data as PuckData;
+    }
+  } catch (err) {
+    console.warn(`[PuckRenderer] could not fetch page data for "${pageSlug}":`, err);
+  }
+}
+
+/* ── Events data (fetched when EventsWidgetSection is used) ── */
+
+interface EventRow {
+  id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  is_all_day: boolean;
+  location: string | null;
+}
+
+let eventRows: EventRow[] = [];
+let eventsFetched = false;
+
+async function fetchEvents(limit: number): Promise<EventRow[]> {
+  if (eventsFetched) return eventRows.slice(0, limit);
+  if (!hasUrl || !hasKey) return [];
+  try {
+    const sb = serverClient();
+    const { data } = await sb
+      .from('events')
+      .select('id, title, starts_at, ends_at, is_all_day, location')
+      .eq('is_published', true)
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(12);
+    eventRows = data ?? [];
+    eventsFetched = true;
+    return eventRows.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+// Pre-fetch events if any EventsWidgetSection exists
+const hasEventsWidget = puckData?.content?.some((item) => item.type === 'EventsWidgetSection');
+if (hasEventsWidget) {
+  const maxLimit = Math.max(
+    ...puckData!.content
+      .filter((item) => item.type === 'EventsWidgetSection')
+      .map((item) => item.props.limit ?? 3)
+  );
+  await fetchEvents(maxLimit);
+}
+
+/* ── Helpers ── */
+
+function safeJson<T>(raw: unknown, fallback: T): T {
+  if (raw == null) return fallback;
+  // Already-parsed data (Puck's array-type field feeds us real arrays).
+  if (Array.isArray(raw) || (typeof raw === 'object' && raw !== null)) {
+    return stripProtoKeys(raw) as T;
+  }
+  if (typeof raw !== 'string') return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    // BUG-6: defense-in-depth against prototype pollution
+    return stripProtoKeys(parsed) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function stripProtoKeys(value: any): any {
+  if (Array.isArray(value)) return value.map(stripProtoKeys);
+  if (value && typeof value === 'object') {
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      out[k] = stripProtoKeys(v);
+    }
+    return out;
+  }
+  return value;
+}
+
+function parseVideoUrl(url: string): string | null {
+  if (!url) return null;
+  const ytMatch = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\s]+)/
+  );
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  const vmMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vmMatch) return `https://player.vimeo.com/video/${vmMatch[1]}`;
+  if (url.includes('youtube.com/embed/') || url.includes('player.vimeo.com/video/')) return url;
+  return null;
+}
+
+function fmtEventDate(iso: string, allDay: boolean): string {
+  const d = new Date(iso);
+  if (allDay) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function starStr(n: number): string {
+  return '\u2605'.repeat(Math.min(n, 5)) + '\u2606'.repeat(Math.max(0, 5 - n));
+}
+
+const widthMap: Record<string, string> = { narrow: '640px', medium: '900px', full: '100%' };
+const divWidthMap: Record<string, string> = { narrow: '50%', medium: '80%', full: '100%' };
+const ratioMap: Record<string, string> = { '16:9': '56.25%', '4:3': '75%', '1:1': '100%' };
+
+// pushStyleProps + renderChildBlock are imported from @lib/puck-render-helpers
+// (kept out of the frontmatter because the HTML-inside-template-literal
+// strings in those helpers trip Astro's dev-mode esbuild parser when
+// declared inline in a .astro frontmatter).
+
+// Prepare events for template
+const eventsForWidget = eventRows;
+
+/**
+ * Return the id + extra CSS declarations for a section wrapper on the
+ * public site, mirroring the editor's withStyle() HOC. Caller passes any
+ * section-specific base style (e.g. a hero's existing layout) and gets
+ * back a merged string. Empty sectionId → no id attribute.
+ */
+function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?: string } {
+  const acc: string[] = [];
+  if (base) acc.push(base.replace(/;\s*$/, ''));
+  pushStyleProps(acc, p);
+  const id = typeof p.sectionId === 'string' && p.sectionId.trim() ? p.sectionId.trim() : undefined;
+  const style = acc.length ? acc.join(';') : undefined;
+  return { id, style };
+}
+---
+
+{usePageBuilder && puckData?.content ? (
+  <Fragment>
+    {puckData.content.map((item) => {
+      const p = item.props;
+
+      /* ── TextBlock ── */
+      if (item.type === 'TextBlock') {
+        const maxW = widthMap[p.maxWidth] || '900px';
+        return (
+          <section {...sectionAttrs(p, `padding:5rem 3rem;text-align:${p.alignment || 'left'}`)}>
+            <div style={`max-width:${maxW};margin:0 auto;`}>
+              {p.label && <span class="section-label">{p.label}</span>}
+              {p.headline && <h2 class="st">{p.headline}</h2>}
+              {p.body && <div class="section-body" style="max-width:none;" set:html={p.body} />}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── Spacer ── */
+      if (item.type === 'Spacer') {
+        return <div style={`height:${p.height ?? 48}px;`} />;
+      }
+
+      /* ── Divider ── */
+      if (item.type === 'Divider') {
+        const dw = divWidthMap[p.width] || '80%';
+        return (
+          <div style="padding:0 3rem;">
+            <hr style={`border:none;border-top:1px ${p.style || 'solid'} ${p.color || '#e8e3d8'};width:${dw};margin:${p.margin ?? 32}px auto;`} />
+          </div>
+        );
+      }
+
+      /* ── HtmlEmbed ── */
+      if (item.type === 'HtmlEmbed') {
+        const srcDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:system-ui,sans-serif;}</style></head><body>${p.code || ''}</body></html>`;
+        return (
+          <div style="padding:0 3rem;">
+            <iframe
+              srcdoc={srcDoc}
+              sandbox="allow-scripts"
+              style={`width:100%;min-height:${p.minHeight ?? 200}px;border:1px solid #e8e3d8;border-radius:4px;background:#fff;`}
+              title="Embedded content"
+              loading="lazy"
+            />
+          </div>
+        );
+      }
+
+      /* ── ImageBlock ── */
+      if (item.type === 'ImageBlock') {
+        const alignMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+        const align = alignMap[p.alignment as keyof typeof alignMap] || 'center';
+        const imgStyleParts = ['display:block', 'max-width:100%'];
+        if (p.width) imgStyleParts.push(`width:${p.width}px`);
+        if (p.height) imgStyleParts.push(`height:${p.height}px`);
+        imgStyleParts.push(`object-fit:${p.objectFit || 'cover'}`);
+        if (p.borderRadius) imgStyleParts.push(`border-radius:${p.borderRadius}px`);
+        const imgEl = p.imageUrl ? (
+          <img src={p.imageUrl} alt={p.alt || ''} loading="lazy" style={imgStyleParts.join(';')} />
+        ) : null;
+        const wrapped = p.linkUrl && imgEl ? (<a href={p.linkUrl}>{imgEl}</a>) : imgEl;
+        return (
+          <figure style={`display:flex;flex-direction:column;align-items:${align};padding:1rem 3rem;margin:0;`}>
+            {wrapped}
+            {p.caption && (
+              <figcaption style={`margin-top:.5rem;font-size:.85rem;color:var(--muted,#888);text-align:${p.alignment || 'center'};`}>
+                {p.caption}
+              </figcaption>
+            )}
+          </figure>
+        );
+      }
+
+      /* ── VideoEmbed ── */
+      if (item.type === 'VideoEmbed') {
+        const embedUrl = parseVideoUrl(p.url || '');
+        const pb = ratioMap[p.aspectRatio] || '56.25%';
+        return (
+          <div style="padding:0 3rem;max-width:900px;margin:0 auto;">
+            {embedUrl ? (
+              <div style={`position:relative;padding-bottom:${pb};height:0;overflow:hidden;border-radius:4px;`}>
+                <iframe
+                  src={embedUrl}
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  title="Video embed"
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div style="padding:40px;background:#f5f0e6;border-radius:4px;text-align:center;color:#665040;">
+                Video not configured
+              </div>
+            )}
+            {p.caption && <p style="font-size:.85rem;color:#665040;text-align:center;margin-top:.8rem;">{p.caption}</p>}
+          </div>
+        );
+      }
+
+      /* ── HeroSection ── */
+      if (item.type === 'HeroSection') {
+        // Critical LCP optimization: emit a real <picture>/<img> with
+        // fetchpriority="high" rather than a CSS background-image. CSS
+        // backgrounds can't be preloaded or prioritized by the browser,
+        // which was adding 1-3s to LCP on the home page.
+        //
+        // Derive .webp + -mobile.webp siblings from the source URL. If the
+        // admin picked a file like /images/hero.jpg we'll auto-serve the
+        // already-generated .webp / mobile variants.
+        const rawUrl = p.backgroundImageUrl || '/images/hero.jpg';
+        const base = rawUrl.replace(/\.(jpe?g|png|webp|avif)$/i, '');
+        const ext = (rawUrl.match(/\.(jpe?g|png|webp|avif)$/i)?.[1] ?? 'jpg').toLowerCase();
+        const jpgUrl = `${base}.${ext === 'webp' || ext === 'avif' ? 'jpg' : ext}`;
+        const webpUrl = `${base}.webp`;
+        const mobileWebpUrl = `${base}-mobile.webp`;
+        return (
+          <section class="page-hero full" {...sectionAttrs(p)}>
+            <div class="hero-bg">
+              <picture>
+                <source media="(max-width:768px)" srcset={mobileWebpUrl} type="image/webp" />
+                <source srcset={webpUrl} type="image/webp" />
+                <img
+                  src={jpgUrl}
+                  alt={p.headlineLine1 || 'Crooked River Ranch RV Park'}
+                  width="1600"
+                  height="900"
+                  fetchpriority="high"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            <div class="hero-overlay" />
+            <div class="hero-content">
+              {p.eyebrow && <div class="hero-eyebrow">{p.eyebrow}</div>}
+              <h1 class="hero-hl">
+                {p.headlineLine1}
+                {p.headlineLine2Italic && <><br /><em>{p.headlineLine2Italic}</em></>}
+              </h1>
+              {p.subtitle && <div class="hero-sub" set:html={p.subtitle} />}
+              <div class="hero-ctas">
+                {p.ctaPrimaryLabel && <a class="btn-p" href={p.ctaPrimaryUrl || '#'}>{p.ctaPrimaryLabel}</a>}
+                {p.ctaSecondaryLabel && <a class="btn-g" href={p.ctaSecondaryUrl || '#'}>{p.ctaSecondaryLabel}</a>}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── TwoColumnSection ── */
+      if (item.type === 'TwoColumnSection') {
+        const features: any[] = safeJson(p.featureList, []);
+        const imgRight = p.imagePosition === 'right';
+        const twoColImgStyle = [] as string[];
+        if (p.imageWidth) twoColImgStyle.push(`width:${p.imageWidth}px`);
+        else twoColImgStyle.push('width:100%');
+        if (p.imageHeight) twoColImgStyle.push(`height:${p.imageHeight}px`);
+        if (p.imageObjectFit) twoColImgStyle.push(`object-fit:${p.imageObjectFit}`);
+        if (p.imageBorderRadius) twoColImgStyle.push(`border-radius:${p.imageBorderRadius}px`);
+        twoColImgStyle.push('max-width:100%');
+        // Opt out of lightbox if this image is intentionally a link
+        // (e.g., admin set imageLinkUrl) — navigation wins over zoom.
+        const twoColImgLightbox = p.image && !p.imageLinkUrl && p.imageLightbox !== false;
+        const twoColImgEl = p.image ? (
+          <img
+            src={p.image}
+            alt={p.imageCaption || p.headline || ''}
+            loading="lazy"
+            style={twoColImgStyle.join(';')}
+            data-lightbox={twoColImgLightbox ? 'true' : undefined}
+            data-lightbox-caption={twoColImgLightbox && p.imageCaption ? p.imageCaption : undefined}
+          />
+        ) : null;
+        const twoColImgWrapped = p.imageLinkUrl && twoColImgEl ? (
+          <a href={p.imageLinkUrl} target={p.imageLinkUrl.startsWith('http') ? '_blank' : undefined} rel={p.imageLinkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}>{twoColImgEl}</a>
+        ) : twoColImgEl;
+        const imgBlock = (
+          <div class="sv">
+            {twoColImgWrapped}
+            {p.imageCaption && <span class="sv-tag">{p.imageCaption}</span>}
+          </div>
+        );
+        const textBlock = (
+          <div>
+            {p.label && <span class="section-label">{p.label}</span>}
+            <h2 class="st">
+              {p.headline}
+              {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+            </h2>
+            {p.body && <div class="section-body" set:html={p.body} />}
+            {features.length > 0 && (
+              <div class="fl">
+                {features.map((f: any, i: number) => (
+                  <div class="fi">
+                    <span class="fn">{f.num ?? String(i + 1).padStart(2, '0')}</span>
+                    <div class="ft">
+                      {f.title && <strong>{f.title}</strong>}
+                      {f.body && <span>{f.body}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {p.ctaLabel && (
+              <div class="section-cta">
+                <a href={p.ctaUrl || '#'}>{p.ctaLabel}</a>
+              </div>
+            )}
+          </div>
+        );
+        const mobileImg = p.mobileImagePosition && p.mobileImagePosition !== 'inherit'
+          ? p.mobileImagePosition
+          : null;
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              <div class="sl" data-mobile-img={mobileImg ?? undefined}>
+                {imgRight ? <>{textBlock}{imgBlock}</> : <>{imgBlock}{textBlock}</>}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── CardGridSection ── */
+      if (item.type === 'CardGridSection') {
+        const cards: any[] = safeJson(p.cards, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              {p.label && <span class="section-label">{p.label}</span>}
+              <h2 class="st">
+                {p.headline}
+                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+              </h2>
+              <div class="am-grid" style="margin-top:2.5rem;">
+                {cards.map((c: any) => {
+                  const inner = (
+                    <>
+                      {c.icon && <span class="am-icon">{c.icon}</span>}
+                      {c.name && <div class="am-name">{c.name}</div>}
+                      {c.desc && <div class="am-desc">{c.desc}</div>}
+                    </>
+                  );
+                  const ext = typeof c.href === 'string' && c.href.startsWith('http');
+                  return c.href ? (
+                    <a class="am-card am-card-link" href={c.href} target={ext ? '_blank' : undefined} rel={ext ? 'noopener noreferrer' : undefined}>{inner}</a>
+                  ) : (
+                    <div class="am-card">{inner}</div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── SiteCardsSection ── */
+      if (item.type === 'SiteCardsSection') {
+        const cards: any[] = safeJson(p.cards, []);
+        const populated = cards.filter((c: any) => c && (c.name || c.label || c.desc || c.price));
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              {p.label && <span class="section-label">{p.label}</span>}
+              <h2 class="st">
+                {p.headline}
+                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+              </h2>
+              {p.intro && <div class="sites-intro" set:html={p.intro} />}
+              {populated.length === 0 ? (
+                <div style="margin-top:2.5rem;padding:2.5rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--text);">
+                  <div style="font-weight:600;margin-bottom:.5rem;">Site cards not configured yet</div>
+                  <div style="font-size:.9rem;color:var(--muted);max-width:520px;margin:0 auto;">
+                    This section has {cards.length} empty card{cards.length === 1 ? '' : 's'}. Open this page in the <strong>Visual Editor</strong>,
+                    click the Site Cards section, and fill in the <code>cards</code> JSON with <code>name</code>, <code>desc</code>, <code>specs</code>, <code>price</code> for each card.
+                  </div>
+                </div>
+              ) : (
+                <div class="sites-grid">
+                  {cards.map((c: any) => {
+                    const hasContent = c && (c.name || c.label || c.desc || c.price);
+                    const ext = typeof c.href === 'string' && c.href.startsWith('http');
+                    const inner = (
+                      <>
+                        {c.label && <div class="site-card-label">{c.label}</div>}
+                        {c.name && <h3>{c.name}</h3>}
+                        {c.desc && <p>{c.desc}</p>}
+                        {Array.isArray(c.specs) && c.specs.length > 0 && (
+                          <div class="site-specs">
+                            {c.specs.map((s: string) => <span class="spec-tag">{s}</span>)}
+                          </div>
+                        )}
+                        {c.price && (
+                          <div class="site-price">
+                            <strong>{c.price}</strong>
+                            {c.pricePer && <small>{c.pricePer}</small>}
+                          </div>
+                        )}
+                        {!hasContent && (
+                          <div style="color:var(--muted);font-size:.85rem;font-style:italic;">
+                            Empty card — add content in the visual editor
+                          </div>
+                        )}
+                      </>
+                    );
+                    return c.href ? (
+                      <a
+                        class={`site-card site-card-link${c.featured ? ' featured' : ''}`}
+                        href={c.href}
+                        target={ext ? '_blank' : undefined}
+                        rel={ext ? 'noopener noreferrer' : undefined}
+                      >{inner}</a>
+                    ) : (
+                      <div class={`site-card${c.featured ? ' featured' : ''}`}>{inner}</div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── ExploreGridSection ── */
+      if (item.type === 'ExploreGridSection') {
+        const cards: any[] = safeJson(p.cards, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              {p.label && <span class="section-label">{p.label}</span>}
+              <h2 class="st">
+                {p.headline}
+                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+              </h2>
+              {p.intro && <div class="section-body" set:html={p.intro} />}
+              <div class="ex-grid">
+                {cards.map((c: any) => {
+                  const inner = (
+                    <>
+                      <div class="ex-vis">
+                        {c.image && <img src={c.image} alt={c.alt || c.title || ''} loading="lazy" />}
+                        {c.distance && <span class="ex-dist">{c.distance}</span>}
+                      </div>
+                      <div class="ex-body">
+                        {c.title && <div class="ex-title">{c.title}</div>}
+                        {c.desc && <div class="ex-desc">{c.desc}</div>}
+                      </div>
+                    </>
+                  );
+                  return c.href ? (
+                    <a class="ex-card ex-link" href={c.href}>{inner}</a>
+                  ) : (
+                    <div class="ex-card">{inner}</div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── ReviewsSection ── */
+      if (item.type === 'ReviewsSection') {
+        const reviews: any[] = safeJson(p.reviews, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              <div class="rev-header">
+                <div>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                </div>
+                {p.rating && (
+                  <div class="rev-overall">
+                    <div class="rev-big-score">{p.rating}</div>
+                    <div class="rev-big-label">out of 5</div>
+                  </div>
+                )}
+              </div>
+              <div class="rev-grid">
+                {reviews.map((r: any) => (
+                  <div class="rev-card">
+                    <div class="rev-stars">{starStr(r.stars ?? 5)}</div>
+                    <div class="rev-quote">{r.quote}</div>
+                    {r.author && <div class="rev-author">{r.author}</div>}
+                    {r.meta && <div class="rev-meta">{r.meta}</div>}
+                  </div>
+                ))}
+              </div>
+              {p.reviewsLink && (
+                <div class="section-cta" style="text-align:center;margin-top:2.5rem;">
+                  <a href={p.reviewsLink}>Read All Reviews</a>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── CtaBannerSection ── */
+      if (item.type === 'CtaBannerSection') {
+        const dark = p.darkBackground === 'true';
+        return (
+          <section {...sectionAttrs(p, `padding:5rem 3rem;background:${dark ? 'var(--deep)' : 'var(--sand)'};text-align:center`)}>
+            <div class="container" style="max-width:720px;">
+              {p.headline && (
+                <h2 class="st" style={dark ? 'color:#fff;' : ''}>{p.headline}</h2>
+              )}
+              {p.body && (
+                <div
+                  class="section-body"
+                  style={`max-width:none;margin:0 auto;${dark ? 'color:rgba(255,255,255,.7);' : ''}`}
+                  set:html={p.body}
+                />
+              )}
+              {p.ctaLabel && (
+                <div class={`section-cta${dark ? ' section-cta-dark' : ''}`} style="margin-top:2rem;">
+                  <a href={p.ctaUrl || '#'}>{p.ctaLabel}</a>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── EventsWidgetSection ── */
+      if (item.type === 'EventsWidgetSection') {
+        const limit = Math.min(Math.max(p.limit ?? 3, 1), 12);
+        const showLink = p.showLinkToAll === 'yes';
+        const events = eventsForWidget.slice(0, limit);
+        return (
+          <section {...sectionAttrs(p, 'padding:2rem 0;background:#fafaf7')}>
+            <div class="container">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.2rem;">
+                <div>
+                  <span class="section-label">What's Happening</span>
+                  {p.heading && <h2 class="st" style="margin-top:.4rem;font-size:clamp(1.6rem, 3vw, 2.4rem);">{p.heading}</h2>}
+                </div>
+                {showLink && <a href="/events" style="color:var(--rust);font-size:.9rem;">All events &rarr;</a>}
+              </div>
+              {events.length > 0 ? (
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;">
+                  {events.map((ev) => (
+                    <a href="/events" style="text-decoration:none;color:inherit;display:block;background:white;padding:1rem 1.2rem;border-left:3px solid var(--rust);border-radius:2px;">
+                      <div style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);font-weight:500;">{fmtEventDate(ev.starts_at, ev.is_all_day)}</div>
+                      <div style="font-family:var(--serif);font-weight:400;font-size:1.15rem;margin-top:.3rem;color:var(--text);">{ev.title}</div>
+                      {ev.location && <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem;">{ev.location}</div>}
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div style="padding:2rem;text-align:center;color:var(--muted);font-size:.9rem;">
+                  No upcoming events
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── ReserveFormSection ── */
+      if (item.type === 'ReserveFormSection') {
+        const fName = p.formName || 'contact';
+        const fTitle = p.formTitle || 'Request a Reservation';
+        const fSubmit = p.submitLabel || 'Send Message';
+        const fDisclaimer = p.disclaimer || 'For immediate availability, call 541-923-1441. Check-in 2:00pm · Check-out 12:00pm.';
+        // Unique-per-section id prefix so multiple forms on one page don't
+        // collide on `id` attributes.
+        const idp = `rf_${fName}`;
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')} id={(typeof p.sectionId === 'string' && p.sectionId.trim()) || 'reserve'}>
+            <div class="container">
+              <div class="rl">
+                <div>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                  {p.body && <div class="section-body" set:html={p.body} />}
+                </div>
+                <form
+                  class="res-form"
+                  name={fName}
+                  method="POST"
+                  action="/"
+                  data-netlify="true"
+                  data-netlify-honeypot="bot-field"
+                >
+                  <input type="hidden" name="form-name" value={fName} />
+                  <p style="display:none;"><label>Don't fill this out: <input name="bot-field" /></label></p>
+                  <h3>{fTitle}</h3>
+                  <div class="fr">
+                    <div class="fg">
+                      <label for={`${idp}_first_name`}>First Name</label>
+                      <input id={`${idp}_first_name`} type="text" name="first_name" maxlength="60" required />
+                    </div>
+                    <div class="fg">
+                      <label for={`${idp}_last_name`}>Last Name</label>
+                      <input id={`${idp}_last_name`} type="text" name="last_name" maxlength="60" required />
+                    </div>
+                  </div>
+                  <div class="fg">
+                    <label for={`${idp}_email`}>Email</label>
+                    <input id={`${idp}_email`} type="email" name="email" maxlength="120" required />
+                  </div>
+                  <div class="fg">
+                    <label for={`${idp}_phone`}>Phone</label>
+                    <input id={`${idp}_phone`} type="tel" name="phone" maxlength="25" />
+                  </div>
+                  <div class="fr">
+                    <div class="fg">
+                      <label for={`${idp}_arrival`}>Arrival Date</label>
+                      <input id={`${idp}_arrival`} type="date" name="arrival_date" />
+                    </div>
+                    <div class="fg">
+                      <label for={`${idp}_departure`}>Departure Date</label>
+                      <input id={`${idp}_departure`} type="date" name="departure_date" />
+                    </div>
+                  </div>
+                  <div class="fg">
+                    <label for={`${idp}_rig`}>RV Type / Rig Size (optional)</label>
+                    <input id={`${idp}_rig`} type="text" name="rig_size" maxlength="120" placeholder="e.g., Class C 32ft, Travel Trailer 24ft" />
+                  </div>
+                  <div class="fg">
+                    <label for={`${idp}_message`}>Message or Questions</label>
+                    <textarea id={`${idp}_message`} name="message" rows="5" maxlength="2000" />
+                  </div>
+                  <button class="btn-sub" type="submit">{fSubmit}</button>
+                  <p class="form-disc">{fDisclaimer}</p>
+                </form>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── RatesTableSection ── */
+      if (item.type === 'RatesTableSection') {
+        const rows: any[] = safeJson(p.rows, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem;background:var(--deep);color:#fff')}>
+            <div class="container">
+              {p.label && <span class="section-label" style="color:var(--gold);">{p.label}</span>}
+              {p.headline && <h2 class="st" style="color:#fff;">{p.headline}</h2>}
+              <div class="rate-table-wrap">
+                <table class="rate-table">
+                  <thead>
+                    <tr>
+                      <th>Site Type</th>
+                      <th>Nightly</th>
+                      <th>Weekly</th>
+                      <th>Monthly</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r: any) => (
+                      <tr>
+                        <td class="rate-type-cell">{r.name}</td>
+                        <td class="rate-price">{r.nightly}</td>
+                        <td class="rate-price">{r.weekly}</td>
+                        <td class="rate-price">{r.monthly}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {rows.some((r: any) => r.notes) && (
+                <div class="rate-note-box">
+                  {rows.filter((r: any) => r.notes).map((r: any) => <div>{r.notes}</div>)}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── FeatureListSection ── */
+      if (item.type === 'FeatureListSection') {
+        const features: any[] = safeJson(p.features, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container" style="max-width:720px;">
+              {p.label && <span class="section-label">{p.label}</span>}
+              {p.headline && <h2 class="st">{p.headline}</h2>}
+              <div class="fl" style="margin-top:2.5rem;">
+                {features.map((f: any, i: number) => (
+                  <div class="fi">
+                    <span class="fn">{f.num ?? String(i + 1).padStart(2, '0')}</span>
+                    <div class="ft">
+                      {f.title && <strong>{f.title}</strong>}
+                      {f.body && <span>{f.body}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── AmenityGridSection ── */
+      if (item.type === 'AmenityGridSection') {
+        const cards: any[] = safeJson(p.cards, []);
+        return (
+          <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
+            <div class="container">
+              {p.label && <span class="section-label">{p.label}</span>}
+              <h2 class="st">
+                {p.headline}
+                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+              </h2>
+              <div class="am-grid" style="margin-top:2.5rem;">
+                {cards.map((c: any) => {
+                  const inner = (
+                    <>
+                      {c.icon && <span class="am-icon">{c.icon}</span>}
+                      {c.name && <div class="am-name">{c.name}</div>}
+                      {c.desc && <div class="am-desc">{c.desc}</div>}
+                    </>
+                  );
+                  const ext = typeof c.href === 'string' && c.href.startsWith('http');
+                  return c.href ? (
+                    <a class="am-card am-card-link" href={c.href} target={ext ? '_blank' : undefined} rel={ext ? 'noopener noreferrer' : undefined}>{inner}</a>
+                  ) : (
+                    <div class="am-card">{inner}</div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ── InterludeSection ── */
+      if (item.type === 'InterludeSection') {
+        // Always render a dark backdrop so the white overlay text stays
+        // readable even when no image is set. If a URL is present, use it;
+        // otherwise paint a deep-navy gradient that evokes the night sky.
+        const interludeBgStyle = p.backgroundImageUrl
+          ? `background-image:url(${p.backgroundImageUrl});background-size:cover;background-position:center;`
+          : 'background:linear-gradient(135deg,#0b1220 0%,#1b2340 45%,#242b4a 100%);';
+        return (
+          <section {...sectionAttrs(p, 'position:relative;min-height:50vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0b1220')}>
+            <div class="hero-bg" style={interludeBgStyle} />
+            <div class="hero-overlay" />
+            <div style="position:relative;z-index:2;text-align:center;padding:5rem 3rem;max-width:780px;">
+              {p.eyebrow && <div class="hero-eyebrow" style="justify-content:center;">{p.eyebrow}</div>}
+              {p.headline && (
+                <div
+                  style="font-family:var(--serif);font-size:clamp(1.8rem, 4vw, 3rem);font-weight:300;font-style:italic;color:#fff;line-height:1.25;margin-bottom:1.5rem;"
+                  set:html={p.headline}
+                />
+              )}
+              {p.body && (
+                <div
+                  style="color:rgba(255,255,255,.75);font-size:1rem;line-height:1.7;margin-bottom:1.5rem;"
+                  set:html={p.body}
+                />
+              )}
+              {p.ctaLabel && (
+                <div class="section-cta section-cta-dark">
+                  <a href={p.ctaUrl || '#'}>{p.ctaLabel}</a>
+                </div>
+              )}
+              {p.credit && (
+                <div style="margin-top:2rem;font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.08em;">
+                  {p.credit}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── TrustBarSection ── */
+      if (item.type === 'TrustBarSection') {
+        const items: any[] = safeJson(p.items, []);
+        const trustAttrs = sectionAttrs(p);
+        return (
+          <div id={trustAttrs.id || 'trust'} style={trustAttrs.style}>
+            {items.map((ti: any, i: number) => {
+              const ext = typeof ti.href === 'string' && ti.href.startsWith('http');
+              const body = (
+                <>
+                  {ti.icon && <span class="ticon">{ti.icon}</span>}
+                  {ti.text}
+                </>
+              );
+              return (
+                <span>
+                  {i > 0 && <span class="td" />}
+                  {ti.href ? (
+                    <a
+                      class="ti ti-link"
+                      href={ti.href}
+                      target={ext ? '_blank' : undefined}
+                      rel={ext ? 'noopener noreferrer' : undefined}
+                    >{body}</a>
+                  ) : (
+                    <span class="ti">{body}</span>
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        );
+      }
+
+      /* ── ShapeBlock ── */
+      if (item.type === 'ShapeBlock') {
+        const outerStyle: string[] = [];
+        outerStyle.push('display:flex');
+        outerStyle.push(`justify-content:${p.alignment === 'left' ? 'flex-start' : p.alignment === 'right' ? 'flex-end' : 'center'}`);
+        outerStyle.push('padding:1rem 3rem');
+        pushStyleProps(outerStyle, p);
+        const strokeStyle = p.strokeWidth > 0 && p.stroke ? `${p.strokeWidth}px solid ${p.stroke}` : undefined;
+        const widthPx = Number(p.widthPx ?? 200);
+        const heightPx = Number(p.heightPx ?? 200);
+        const side = Math.min(widthPx, heightPx);
+        const common: string[] = [];
+        common.push(`background:${p.fill || '#C4622D'}`);
+        if (strokeStyle) common.push(`border:${strokeStyle}`);
+        if (p.shape === 'circle') {
+          return (
+            <div style={outerStyle.join(';')}>
+              <div style={`width:${side}px;height:${side}px;border-radius:50%;${common.join(';')}`} />
+            </div>
+          );
+        }
+        if (p.shape === 'pill') {
+          return (
+            <div style={outerStyle.join(';')}>
+              <div style={`width:${widthPx}px;height:${heightPx}px;border-radius:9999px;${common.join(';')}`} />
+            </div>
+          );
+        }
+        if (p.shape === 'rounded') {
+          return (
+            <div style={outerStyle.join(';')}>
+              <div style={`width:${widthPx}px;height:${heightPx}px;border-radius:16px;${common.join(';')}`} />
+            </div>
+          );
+        }
+        if (p.shape === 'triangle') {
+          return (
+            <div style={outerStyle.join(';')}>
+              <svg width={widthPx} height={heightPx} viewBox={`0 0 ${widthPx} ${heightPx}`} aria-hidden="true">
+                <polygon
+                  points={`${widthPx / 2},0 ${widthPx},${heightPx} 0,${heightPx}`}
+                  fill={p.fill || '#C4622D'}
+                  stroke={p.stroke || 'none'}
+                  stroke-width={p.strokeWidth || 0}
+                />
+              </svg>
+            </div>
+          );
+        }
+        return (
+          <div style={outerStyle.join(';')}>
+            <div style={`width:${widthPx}px;height:${heightPx}px;${common.join(';')}`} />
+          </div>
+        );
+      }
+
+      /* ── LineBlock ── */
+      if (item.type === 'LineBlock') {
+        const outerStyle: string[] = [];
+        outerStyle.push('display:flex');
+        outerStyle.push(`justify-content:${p.alignment === 'left' ? 'flex-start' : p.alignment === 'right' ? 'flex-end' : 'center'}`);
+        outerStyle.push('padding:1rem 3rem');
+        pushStyleProps(outerStyle, p);
+        if (p.orientation === 'vertical') {
+          return (
+            <div style={outerStyle.join(';')}>
+              <span style={`width:${p.thickness}px;height:${p.verticalHeight}px;border-left:${p.thickness}px ${p.style} ${p.color};`} />
+            </div>
+          );
+        }
+        const lengthVal = p.lengthMode === 'px' ? `${p.lengthPx}px` : `${p.lengthPercent}%`;
+        return (
+          <div style={outerStyle.join(';')}>
+            <hr style={`width:${lengthVal};border:none;border-top:${p.thickness}px ${p.style} ${p.color};margin:0;`} />
+          </div>
+        );
+      }
+
+      /* ── BackgroundImageBlock ── */
+      if (item.type === 'BackgroundImageBlock') {
+        const sectionStyle: string[] = [];
+        sectionStyle.push('position:relative');
+        sectionStyle.push(`min-height:${p.minHeightPx || 360}px`);
+        if (p.imageUrl) {
+          sectionStyle.push(`background-image:url("${p.imageUrl}")`);
+          sectionStyle.push('background-size:cover');
+          sectionStyle.push('background-position:center');
+          sectionStyle.push(`background-attachment:${p.attachment === 'fixed' ? 'fixed' : 'scroll'}`);
+        } else {
+          sectionStyle.push('background:#f5f0e6');
+        }
+        sectionStyle.push('display:flex');
+        sectionStyle.push(`align-items:${p.vAlign === 'top' ? 'flex-start' : p.vAlign === 'bottom' ? 'flex-end' : 'center'}`);
+        sectionStyle.push(`justify-content:${p.hAlign === 'left' ? 'flex-start' : p.hAlign === 'right' ? 'flex-end' : 'center'}`);
+        const hasUserPadding = p.paddingTop || p.paddingBottom || p.paddingX;
+        if (!hasUserPadding) sectionStyle.push('padding:4rem 3rem');
+        sectionStyle.push(`color:${p.textColor || '#fff'}`);
+        sectionStyle.push(`text-align:${p.hAlign || 'center'}`);
+        sectionStyle.push('overflow:hidden');
+        pushStyleProps(sectionStyle, p);
+        return (
+          <section style={sectionStyle.join(';')} id={typeof p.sectionId === 'string' && p.sectionId.trim() ? p.sectionId.trim() : undefined}>
+            {p.overlayColor && (
+              <div aria-hidden="true" style={`position:absolute;inset:0;background:${p.overlayColor};pointer-events:none;`} />
+            )}
+            <div style="position:relative;z-index:1;max-width:900px;" set:html={p.content || ''} />
+          </section>
+        );
+      }
+
+      /* ── FreeformContainerBlock ──
+         Renders its nested children from data.zones["<id>:items"] using
+         the same block dispatcher — recursion is flattened by looking up
+         the zone for this container by id. */
+      if (item.type === 'FreeformContainerBlock') {
+        const sectionStyle: string[] = [];
+        sectionStyle.push('position:relative');
+        if (p.bgImageUrl) {
+          sectionStyle.push(`background-image:url("${p.bgImageUrl}")`);
+          sectionStyle.push('background-size:cover');
+          sectionStyle.push('background-position:center');
+        }
+        pushStyleProps(sectionStyle, p);
+        const innerStyle: string[] = [];
+        innerStyle.push(`max-width:${p.contentMaxWidth || 1200}px`);
+        innerStyle.push('margin:0 auto');
+        innerStyle.push('display:flex');
+        innerStyle.push(`flex-direction:${p.direction || 'column'}`);
+        innerStyle.push(`gap:${p.gap ?? 16}px`);
+        innerStyle.push(`align-items:${p.contentAlign || 'stretch'}`);
+        const zoneKey = `${p.id}:items`;
+        const children = (puckData?.zones?.[zoneKey] ?? []) as PuckItem[];
+        return (
+          <section style={sectionStyle.join(';')} id={typeof p.sectionId === 'string' && p.sectionId.trim() ? p.sectionId.trim() : undefined}>
+            <div style={innerStyle.join(';')}>
+              {children.map((child) => <Fragment set:html={renderChildBlock(child)} />)}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── Unknown type — skip ── */
+      console.warn(`[PuckRenderer] Unknown component type: "${item.type}"`);
+      return null;
+    })}
+  </Fragment>
+) : (
+  <slot />
+)}

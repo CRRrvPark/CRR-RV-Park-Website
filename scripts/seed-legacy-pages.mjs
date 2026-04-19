@@ -38,7 +38,31 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
   process.exit(1);
 }
 
-const { default: pages } = await import(pathToFileURL(resolve(__dirname, 'legacy-pages-data.mjs')).href);
+const { default: rawPages } = await import(pathToFileURL(resolve(__dirname, 'legacy-pages-data.mjs')).href);
+
+// Puck's ComponentData shape is `{ type, props: { id, ...userProps } }`.
+// The data file puts `id` at the ITEM level (`{ type, id, props }`), which
+// Puck ignores — leading to Puck auto-generating IDs, collisions, and the
+// editor rendering duplicates of a single component instead of the real
+// page. Normalize here by moving `id` into `props`.
+function normalizeItemIds(data) {
+  if (!data || !Array.isArray(data.content)) return data;
+  return {
+    ...data,
+    content: data.content.map((item) => {
+      if (!item || typeof item !== 'object') return item;
+      const { id, props, ...rest } = item;
+      const nextProps = { ...(props ?? {}) };
+      if (id && !nextProps.id) nextProps.id = id;
+      return { ...rest, props: nextProps };
+    }),
+  };
+}
+
+const pages = rawPages.map((p) => ({
+  ...p,
+  page_builder_data: normalizeItemIds(p.page_builder_data),
+}));
 
 const SKIP_SLUGS = new Set(['index']); // see header
 
@@ -80,14 +104,26 @@ async function seedOne(entry) {
     use_page_builder: true,
   };
 
+  let pageId;
+  let action;
   if (existing) {
     await rest(`pages?id=eq.${existing.id}`, 'PATCH', payload);
-    return { slug, action: 'updated', hadBuilderAlready: !!existing.use_page_builder };
+    pageId = existing.id;
+    action = 'updated';
+  } else {
+    const inserted = await rest('pages', 'POST', { slug, is_published: true, ...payload });
+    pageId = Array.isArray(inserted) ? inserted[0]?.id : null;
+    action = 'inserted';
   }
 
-  // Row missing — insert. display_order defaults to 0; slug uniqueness is enforced.
-  await rest('pages', 'POST', { slug, is_published: true, ...payload });
-  return { slug, action: 'inserted', hadBuilderAlready: false };
+  // Wipe any stale draft. If the editor opened the page while its data was
+  // malformed, Puck may have auto-saved a broken draft that would override
+  // the correct page_builder_data on next load.
+  if (pageId) {
+    await rest(`page_drafts?page_id=eq.${pageId}`, 'DELETE').catch(() => {});
+  }
+
+  return { slug, action, hadBuilderAlready: !!existing?.use_page_builder };
 }
 
 function loadDotenv(path) {

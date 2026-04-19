@@ -43,12 +43,31 @@ interface SyncStatusResp {
   checkedAt: string;
 }
 
+interface DailyCount {
+  day: string;
+  book_now: number;
+  reserve: number;
+  call: number;
+  email: number;
+  golf_tee: number;
+}
+interface DashboardStats {
+  conversions: {
+    daily: DailyCount[];
+    totals7d: { book_now: number; reserve: number; call: number; email: number; golf_tee: number };
+  };
+  alerts: Array<{ key: string; severity: 'info' | 'warning' | 'error'; message: string; href?: string }>;
+  clarity: { projectId: string; dashboardUrl: string };
+  checkedAt: string;
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [recent, setRecent] = useState<AuditEntry[] | null>(null);
   const [sync, setSync] = useState<SyncStatusResp | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState<boolean>(() => {
@@ -63,6 +82,9 @@ export function Dashboard() {
     apiGet<SyncStatusResp>('/api/sync/status')
       .then(setSync)
       .catch(() => setSync({ services: {}, pendingDrafts: 0, unpublishedChanges: 0, checkedAt: new Date().toISOString() }));
+    apiGet<DashboardStats>('/api/dashboard/stats')
+      .then(setStats)
+      .catch(() => setStats(null));
   }, []);
 
   const publish = async () => {
@@ -125,6 +147,9 @@ export function Dashboard() {
 
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-6)' }}>
+      {stats?.alerts && stats.alerts.length > 0 && (
+        <AlertsStrip alerts={stats.alerts} />
+      )}
       {showWelcome && (
         <WelcomeCard name={user?.displayName ?? 'there'} onDismiss={dismissWelcome} />
       )}
@@ -185,6 +210,9 @@ export function Dashboard() {
           footnote={<span style={{ textTransform: 'capitalize' }}>{ROLE_BLURB[user?.role ?? 'viewer']}</span>}
         />
       </div>
+
+      {/* Conversions — who clicked what, last 14 days */}
+      <ConversionsCard stats={stats} />
 
       {/* Three-up: health + recent + quick links */}
       <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
@@ -395,3 +423,144 @@ const kbdStyle: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize: '11px',
 };
+
+function AlertsStrip({ alerts }: { alerts: DashboardStats['alerts'] }) {
+  return (
+    <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
+      {alerts.map((a) => {
+        const bg = a.severity === 'error' ? 'var(--c-danger-soft, #fde6e6)'
+          : a.severity === 'warning' ? 'var(--c-warning-soft, #fdf2d9)'
+          : 'var(--c-info-soft, #e6f1fd)';
+        const border = a.severity === 'error' ? 'var(--c-danger, #dc2626)'
+          : a.severity === 'warning' ? 'var(--c-warning, #d69e2e)'
+          : 'var(--c-info, #2b6cb0)';
+        return (
+          <div
+            key={a.key}
+            style={{
+              display: 'flex',
+              gap: 'var(--sp-3)',
+              padding: 'var(--sp-3) var(--sp-4)',
+              background: bg,
+              borderLeft: `4px solid ${border}`,
+              borderRadius: 'var(--r-sm)',
+              alignItems: 'center',
+            }}
+          >
+            <IconAlert size={16} style={{ color: border, flexShrink: 0 }} />
+            <div style={{ flex: 1, fontSize: 'var(--fs-sm)' }}>{a.message}</div>
+            {a.href && (
+              <a href={a.href} className="btn btn-secondary btn-sm" style={{ whiteSpace: 'nowrap' }}>
+                Go fix →
+              </a>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ConversionsCard({ stats }: { stats: DashboardStats | null }) {
+  if (!stats) {
+    return (
+      <Card>
+        <CardHeader title="Visitor actions" eyebrow="Last 14 days" />
+        <div className="text-muted text-sm" style={{ padding: 'var(--sp-4)', textAlign: 'center' }}>
+          Loading…
+        </div>
+      </Card>
+    );
+  }
+
+  const { daily, totals7d } = stats.conversions;
+  const maxDaily = Math.max(
+    1,
+    ...daily.map((d) => d.book_now + d.reserve + d.call + d.email + d.golf_tee),
+  );
+
+  return (
+    <Card>
+      <CardHeader
+        title="Visitor actions"
+        eyebrow="Last 14 days · 7-day totals"
+        action={
+          <a
+            href={stats.clarity.dashboardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-ghost btn-sm"
+            title="Open Microsoft Clarity for session replays, heatmaps, and engagement metrics"
+          >
+            Full analytics (Clarity) →
+          </a>
+        }
+      />
+
+      {/* 7-day totals row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+          gap: 'var(--sp-3)',
+          marginBottom: 'var(--sp-5)',
+        }}
+      >
+        <TotalTile label="Book Now" value={totals7d.book_now} color="var(--c-rust, #c4622d)" />
+        <TotalTile label="Reserve" value={totals7d.reserve} color="var(--c-rust, #c4622d)" />
+        <TotalTile label="Phone" value={totals7d.call} color="var(--c-success, #2b8a3e)" />
+        <TotalTile label="Email" value={totals7d.email} color="var(--c-info, #2b6cb0)" />
+        <TotalTile label="Golf tee" value={totals7d.golf_tee} color="var(--c-warning, #d69e2e)" />
+      </div>
+
+      {/* Daily bar chart */}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 72, marginBottom: 'var(--sp-2)' }}>
+        {daily.map((d) => {
+          const total = d.book_now + d.reserve + d.call + d.email + d.golf_tee;
+          const heightPct = total === 0 ? 2 : (total / maxDaily) * 100;
+          return (
+            <div
+              key={d.day}
+              title={`${d.day}: ${total} click${total === 1 ? '' : 's'} (book:${d.book_now} reserve:${d.reserve} call:${d.call} email:${d.email} golf:${d.golf_tee})`}
+              style={{
+                flex: 1,
+                minHeight: 2,
+                height: `${heightPct}%`,
+                background: total > 0 ? 'var(--c-rust, #c4622d)' : 'var(--c-border, #e5e5e5)',
+                borderRadius: 2,
+                transition: 'height 160ms',
+              }}
+            />
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--fs-xs)', color: 'var(--c-text-muted)' }}>
+        <span>{daily[0]?.day}</span>
+        <span>Today</span>
+      </div>
+
+      <div style={{ marginTop: 'var(--sp-3)', fontSize: 'var(--fs-xs)', color: 'var(--c-text-muted)' }}>
+        Counts are from visitors clicking Book Now, Reserve, phone links, email links, and golf-tee links on the public site.
+        Identity is not tracked — visitor counts are session-level only. For heatmaps, scroll depth, and session replays, open the Clarity dashboard.
+      </div>
+    </Card>
+  );
+}
+
+function TotalTile({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div
+      style={{
+        border: '1px solid var(--c-border)',
+        borderRadius: 'var(--r-md)',
+        padding: 'var(--sp-3)',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ fontSize: 'var(--fs-2xl)', fontFamily: 'var(--font-serif)', color, lineHeight: 1 }}>
+        {value}
+      </div>
+      <div className="text-xs text-muted" style={{ marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}

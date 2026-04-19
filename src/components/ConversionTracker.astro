@@ -1,0 +1,76 @@
+---
+/**
+ * ConversionTracker — inline click tracker for high-signal CTAs.
+ *
+ * Listens for clicks on every `<a>` anywhere in the document and, when the
+ * href matches a known conversion pattern, fires a fire-and-forget POST to
+ * /api/analytics/track so the admin dashboard can show Book Now / Reserve
+ * click counts. Navigates the user normally regardless of whether the
+ * beacon succeeds.
+ *
+ * Detection (by href pattern, no markup changes required):
+ *   fireflyreservations.com     → book_now_click
+ *   crookedriverranchgc.com     → golf_tee_click
+ *   tel:                        → call_click
+ *   mailto:                     → email_click
+ *
+ * Uses `navigator.sendBeacon` when available so the POST survives the
+ * page unload (clicking a link typically starts navigation immediately).
+ */
+---
+<script is:inline>
+  (function () {
+    function classify(href) {
+      if (!href) return null;
+      if (href.indexOf('tel:') === 0) return 'call_click';
+      if (href.indexOf('mailto:') === 0) return 'email_click';
+      try {
+        var u = new URL(href, window.location.origin);
+        var host = u.hostname.replace(/^www\./, '');
+        if (host.indexOf('fireflyreservations.com') >= 0) return 'book_now_click';
+        if (host.indexOf('crookedriverranchgc.com') >= 0) return 'golf_tee_click';
+      } catch (e) { /* not a valid URL — ignore */ }
+      return null;
+    }
+
+    function track(event) {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var payload = JSON.stringify({
+          event: event,
+          path: window.location.pathname,
+          ref: document.referrer || undefined,
+          utm: {
+            source: params.get('utm_source') || undefined,
+            campaign: params.get('utm_campaign') || undefined,
+          },
+        });
+        if (navigator.sendBeacon) {
+          var blob = new Blob([payload], { type: 'application/json' });
+          navigator.sendBeacon('/api/analytics/track', blob);
+          return;
+        }
+        // Fallback for browsers without sendBeacon — keepalive=true lets the
+        // request finish after the page unloads.
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true,
+        }).catch(function () { /* fire and forget */ });
+      } catch (e) { /* never block navigation on tracking */ }
+    }
+
+    document.addEventListener('click', function (ev) {
+      var target = ev.target;
+      while (target && target !== document) {
+        if (target.tagName === 'A') {
+          var event = classify(target.getAttribute('href'));
+          if (event) track(event);
+          return;
+        }
+        target = target.parentNode;
+      }
+    }, { capture: true });
+  })();
+</script>

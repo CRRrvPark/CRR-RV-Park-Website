@@ -6,7 +6,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 4321,
-      "cwd": "C:/Users/mathe/Documents/RV Park/crr-rv-park-platform-DEV"
+      "cwd": "C:/dev/CRR-RV-Park-Website"
     }
   ]
 }

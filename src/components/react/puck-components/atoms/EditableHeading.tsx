@@ -21,6 +21,7 @@ export interface EditableHeadingProps {
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   italic?: boolean;
   line2Italic?: string;
+  inlineItalic?: string;
   className?: string;
 }
 
@@ -31,6 +32,7 @@ export const EditableHeading: ComponentConfig = {
     level: 2,
     italic: false,
     line2Italic: '',
+    inlineItalic: '',
     className: '',
   },
   fields: {
@@ -55,16 +57,22 @@ export const EditableHeading: ComponentConfig = {
         { label: 'Yes', value: true },
       ],
     },
-    line2Italic: { type: 'text', label: 'Italic line 2 (optional — hero two-line pattern)' },
+    line2Italic: { type: 'text', label: 'Italic line 2, with line break (optional — hero two-line pattern)' },
+    inlineItalic: { type: 'text', label: 'Inline italic tail (optional — space + italic)' },
     className: { type: 'text', label: 'CSS class (leave blank for default)' },
   },
-  render: ({ text, level, italic, line2Italic, className, puck }: any) => {
+  render: ({ text, level, italic, line2Italic, inlineItalic, className, puck }: any) => {
     const tag = `h${level || 2}`;
-    const body = italic && !line2Italic
-      ? createElement('em', null, text)
-      : (line2Italic
-        ? createElement('span', null, text, createElement('br'), createElement('em', null, line2Italic))
-        : text);
+    let body: any;
+    if (line2Italic) {
+      body = createElement('span', null, text, createElement('br'), createElement('em', null, line2Italic));
+    } else if (inlineItalic) {
+      body = createElement('span', null, text, ' ', createElement('em', null, inlineItalic));
+    } else if (italic) {
+      body = createElement('em', null, text);
+    } else {
+      body = text;
+    }
     return createElement(
       tag,
       { ref: puck?.dragRef, className: className || undefined },

@@ -199,6 +199,24 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
   const style = acc.length ? acc.join(';') : undefined;
   return { id, style };
 }
+
+/**
+ * Return the atom-list for a section's zone, or null if the zone is empty.
+ * Used by every section that supports V4 atom chromes so each render-site
+ * only needs a simple "zones ? fragment : legacy" ternary.
+ */
+function getZone(puckDataObj: PuckData | null, itemId: string | undefined, zoneName: string): any[] | null {
+  if (!puckDataObj || !itemId) return null;
+  const z = (puckDataObj.zones || {}) as Record<string, any[]>;
+  const arr = z[`${itemId}:${zoneName}`];
+  return Array.isArray(arr) && arr.length > 0 ? arr : null;
+}
+
+/** Render an atom array to an HTML string via renderAtom(). */
+function zoneHtml(atoms: any[] | null): string {
+  if (!atoms) return '';
+  return atoms.map(renderAtom).join('');
+}
 ---
 
 {usePageBuilder && puckData?.content ? (
@@ -414,14 +432,22 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
             {p.imageCaption && <span class="sv-tag">{p.imageCaption}</span>}
           </div>
         );
+        const twoColChromeZone = getZone(puckData, p.id, 'section-chrome');
+        const twoColCtasZone = getZone(puckData, p.id, 'section-ctas');
         const textBlock = (
           <div>
-            {p.label && <span class="section-label">{p.label}</span>}
-            <h2 class="st">
-              {p.headline}
-              {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-            </h2>
-            {p.body && <div class="section-body" set:html={p.body} />}
+            {twoColChromeZone ? (
+              <Fragment set:html={zoneHtml(twoColChromeZone)} />
+            ) : (
+              <>
+                {p.label && <span class="section-label">{p.label}</span>}
+                <h2 class="st">
+                  {p.headline}
+                  {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                </h2>
+                {p.body && <div class="section-body" set:html={p.body} />}
+              </>
+            )}
             {features.length > 0 && (
               <div class="fl">
                 {features.map((f: any, i: number) => (
@@ -435,10 +461,16 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
                 ))}
               </div>
             )}
-            {p.ctaLabel && (
+            {twoColCtasZone ? (
               <div class="section-cta">
-                <a href={p.ctaUrl || '#'}>{p.ctaLabel}</a>
+                <Fragment set:html={zoneHtml(twoColCtasZone)} />
               </div>
+            ) : (
+              p.ctaLabel && (
+                <div class="section-cta">
+                  <a href={p.ctaUrl || '#'}>{p.ctaLabel}</a>
+                </div>
+              )
             )}
           </div>
         );
@@ -459,14 +491,21 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       /* ── CardGridSection ── */
       if (item.type === 'CardGridSection') {
         const cards: any[] = safeJson(p.cards, []);
+        const cgChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container">
-              {p.label && <span class="section-label">{p.label}</span>}
-              <h2 class="st">
-                {p.headline}
-                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-              </h2>
+              {cgChrome ? (
+                <Fragment set:html={zoneHtml(cgChrome)} />
+              ) : (
+                <>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                </>
+              )}
               <div class="am-grid" style="margin-top:2.5rem;">
                 {cards.map((c: any) => {
                   const inner = (
@@ -493,15 +532,22 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       if (item.type === 'SiteCardsSection') {
         const cards: any[] = safeJson(p.cards, []);
         const populated = cards.filter((c: any) => c && (c.name || c.label || c.desc || c.price));
+        const scChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container">
-              {p.label && <span class="section-label">{p.label}</span>}
-              <h2 class="st">
-                {p.headline}
-                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-              </h2>
-              {p.intro && <div class="sites-intro" set:html={p.intro} />}
+              {scChrome ? (
+                <Fragment set:html={zoneHtml(scChrome)} />
+              ) : (
+                <>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                  {p.intro && <div class="sites-intro" set:html={p.intro} />}
+                </>
+              )}
               {populated.length === 0 ? (
                 <div style="margin-top:2.5rem;padding:2.5rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--text);">
                   <div style="font-weight:600;margin-bottom:.5rem;">Site cards not configured yet</div>
@@ -559,15 +605,22 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       /* ── ExploreGridSection ── */
       if (item.type === 'ExploreGridSection') {
         const cards: any[] = safeJson(p.cards, []);
+        const exChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container">
-              {p.label && <span class="section-label">{p.label}</span>}
-              <h2 class="st">
-                {p.headline}
-                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-              </h2>
-              {p.intro && <div class="section-body" set:html={p.intro} />}
+              {exChrome ? (
+                <Fragment set:html={zoneHtml(exChrome)} />
+              ) : (
+                <>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                  {p.intro && <div class="section-body" set:html={p.intro} />}
+                </>
+              )}
               <div class="ex-grid">
                 {cards.map((c: any) => {
                   const inner = (
@@ -597,16 +650,23 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       /* ── ReviewsSection ── */
       if (item.type === 'ReviewsSection') {
         const reviews: any[] = safeJson(p.reviews, []);
+        const revChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container">
               <div class="rev-header">
                 <div>
-                  {p.label && <span class="section-label">{p.label}</span>}
-                  <h2 class="st">
-                    {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-                  </h2>
+                  {revChrome ? (
+                    <Fragment set:html={zoneHtml(revChrome)} />
+                  ) : (
+                    <>
+                      {p.label && <span class="section-label">{p.label}</span>}
+                      <h2 class="st">
+                        {p.headline}
+                        {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                      </h2>
+                    </>
+                  )}
                 </div>
                 {p.rating && (
                   <div class="rev-overall">
@@ -705,17 +765,24 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
         // Unique-per-section id prefix so multiple forms on one page don't
         // collide on `id` attributes.
         const idp = `rf_${fName}`;
+        const rfChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')} id={(typeof p.sectionId === 'string' && p.sectionId.trim()) || 'reserve'}>
             <div class="container">
               <div class="rl">
                 <div>
-                  {p.label && <span class="section-label">{p.label}</span>}
-                  <h2 class="st">
-                    {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-                  </h2>
-                  {p.body && <div class="section-body" set:html={p.body} />}
+                  {rfChrome ? (
+                    <Fragment set:html={zoneHtml(rfChrome)} />
+                  ) : (
+                    <>
+                      {p.label && <span class="section-label">{p.label}</span>}
+                      <h2 class="st">
+                        {p.headline}
+                        {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                      </h2>
+                      {p.body && <div class="section-body" set:html={p.body} />}
+                    </>
+                  )}
                 </div>
                 <form
                   class="res-form"
@@ -816,11 +883,18 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       /* ── FeatureListSection ── */
       if (item.type === 'FeatureListSection') {
         const features: any[] = safeJson(p.features, []);
+        const flChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container" style="max-width:720px;">
-              {p.label && <span class="section-label">{p.label}</span>}
-              {p.headline && <h2 class="st">{p.headline}</h2>}
+              {flChrome ? (
+                <Fragment set:html={zoneHtml(flChrome)} />
+              ) : (
+                <>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  {p.headline && <h2 class="st">{p.headline}</h2>}
+                </>
+              )}
               <div class="fl" style="margin-top:2.5rem;">
                 {features.map((f: any, i: number) => (
                   <div class="fi">
@@ -840,14 +914,21 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
       /* ── AmenityGridSection ── */
       if (item.type === 'AmenityGridSection') {
         const cards: any[] = safeJson(p.cards, []);
+        const agChrome = getZone(puckData, p.id, 'section-chrome');
         return (
           <section {...sectionAttrs(p, 'padding:6.5rem 3rem')}>
             <div class="container">
-              {p.label && <span class="section-label">{p.label}</span>}
-              <h2 class="st">
-                {p.headline}
-                {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
-              </h2>
+              {agChrome ? (
+                <Fragment set:html={zoneHtml(agChrome)} />
+              ) : (
+                <>
+                  {p.label && <span class="section-label">{p.label}</span>}
+                  <h2 class="st">
+                    {p.headline}
+                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  </h2>
+                </>
+              )}
               <div class="am-grid" style="margin-top:2.5rem;">
                 {cards.map((c: any) => {
                   const inner = (

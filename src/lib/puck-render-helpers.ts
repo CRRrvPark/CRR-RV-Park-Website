@@ -191,6 +191,8 @@ export function renderAtom(atom: PuckItem | null | undefined): string {
     let body: string;
     if (p.line2Italic) {
       body = esc(p.text || '') + '<br /><em>' + esc(p.line2Italic) + '</em>';
+    } else if (p.inlineItalic) {
+      body = esc(p.text || '') + ' <em>' + esc(p.inlineItalic) + '</em>';
     } else if (p.italic) {
       body = '<em>' + esc(p.text || '') + '</em>';
     } else {
@@ -209,8 +211,13 @@ export function renderAtom(atom: PuckItem | null | undefined): string {
   if (atom.type === 'EditableButton') {
     const variantCls: Record<string, string> = { primary: 'btn-p', secondary: 'btn-g', ghost: 'btn-o' };
     const cls = p.variant === 'custom' ? (p.className || '') : (variantCls[p.variant as string] || 'btn-p');
+    // Omit the class attribute entirely when empty — sections that wrap CTAs
+    // in <div class="section-cta"> style the inner <a> via the parent
+    // selector and the legacy renderer emits no class on the anchor, so
+    // adding class="" would be a byte-diff.
+    const clsAttr = cls ? ' class="' + esc(cls) + '"' : '';
     const tgt = p.openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
-    return '<a class="' + esc(cls) + '" href="' + esc(p.url || '#') + '"' + tgt + '>' + esc(p.label || '') + '</a>';
+    return '<a' + clsAttr + ' href="' + esc(p.url || '#') + '"' + tgt + '>' + esc(p.label || '') + '</a>';
   }
 
   if (atom.type === 'EditableImage') {

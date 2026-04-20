@@ -335,6 +335,25 @@ export const HeroSection: ComponentConfig = {
   },
 };
 
+/* ── Shared chrome helpers ── */
+
+/**
+ * V4 section chrome atoms — the standard set of atoms each section's
+ * `section-chrome` DropZone accepts. All sections' chromes consist of the
+ * same 3 atom types (eyebrow/section-label + headline + rich body/intro),
+ * so this list is the single source of truth.
+ */
+const CHROME_ATOMS = ['EditableEyebrow', 'EditableHeading', 'EditableRichText'] as const;
+
+/** Returns true when any legacy chrome prop has real content. */
+function hasLegacyChrome(p: Record<string, unknown>, keys: readonly string[]): boolean {
+  for (const k of keys) {
+    const v = p[k];
+    if (typeof v === 'string' && v.trim()) return true;
+  }
+  return false;
+}
+
 /* ── 2. TwoColumnSection ── */
 
 export const TwoColumnSection: ComponentConfig = {
@@ -427,14 +446,26 @@ export const TwoColumnSection: ComponentConfig = {
       </div>
     );
     const mobileOrder = mobileImagePosition && mobileImagePosition !== 'inherit' ? mobileImagePosition : null;
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic, body },
+      ['label', 'headline', 'headlineItalic', 'body']
+    );
+    const legacyCta = Boolean(ctaLabel && String(ctaLabel).trim());
+
     const textBlock = (
       <div>
-        {label && <span className="section-label">{label}</span>}
-        <h2 className="st">
-          {headline}
-          {headlineItalic && <> <em>{headlineItalic}</em></>}
-        </h2>
-        {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
+        {legacyChrome ? (
+          <>
+            {label && <span className="section-label">{label}</span>}
+            <h2 className="st">
+              {headline}
+              {headlineItalic && <> <em>{headlineItalic}</em></>}
+            </h2>
+            {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
+          </>
+        ) : (
+          <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+        )}
         {features.length > 0 && (
           <div className="fl">
             {features.map((f, i) => (
@@ -448,9 +479,13 @@ export const TwoColumnSection: ComponentConfig = {
             ))}
           </div>
         )}
-        {ctaLabel && (
+        {legacyCta ? (
           <div className="section-cta">
             <a href={ctaUrl || '#'}>{ctaLabel}</a>
+          </div>
+        ) : (
+          <div className="section-cta">
+            <DropZone zone="section-ctas" allow={['EditableButton']} />
           </div>
         )}
       </div>
@@ -506,14 +541,21 @@ export const CardGridSection: ComponentConfig = {
   },
   render: ({ label, headline, headlineItalic, cards, puck }: any) => {
     const items: { icon?: string; name?: string; desc?: string; href?: string; image?: string; imageWidth?: number; imageHeight?: number }[] = safeJson(cards, []);
+    const legacyChrome = hasLegacyChrome({ label, headline, headlineItalic }, ['label', 'headline', 'headlineItalic']);
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
-          {label && <span className="section-label">{label}</span>}
-          <h2 className="st">
-            {headline}
-            {headlineItalic && <> <em>{headlineItalic}</em></>}
-          </h2>
+          {legacyChrome ? (
+            <>
+              {label && <span className="section-label">{label}</span>}
+              <h2 className="st">
+                {headline}
+                {headlineItalic && <> <em>{headlineItalic}</em></>}
+              </h2>
+            </>
+          ) : (
+            <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+          )}
           <div className="am-grid" style={{ marginTop: '2.5rem' }}>
             {items.map((c, i) => (
               <div className="am-card" key={i}>
@@ -579,15 +621,25 @@ export const SiteCardsSection: ComponentConfig = {
   },
   render: ({ label, headline, headlineItalic, intro, cards, puck }: any) => {
     const items: any[] = safeJson(cards, []);
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic, intro },
+      ['label', 'headline', 'headlineItalic', 'intro']
+    );
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
-          {label && <span className="section-label">{label}</span>}
-          <h2 className="st">
-            {headline}
-            {headlineItalic && <> <em>{headlineItalic}</em></>}
-          </h2>
-          {intro && <div className="sites-intro" dangerouslySetInnerHTML={{ __html: intro }} />}
+          {legacyChrome ? (
+            <>
+              {label && <span className="section-label">{label}</span>}
+              <h2 className="st">
+                {headline}
+                {headlineItalic && <> <em>{headlineItalic}</em></>}
+              </h2>
+              {intro && <div className="sites-intro" dangerouslySetInnerHTML={{ __html: intro }} />}
+            </>
+          ) : (
+            <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+          )}
           <div className="sites-grid">
             {items.map((c, i) => (
               <div className={`site-card${c.featured ? ' featured' : ''}`} key={i}>
@@ -674,15 +726,25 @@ export const ExploreGridSection: ComponentConfig = {
   },
   render: ({ label, headline, headlineItalic, intro, cards, puck }: any) => {
     const items: any[] = safeJson(cards, []);
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic, intro },
+      ['label', 'headline', 'headlineItalic', 'intro']
+    );
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
-          {label && <span className="section-label">{label}</span>}
-          <h2 className="st">
-            {headline}
-            {headlineItalic && <> <em>{headlineItalic}</em></>}
-          </h2>
-          {intro && <div className="section-body" dangerouslySetInnerHTML={{ __html: intro }} />}
+          {legacyChrome ? (
+            <>
+              {label && <span className="section-label">{label}</span>}
+              <h2 className="st">
+                {headline}
+                {headlineItalic && <> <em>{headlineItalic}</em></>}
+              </h2>
+              {intro && <div className="section-body" dangerouslySetInnerHTML={{ __html: intro }} />}
+            </>
+          ) : (
+            <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+          )}
           <div className="ex-grid">
             {items.map((c, i) => {
               const cardImgStyle = imgStyle(c.imageWidth, c.imageHeight, 'cover', 0);
@@ -768,16 +830,26 @@ export const ReviewsSection: ComponentConfig = {
   render: ({ label, headline, headlineItalic, rating, reviewsLink, reviews, puck }: any) => {
     const items: any[] = safeJson(reviews, []);
     const starStr = (n: number) => '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic },
+      ['label', 'headline', 'headlineItalic']
+    );
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
           <div className="rev-header">
             <div>
-              {label && <span className="section-label">{label}</span>}
-              <h2 className="st">
-                {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
-              </h2>
+              {legacyChrome ? (
+                <>
+                  {label && <span className="section-label">{label}</span>}
+                  <h2 className="st">
+                    {headline}
+                    {headlineItalic && <> <em>{headlineItalic}</em></>}
+                  </h2>
+                </>
+              ) : (
+                <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+              )}
             </div>
             {rating && (
               <div className="rev-overall">
@@ -834,6 +906,10 @@ export const CtaBannerSection: ComponentConfig = {
       ],
     },
   },
+  // Not atom-ized in Session 2 — the body has dark-mode inline styles that
+  // EditableRichText cannot currently carry without a dedicated inlineStyle
+  // field. Kept on the legacy path until a future session adds inline-style
+  // support or an opinionated dark-mode chrome wrapper.
   render: ({ headline, body, ctaLabel, ctaUrl, darkBackground, puck }: any) => {
     const dark = darkBackground === 'true';
     return (
@@ -895,6 +971,11 @@ export const EventsWidgetSection: ComponentConfig = {
       ],
     },
   },
+  // Not atom-ized in Session 2 — PuckRenderer.astro's public-site output
+  // includes a hard-coded "What's Happening" section-label span and inline
+  // styles on the h2 (margin-top, clamp font-size) that the atoms cannot
+  // reproduce byte-identically without dedicated inlineStyle support. Kept
+  // on the legacy path.
   render: ({ heading, limit, showLinkToAll, puck }: any) => (
     <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
       <div className="container">
@@ -956,17 +1037,27 @@ export const ReserveFormSection: ComponentConfig = {
     const fTitle = formTitle || 'Request a Reservation';
     const fSubmit = submitLabel || 'Send Message';
     const fDisclaimer = disclaimer || 'For immediate availability, call 541-923-1441.';
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic, body },
+      ['label', 'headline', 'headlineItalic', 'body']
+    );
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
           <div className="rl">
             <div>
-              {label && <span className="section-label">{label}</span>}
-              <h2 className="st">
-                {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
-              </h2>
-              {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
+              {legacyChrome ? (
+                <>
+                  {label && <span className="section-label">{label}</span>}
+                  <h2 className="st">
+                    {headline}
+                    {headlineItalic && <> <em>{headlineItalic}</em></>}
+                  </h2>
+                  {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
+                </>
+              ) : (
+                <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+              )}
             </div>
             {/* Editor-side preview of the real Netlify form — admin sees exactly
                 what will render on the live page. The public output is emitted
@@ -1108,11 +1199,18 @@ export const FeatureListSection: ComponentConfig = {
   },
   render: ({ label, headline, features, puck }: any) => {
     const items: any[] = safeJson(features, []);
+    const legacyChrome = hasLegacyChrome({ label, headline }, ['label', 'headline']);
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container" style={{ maxWidth: 720 }}>
-          {label && <span className="section-label">{label}</span>}
-          {headline && <h2 className="st">{headline}</h2>}
+          {legacyChrome ? (
+            <>
+              {label && <span className="section-label">{label}</span>}
+              {headline && <h2 className="st">{headline}</h2>}
+            </>
+          ) : (
+            <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+          )}
           <div className="fl" style={{ marginTop: '2.5rem' }}>
             {items.map((f, i) => (
               <div className="fi" key={i}>
@@ -1167,14 +1265,24 @@ export const AmenityGridSection: ComponentConfig = {
   },
   render: ({ label, headline, headlineItalic, cards, puck }: any) => {
     const items: any[] = safeJson(cards, []);
+    const legacyChrome = hasLegacyChrome(
+      { label, headline, headlineItalic },
+      ['label', 'headline', 'headlineItalic']
+    );
     return (
       <section ref={puck.dragRef} style={{ padding: '6.5rem 3rem' }}>
         <div className="container">
-          {label && <span className="section-label">{label}</span>}
-          <h2 className="st">
-            {headline}
-            {headlineItalic && <> <em>{headlineItalic}</em></>}
-          </h2>
+          {legacyChrome ? (
+            <>
+              {label && <span className="section-label">{label}</span>}
+              <h2 className="st">
+                {headline}
+                {headlineItalic && <> <em>{headlineItalic}</em></>}
+              </h2>
+            </>
+          ) : (
+            <DropZone zone="section-chrome" allow={CHROME_ATOMS as unknown as string[]} />
+          )}
           <div className="am-grid" style={{ marginTop: '2.5rem' }}>
             {items.map((c, i) => (
               <div className="am-card" key={i}>

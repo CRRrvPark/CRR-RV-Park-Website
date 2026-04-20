@@ -26,6 +26,16 @@
  *     migrator lifts flat props into those zones and clears the flat props
  *     so the hero renders through the zone path instead of the fallback.
  *     Idempotent: runs only when zones for the hero are empty.
+ *   • Section-chrome migration for 9 standard-pattern sections
+ *     (TwoColumn, CardGrid, SiteCards, Explore, Reviews, ReserveForm,
+ *     FeatureList, AmenityGrid, EventsWidget): lifts label + headline
+ *     (+ inlineItalic for most) + body/intro into a `section-chrome` zone.
+ *     TwoColumnSection additionally lifts ctaLabel/ctaUrl into a
+ *     `section-ctas` zone. CtaBanner, RatesTable, Interlude, ImageBlock,
+ *     TrustBar are intentionally not migrated — either they carry inline
+ *     styles that atoms can't currently express without a dedicated
+ *     inlineStyle field (CtaBanner, RatesTable, Interlude), or they have
+ *     no chrome to lift (ImageBlock, TrustBar).
  */
 
 type AnyProps = Record<string, unknown>;
@@ -65,6 +75,173 @@ function normalizeSiteCard(card: AnyProps): AnyProps {
     };
   }
   return card;
+}
+
+/**
+ * V4 per-section chrome migration config.
+ *
+ * Each entry describes how to lift a section's legacy flat chrome props
+ * (label, headline, headlineItalic, body/intro) into atoms in the
+ * `section-chrome` zone. `headline` is required when `useHeading` is true;
+ * other fields are optional.
+ *
+ * `bodyKey` = which flat prop holds the rich-text body ('body' | 'intro').
+ * `bodyClass` = the public-site CSS class wrapping the body text
+ * ('section-body' | 'sites-intro' | etc.) — preserved on the atom so
+ * emitted HTML stays byte-identical.
+ *
+ * `useLabel` = whether to lift `label` into an EditableEyebrow atom.
+ * `useItalicInline` = whether to map `headlineItalic` to EditableHeading's
+ * `inlineItalic` field (space + italic pattern).
+ *
+ * Sections omitted from this table are NOT migrated (CtaBanner, RatesTable,
+ * Interlude, ImageBlock, TrustBar). Their legacy path remains active.
+ */
+interface SectionChromeConfig {
+  useLabel?: boolean;
+  useHeading?: boolean;
+  useItalicInline?: boolean;
+  headingLevel?: number;
+  headingClass?: string;
+  bodyKey?: 'body' | 'intro';
+  bodyClass?: string;
+  headingKey?: 'headline' | 'heading';
+}
+
+const SECTION_CHROME: Record<string, SectionChromeConfig> = {
+  TwoColumnSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+    bodyKey: 'body',
+    bodyClass: 'section-body',
+  },
+  CardGridSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+  },
+  SiteCardsSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+    bodyKey: 'intro',
+    bodyClass: 'sites-intro',
+  },
+  ExploreGridSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+    bodyKey: 'intro',
+    bodyClass: 'section-body',
+  },
+  ReviewsSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+  },
+  ReserveFormSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+    bodyKey: 'body',
+    bodyClass: 'section-body',
+  },
+  FeatureListSection: {
+    useLabel: true,
+    useHeading: true,
+    headingLevel: 2,
+    headingClass: 'st',
+  },
+  AmenityGridSection: {
+    useLabel: true,
+    useHeading: true,
+    useItalicInline: true,
+    headingLevel: 2,
+    headingClass: 'st',
+  },
+  // EventsWidgetSection is intentionally omitted — public-site renderer
+  // hard-codes a "What's Happening" label span and inline h2 styles that
+  // atoms cannot currently reproduce byte-identically.
+};
+
+/**
+ * Build the section-chrome zone atoms + cleared props for a standard
+ * chrome-pattern section. Returns null if the section has no flat content
+ * worth lifting (so the migrator doesn't produce empty zones).
+ */
+function buildSectionChrome(
+  itemType: string,
+  itemId: string,
+  props: AnyProps,
+): { atoms: AnyProps[]; remaining: AnyProps } | null {
+  const cfg = SECTION_CHROME[itemType];
+  if (!cfg) return null;
+
+  const headingKey = cfg.headingKey || 'headline';
+  const label = cfg.useLabel && typeof props.label === 'string' ? props.label.trim() : '';
+  const headline = cfg.useHeading && typeof props[headingKey] === 'string' ? (props[headingKey] as string).trim() : '';
+  const headlineItalic = cfg.useItalicInline && typeof props.headlineItalic === 'string' ? props.headlineItalic.trim() : '';
+  const body = cfg.bodyKey && typeof props[cfg.bodyKey] === 'string' ? (props[cfg.bodyKey] as string).trim() : '';
+
+  if (!label && !headline && !headlineItalic && !body) return null;
+
+  const atoms: AnyProps[] = [];
+  if (label) {
+    atoms.push({
+      type: 'EditableEyebrow',
+      props: {
+        id: `${itemId}-label`,
+        text: label,
+        tag: 'span',
+        className: 'section-label',
+      },
+    });
+  }
+  if (headline || headlineItalic) {
+    atoms.push({
+      type: 'EditableHeading',
+      props: {
+        id: `${itemId}-heading`,
+        text: headline,
+        level: cfg.headingLevel || 2,
+        italic: false,
+        line2Italic: '',
+        inlineItalic: headlineItalic,
+        className: cfg.headingClass || '',
+      },
+    });
+  }
+  if (body && cfg.bodyKey) {
+    atoms.push({
+      type: 'EditableRichText',
+      props: {
+        id: `${itemId}-${cfg.bodyKey}`,
+        html: body,
+        className: cfg.bodyClass || '',
+      },
+    });
+  }
+
+  const remaining: AnyProps = { ...props };
+  if (cfg.useLabel) remaining.label = '';
+  remaining[headingKey] = '';
+  if (cfg.useItalicInline) remaining.headlineItalic = '';
+  if (cfg.bodyKey) remaining[cfg.bodyKey] = '';
+
+  return { atoms, remaining };
 }
 
 /**
@@ -180,35 +357,76 @@ export function migratePuckData<T extends { content?: unknown[] } | null | undef
   const nextContent = content.map((item: any) => {
     if (!item || typeof item !== 'object') return item;
     const type = item.type;
+    const itemId: string = typeof item.props?.id === 'string' ? item.props.id : '';
+    let workingItem = item;
 
     // ── V4 Hero migration: flat props → atoms in zones ──
     if (type === 'HeroSection') {
-      const heroId = typeof item.props?.id === 'string' ? item.props.id : '';
-      const mainKey = `${heroId}:hero-main`;
-      const ctasKey = `${heroId}:hero-ctas`;
+      const mainKey = `${itemId}:hero-main`;
+      const ctasKey = `${itemId}:hero-ctas`;
       const existingMain = zonesIn[mainKey];
       const existingCtas = zonesIn[ctasKey];
       const hasZones = Array.isArray(existingMain) && existingMain.length > 0
         || Array.isArray(existingCtas) && existingCtas.length > 0;
 
       // Only migrate when we have an id and no zones have been populated yet.
-      if (heroId && !hasZones) {
-        const built = buildHeroZones(heroId, item.props || {});
+      if (itemId && !hasZones) {
+        const built = buildHeroZones(itemId, item.props || {});
         if (built) {
           zonesOut[mainKey] = built.heroMain;
           zonesOut[ctasKey] = built.heroCtas;
           zonesChanged = true;
-          return { ...item, props: built.remainingProps };
+          workingItem = { ...item, props: built.remainingProps };
         }
       }
       // Hero has zones already (already-migrated) or no content to lift.
-      // Still fall through to legacy array-field normalization below.
+    }
+
+    // ── V4 section-chrome migration (9 standard chrome-pattern sections) ──
+    if (SECTION_CHROME[type] && itemId) {
+      const chromeKey = `${itemId}:section-chrome`;
+      const existingChrome = zonesIn[chromeKey];
+      const hasChrome = Array.isArray(existingChrome) && existingChrome.length > 0;
+      if (!hasChrome) {
+        const built = buildSectionChrome(type, itemId, workingItem.props || {});
+        if (built) {
+          zonesOut[chromeKey] = built.atoms;
+          zonesChanged = true;
+          workingItem = { ...workingItem, props: built.remaining };
+        }
+      }
+    }
+
+    // ── V4 TwoColumnSection CTA migration: ctaLabel/ctaUrl → section-ctas zone ──
+    if (type === 'TwoColumnSection' && itemId) {
+      const ctasKey = `${itemId}:section-ctas`;
+      const existingCtas = zonesIn[ctasKey];
+      const hasCtas = Array.isArray(existingCtas) && existingCtas.length > 0;
+      if (!hasCtas) {
+        const p = workingItem.props || {};
+        const ctaLabel = typeof p.ctaLabel === 'string' ? p.ctaLabel.trim() : '';
+        if (ctaLabel) {
+          zonesOut[ctasKey] = [{
+            type: 'EditableButton',
+            props: {
+              id: `${itemId}-cta`,
+              label: ctaLabel,
+              url: typeof p.ctaUrl === 'string' ? p.ctaUrl : '',
+              variant: 'custom',
+              className: '',
+              openInNewTab: false,
+            },
+          }];
+          zonesChanged = true;
+          workingItem = { ...workingItem, props: { ...p, ctaLabel: '', ctaUrl: '' } };
+        }
+      }
     }
 
     const fields = ARRAY_FIELDS[type];
-    if (!fields) return item;
+    if (!fields) return workingItem;
 
-    const nextProps: AnyProps = { ...(item.props ?? {}) };
+    const nextProps: AnyProps = { ...(workingItem.props ?? {}) };
     let changed = false;
 
     for (const key of fields) {
@@ -230,7 +448,7 @@ export function migratePuckData<T extends { content?: unknown[] } | null | undef
       }
     }
 
-    return changed ? { ...item, props: nextProps } : item;
+    return changed ? { ...workingItem, props: nextProps } : workingItem;
   });
 
   const result: any = { ...(data as any), content: nextContent };

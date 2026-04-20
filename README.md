@@ -25,7 +25,7 @@ Astro static pages         ←←←     /admin (React islands)  →→→    Su
        /api/users, /api/audit, etc.
 ```
 
-**Key principle:** content lives in Supabase; the static site rebuilds on demand via Netlify Deploy API. **No git is in the editing workflow** — this is a deliberate choice to make the system operable by non-technical HOA successors. See [memory/project_governance.md](.) for the rationale.
+**Key principle:** content lives in Supabase; code + schema changes ship through Git → Netlify continuous deployment. The admin UI is the only editing surface non-technical operators ever need to touch — no git, no CLI, no config files. Developer changes flow through `git push` to `main` at [github.com/CRRrvPark/CRR-RV-Park-Website](https://github.com/CRRrvPark/CRR-RV-Park-Website) which Netlify auto-deploys.
 
 ---
 
@@ -33,36 +33,44 @@ Astro static pages         ←←←     /admin (React islands)  →→→    Su
 
 | Phase | Status | Description |
 |---|---|---|
-| 0 | ✅ Done (scaffolding) / ⏳ Account provisioning still owed | Foundations + accounts |
-| 1 | ✅ Code complete / ⏳ Verification owed | Astro migration of 11 HTML pages |
-| 2 | 🚧 Scaffolded | Admin UI + auth + Tiptap WYSIWYG |
-| 3 | 🚧 Scaffolded | Code editor + publish + audit + snapshots |
-| 4 | 🚧 Scaffolded | Zoho Drive media library |
-| 5 | 🚧 Scaffolded | Zoho Calendar /events page |
-| 6 | ⏳ Pending | Polish, runbook completion, editor handoff |
+| 0–5 | ✅ Shipped | Foundations, Astro migration, admin UI, auth, Tiptap, code editor, publish, audit, snapshots, Zoho Drive + Calendar |
+| V2 | ✅ Shipped | Area-guide (trails, things-to-do, local places, park sites) |
+| V3 | ✅ Shipped | WYSIWYG Path A — Puck-based Visual Editor with live preview, section library, global styles, versions, templates |
+| V3.1 | ✅ Shipped | Manual photo upload (Supabase Storage), canvas-as-live-preview, link picker, card array-field editors, Zoho sync resilience, section-ID + per-block style panels, legacy page migration (7 static `.astro` → `page_builder_data`), dashboard analytics + conversion tracking |
+| V4 | 🚧 Next | Block-level editor rebuild — every headline, paragraph, image, button, spacer is its own clickable Puck atom. See [`HANDOFF-V4-EDITOR-REBUILD.md`](HANDOFF-V4-EDITOR-REBUILD.md). |
 
-See [`SPEC-PHASE-1.md`](SPEC-PHASE-1.md) for what verification is still owed on Phase 1.
+**Current home page note:** the home (`index`) still uses the legacy `sections` + `content_blocks` schema. All other nav-linked pages are on `page_builder_data`. Home migration is folded into V4 session 1.
+
+See [`SPEC-PHASE-1.md`](SPEC-PHASE-1.md) for the original Phase 1 spec. Current authoritative handoff is [`HANDOFF-V4-EDITOR-REBUILD.md`](HANDOFF-V4-EDITOR-REBUILD.md).
 
 ---
 
 ## Local development
 
 ```bash
-# 1. Install dependencies
+# 1. Clone the repo (once)
+git clone https://github.com/CRRrvPark/CRR-RV-Park-Website.git
+cd CRR-RV-Park-Website
+
+# 2. Install dependencies
 npm install
 
-# 2. Set up environment
+# 3. Set up environment
 cp .env.example .env
 # Edit .env with your Supabase + Netlify + Zoho credentials
 
-# 3. Run dev server
+# 4. Run dev server
 npm run dev
 # Opens at http://localhost:4321
 
-# 4. Build for production
+# 5. Build for production (Netlify does this automatically on push)
 npm run build
 # Output goes to ./dist
 ```
+
+## Deployment
+
+Every push to `main` on GitHub auto-deploys to Netlify (see [`NETLIFY-DEPLOY.md`](NETLIFY-DEPLOY.md)). No manual drag-drop, no CLI invocation needed. The canonical repo folder on the primary dev machine is `C:\dev\CRR-RV-Park-Website\`.
 
 ### Without Supabase configured
 

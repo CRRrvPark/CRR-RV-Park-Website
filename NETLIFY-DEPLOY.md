@@ -6,6 +6,26 @@
 
 ---
 
+## Deployment model (as of 2026-04-19)
+
+**Continuous deployment from GitHub is the primary and only expected path.**
+
+- Every `git push` to `main` on https://github.com/CRRrvPark/CRR-RV-Park-Website triggers a Netlify build automatically.
+- Build command: `npm run build` (from `netlify.toml`).
+- Publish directory: `dist`.
+- Functions directory: `.netlify/v1/functions`.
+- Auto-deploy takes roughly 3–5 minutes per push.
+
+**Drag-and-drop deploys are deprecated.** They still work in an emergency (Netlify → Sites → drag a `dist/` folder onto the drop target), but the normal flow is git-first.
+
+**Netlify CLI deploys (`netlify deploy --prod`) also still work**, but are rarely needed. Most common use case: verifying a deploy from a pre-release branch before merging.
+
+### Common gotcha: "Unrecognized Git contributor" blocks a deploy
+
+Netlify's paid plans include a "verified contributors only" deploy gate. If a commit's author or co-author email isn't on the team, the deploy is blocked. The most common trigger is adding a `Co-Authored-By: <bot>` trailer to commits — bot emails aren't team members. Resolution: drop the trailer and keep commits authored by the team member only, **or** loosen the setting in Netlify → Team settings → Members → Deploy permissions.
+
+---
+
 ## Why the admin login fails on Netlify (and works locally)
 
 Your `.env` file only exists on your local machine. When Netlify runs `npm run build` on their servers, it has **no access** to your local `.env` — it only knows what you've entered in its own dashboard.
@@ -68,11 +88,11 @@ If you ever see `output: 'static'` again, the login will break because API route
 
 ### 3. Redeploy
 
-After adding env vars, Netlify does **not** automatically rebuild. Trigger one:
+After adding env vars, Netlify does **not** automatically rebuild. Trigger one of:
 
-- **Option A (recommended):** Deploys tab → "Trigger deploy" → "Deploy site"
-- **Option B:** push a new ZIP upload
-- **Option C:** `netlify deploy --prod` from the CLI
+- **Option A (recommended):** push any commit to `main` — auto-deploys.
+- **Option B:** Deploys tab → "Trigger deploy" → "Deploy site" (re-runs the last commit).
+- **Option C:** `netlify deploy --build --prod` from the CLI in the repo folder.
 
 ### 4. Verify the login works
 

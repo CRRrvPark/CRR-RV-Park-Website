@@ -1,5 +1,8 @@
 # Handoff V3 — WYSIWYG upgrade + public events calendar
 
+> **⚠ SUPERSEDED 2026-04-19 by [HANDOFF-V4-EDITOR-REBUILD.md](HANDOFF-V4-EDITOR-REBUILD.md).**
+> V3.1 follow-up work all shipped in 2026-04-19 (manual photo upload, link picker, card array-field editor, legacy page migration, Zoho sync resilience, section-IDs + per-block styles, dashboard analytics). V4 is now the active plan: a block-level rebuild of the Visual Editor. Treat this document as historical context only.
+>
 > **Supersedes:** [HANDOFF-V2-AREA-GUIDE.md](HANDOFF-V2-AREA-GUIDE.md) (kept as historical reference for the V2 area-guide cut)
 >
 > **Date tagged:** 2026-04-18

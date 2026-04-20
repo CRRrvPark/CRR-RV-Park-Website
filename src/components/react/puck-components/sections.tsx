@@ -16,10 +16,12 @@
  */
 
 import type { ComponentConfig } from '@puckeditor/core';
+import { DropZone } from '@puckeditor/core';
 import { MediaPickerField } from './fields/MediaPickerField';
 import { richTextField } from './fields/RichTextField';
 import { linkPickerField } from './fields/LinkPickerField';
 import { styleFields, STYLE_DEFAULTS } from '@lib/puck-style';
+import { ATOM_NAMES } from './atoms';
 
 /* ── helpers ── */
 
@@ -216,60 +218,121 @@ export const ImageBlock: ComponentConfig = {
 
 /* ── 1. HeroSection ── */
 
+/**
+ * HeroSection — V4 refactor.
+ *
+ * Structure:
+ *   <section class="page-hero full">
+ *     <div class="hero-bg">background image</div>
+ *     <div class="hero-overlay" />
+ *     <div class="hero-content">
+ *       <DropZone "hero-main"> — EditableEyebrow/Heading/RichText atoms
+ *       <div class="hero-ctas">
+ *         <DropZone "hero-ctas"> — EditableButton atoms only
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * Legacy flat-prop data (eyebrow, headlineLine1, headlineLine2Italic,
+ * subtitle, ctaPrimary*, ctaSecondary*) is still accepted and rendered
+ * when zones are empty. puck-data-migrate.ts lifts those flat props into
+ * atoms in the two zones on load, after which the zones take over and the
+ * flat-prop fallback never fires.
+ *
+ * The flat-prop *fields* are preserved in the config so:
+ *   (a) old saves without zones still show their current content in the
+ *       right panel while editors migrate, and
+ *   (b) the old editor UX is available if an atom-based edit hits a snag
+ *       (useful during V4 rollout).
+ * Once all hero pages are migrated, a future cleanup pass will drop the
+ * flat-prop fields and renderer fallback.
+ */
 export const HeroSection: ComponentConfig = {
   label: 'Hero Section',
   defaultProps: {
     ...STYLE_DEFAULTS,
-    eyebrow: 'Welcome to',
-    headlineLine1: 'Crooked River Ranch',
-    headlineLine2Italic: 'RV Park.',
-    subtitle: '<p>A serene high-desert retreat in Central Oregon.</p>',
-    ctaPrimaryLabel: 'Reserve Your Site',
-    ctaPrimaryUrl: '#',
-    ctaSecondaryLabel: 'Learn More',
-    ctaSecondaryUrl: '#',
+    eyebrow: '',
+    headlineLine1: '',
+    headlineLine2Italic: '',
+    subtitle: '',
+    ctaPrimaryLabel: '',
+    ctaPrimaryUrl: '',
+    ctaSecondaryLabel: '',
+    ctaSecondaryUrl: '',
     backgroundImageUrl: '/images/hero.jpg',
     bgObjectFit: 'cover',
   },
   fields: {
     ...styleFields,
-    eyebrow: { type: 'text', label: 'Eyebrow text' },
-    headlineLine1: { type: 'text', label: 'Headline (line 1)' },
-    headlineLine2Italic: { type: 'text', label: 'Headline (italic gold line)' },
-    subtitle: richTextField('Subtitle'),
-    ctaPrimaryLabel: { type: 'text', label: 'Primary CTA label' },
-    ctaPrimaryUrl: linkPickerField('Primary CTA URL'),
-    ctaSecondaryLabel: { type: 'text', label: 'Secondary CTA label' },
-    ctaSecondaryUrl: linkPickerField('Secondary CTA URL'),
     backgroundImageUrl: {
       type: 'custom',
       label: 'Background image',
       render: MediaPickerField,
     },
     bgObjectFit: objectFitField,
+    // Legacy flat-prop fallback fields — kept so pre-migration saves remain
+    // editable. New content lives in the DropZone atoms; these can be left
+    // blank once the page is migrated.
+    eyebrow: { type: 'text', label: 'Legacy eyebrow (fallback — prefer the Eyebrow atom)' },
+    headlineLine1: { type: 'text', label: 'Legacy headline L1 (fallback — prefer the Heading atom)' },
+    headlineLine2Italic: { type: 'text', label: 'Legacy headline L2 italic (fallback)' },
+    subtitle: richTextField('Legacy subtitle (fallback — prefer the Rich Text atom)'),
+    ctaPrimaryLabel: { type: 'text', label: 'Legacy primary CTA label (fallback — prefer the Button atom)' },
+    ctaPrimaryUrl: linkPickerField('Legacy primary CTA URL (fallback)'),
+    ctaSecondaryLabel: { type: 'text', label: 'Legacy secondary CTA label (fallback)' },
+    ctaSecondaryUrl: linkPickerField('Legacy secondary CTA URL (fallback)'),
   },
   render: ({
     eyebrow, headlineLine1, headlineLine2Italic, subtitle,
     ctaPrimaryLabel, ctaPrimaryUrl, ctaSecondaryLabel, ctaSecondaryUrl,
     backgroundImageUrl, bgObjectFit, puck,
-  }: any) => (
-    <section className="page-hero full" ref={puck.dragRef}>
-      <div className="hero-bg" style={bgImageStyle(backgroundImageUrl, bgObjectFit)} />
-      <div className="hero-overlay" />
-      <div className="hero-content">
-        {eyebrow && <div className="hero-eyebrow">{eyebrow}</div>}
-        <h1 className="hero-hl">
-          {headlineLine1}
-          {headlineLine2Italic && <><br /><em>{headlineLine2Italic}</em></>}
-        </h1>
-        {subtitle && <div className="hero-sub" dangerouslySetInnerHTML={{ __html: subtitle }} />}
-        <div className="hero-ctas">
-          {ctaPrimaryLabel && <a className="btn-p" href={ctaPrimaryUrl || '#'}>{ctaPrimaryLabel}</a>}
-          {ctaSecondaryLabel && <a className="btn-g" href={ctaSecondaryUrl || '#'}>{ctaSecondaryLabel}</a>}
+  }: any) => {
+    // Legacy fallback: if no atoms have been added to the zones yet AND the
+    // flat props still hold the content, render the old flat output.
+    // Once puck-data-migrate.ts lifts flat → atoms, this branch never fires
+    // because the flat props are cleared during migration.
+    const hasLegacyContent = Boolean(
+      (eyebrow && String(eyebrow).trim())
+      || (headlineLine1 && String(headlineLine1).trim())
+      || (headlineLine2Italic && String(headlineLine2Italic).trim())
+      || (subtitle && String(subtitle).trim())
+      || (ctaPrimaryLabel && String(ctaPrimaryLabel).trim())
+      || (ctaSecondaryLabel && String(ctaSecondaryLabel).trim())
+    );
+
+    return (
+      <section className="page-hero full" ref={puck.dragRef}>
+        <div className="hero-bg" style={bgImageStyle(backgroundImageUrl, bgObjectFit)} />
+        <div className="hero-overlay" />
+        <div className="hero-content">
+          {hasLegacyContent ? (
+            <>
+              {eyebrow && <div className="hero-eyebrow">{eyebrow}</div>}
+              <h1 className="hero-hl">
+                {headlineLine1}
+                {headlineLine2Italic && <><br /><em>{headlineLine2Italic}</em></>}
+              </h1>
+              {subtitle && <div className="hero-sub" dangerouslySetInnerHTML={{ __html: subtitle }} />}
+              <div className="hero-ctas">
+                {ctaPrimaryLabel && <a className="btn-p" href={ctaPrimaryUrl || '#'}>{ctaPrimaryLabel}</a>}
+                {ctaSecondaryLabel && <a className="btn-g" href={ctaSecondaryUrl || '#'}>{ctaSecondaryLabel}</a>}
+              </div>
+            </>
+          ) : (
+            <>
+              <DropZone
+                zone="hero-main"
+                allow={ATOM_NAMES.filter((n) => n !== 'EditableButton') as string[]}
+              />
+              <div className="hero-ctas">
+                <DropZone zone="hero-ctas" allow={['EditableButton']} />
+              </div>
+            </>
+          )}
         </div>
-      </div>
-    </section>
-  ),
+      </section>
+    );
+  },
 };
 
 /* ── 2. TwoColumnSection ── */

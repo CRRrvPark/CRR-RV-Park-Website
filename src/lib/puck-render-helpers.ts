@@ -165,3 +165,66 @@ export function renderChildBlock(child: PuckItem): string {
 
   return '<div style="padding:1rem 3rem;color:#888;font-size:.85rem;font-style:italic;">[' + esc(child.type) + ' is not yet supported as a nested child on public pages]</div>';
 }
+
+/**
+ * Render a V4 atom (EditableHeading / EditableRichText / EditableButton /
+ * EditableImage / EditableEyebrow) as an HTML string. Used by the Astro
+ * hero renderer via `<Fragment set:html={...}>` so the emitted HTML is
+ * byte-identical to the legacy hero output for the same content.
+ *
+ * Returns '' for unknown atom types (defensive — should not happen for
+ * well-formed migrated data).
+ */
+export function renderAtom(atom: PuckItem | null | undefined): string {
+  if (!atom || typeof atom !== 'object') return '';
+  const p = atom.props || {};
+
+  if (atom.type === 'EditableEyebrow') {
+    const tagName = (p.tag === 'span' || p.tag === 'p') ? p.tag : 'div';
+    const cls = p.className ? ' class="' + esc(p.className) + '"' : '';
+    return '<' + tagName + cls + '>' + esc(p.text || '') + '</' + tagName + '>';
+  }
+
+  if (atom.type === 'EditableHeading') {
+    const lvl = Math.min(Math.max(Number(p.level) || 2, 1), 6);
+    const cls = p.className ? ' class="' + esc(p.className) + '"' : '';
+    let body: string;
+    if (p.line2Italic) {
+      body = esc(p.text || '') + '<br /><em>' + esc(p.line2Italic) + '</em>';
+    } else if (p.italic) {
+      body = '<em>' + esc(p.text || '') + '</em>';
+    } else {
+      body = esc(p.text || '');
+    }
+    return '<h' + lvl + cls + '>' + body + '</h' + lvl + '>';
+  }
+
+  if (atom.type === 'EditableRichText') {
+    const cls = p.className ? ' class="' + esc(p.className) + '"' : '';
+    // `html` is editor-sanitized (Tiptap) — same trust boundary as
+    // existing `set:html={p.body}` usage across this renderer.
+    return '<div' + cls + '>' + (p.html || '') + '</div>';
+  }
+
+  if (atom.type === 'EditableButton') {
+    const variantCls: Record<string, string> = { primary: 'btn-p', secondary: 'btn-g', ghost: 'btn-o' };
+    const cls = p.variant === 'custom' ? (p.className || '') : (variantCls[p.variant as string] || 'btn-p');
+    const tgt = p.openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+    return '<a class="' + esc(cls) + '" href="' + esc(p.url || '#') + '"' + tgt + '>' + esc(p.label || '') + '</a>';
+  }
+
+  if (atom.type === 'EditableImage') {
+    const styleParts: string[] = ['display:block', 'max-width:100%'];
+    if (p.width) styleParts.push('width:' + p.width + 'px');
+    if (p.height) styleParts.push('height:' + p.height + 'px');
+    if (p.objectFit) styleParts.push('object-fit:' + p.objectFit);
+    if (p.borderRadius) styleParts.push('border-radius:' + p.borderRadius + 'px');
+    const clsAttr = p.className ? ' class="' + esc(p.className) + '"' : '';
+    const img = p.imageUrl
+      ? '<img src="' + esc(p.imageUrl) + '" alt="' + esc(p.alt || '') + '" loading="lazy"' + clsAttr + ' style="' + styleParts.join(';') + '" />'
+      : '';
+    return p.linkUrl && img ? '<a href="' + esc(p.linkUrl) + '">' + img + '</a>' : img;
+  }
+
+  return '';
+}

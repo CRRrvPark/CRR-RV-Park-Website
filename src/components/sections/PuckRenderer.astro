@@ -15,7 +15,7 @@
  */
 
 import { serverClient } from '@lib/supabase';
-import { pushStyleProps, renderChildBlock, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
+import { pushStyleProps, renderChildBlock, renderAtom, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
 
 export interface Props {
   pageSlug: string;
@@ -319,6 +319,24 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
         const jpgUrl = `${base}.${ext === 'webp' || ext === 'avif' ? 'jpg' : ext}`;
         const webpUrl = `${base}.webp`;
         const mobileWebpUrl = `${base}-mobile.webp`;
+
+        // V4: atoms-in-zones path. When zones are populated for this hero,
+        // we render them instead of the flat-prop fallback. The alt text
+        // for the background image needs to come from somewhere meaningful;
+        // pull it from the first EditableHeading atom if present.
+        const heroId = p.id;
+        const zonesMap = (puckData?.zones || {});
+        const heroMainZone = heroId ? zonesMap[heroId + ':hero-main'] : undefined;
+        const heroCtasZone = heroId ? zonesMap[heroId + ':hero-ctas'] : undefined;
+        const hasZones = (Array.isArray(heroMainZone) && heroMainZone.length > 0)
+          || (Array.isArray(heroCtasZone) && heroCtasZone.length > 0);
+
+        const firstHeadingAtom = hasZones && Array.isArray(heroMainZone)
+          ? heroMainZone.find((a) => a && a.type === 'EditableHeading')
+          : null;
+        const firstHeadingText = firstHeadingAtom && firstHeadingAtom.props ? firstHeadingAtom.props.text : undefined;
+        const bgImgAlt = firstHeadingText || p.headlineLine1 || 'Crooked River Ranch RV Park';
+
         return (
           <section class="page-hero full" {...sectionAttrs(p)}>
             <div class="hero-bg">
@@ -327,7 +345,7 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
                 <source srcset={webpUrl} type="image/webp" />
                 <img
                   src={jpgUrl}
-                  alt={p.headlineLine1 || 'Crooked River Ranch RV Park'}
+                  alt={bgImgAlt}
                   width="1600"
                   height="900"
                   fetchpriority="high"
@@ -337,16 +355,27 @@ function sectionAttrs(p: Record<string, any>, base = ''): { id?: string; style?:
             </div>
             <div class="hero-overlay" />
             <div class="hero-content">
-              {p.eyebrow && <div class="hero-eyebrow">{p.eyebrow}</div>}
-              <h1 class="hero-hl">
-                {p.headlineLine1}
-                {p.headlineLine2Italic && <><br /><em>{p.headlineLine2Italic}</em></>}
-              </h1>
-              {p.subtitle && <div class="hero-sub" set:html={p.subtitle} />}
-              <div class="hero-ctas">
-                {p.ctaPrimaryLabel && <a class="btn-p" href={p.ctaPrimaryUrl || '#'}>{p.ctaPrimaryLabel}</a>}
-                {p.ctaSecondaryLabel && <a class="btn-g" href={p.ctaSecondaryUrl || '#'}>{p.ctaSecondaryLabel}</a>}
-              </div>
+              {hasZones ? (
+                <Fragment set:html={
+                  (heroMainZone || []).map(renderAtom).join('')
+                  + '<div class="hero-ctas">'
+                  + (heroCtasZone || []).map(renderAtom).join('')
+                  + '</div>'
+                } />
+              ) : (
+                <>
+                  {p.eyebrow && <div class="hero-eyebrow">{p.eyebrow}</div>}
+                  <h1 class="hero-hl">
+                    {p.headlineLine1}
+                    {p.headlineLine2Italic && <><br /><em>{p.headlineLine2Italic}</em></>}
+                  </h1>
+                  {p.subtitle && <div class="hero-sub" set:html={p.subtitle} />}
+                  <div class="hero-ctas">
+                    {p.ctaPrimaryLabel && <a class="btn-p" href={p.ctaPrimaryUrl || '#'}>{p.ctaPrimaryLabel}</a>}
+                    {p.ctaSecondaryLabel && <a class="btn-g" href={p.ctaSecondaryUrl || '#'}>{p.ctaSecondaryLabel}</a>}
+                  </div>
+                </>
+              )}
             </div>
           </section>
         );

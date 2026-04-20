@@ -16,6 +16,16 @@
  * Also handles the SiteCards `specs` → `specsText` shape change: legacy
  * data stores `specs: ["50 AMP", ...]`; the new UI collects a
  * comma-separated string `specsText`. We convert once on load.
+ *
+ * V4 additions:
+ *   • Hero flat-prop → atom-zone migration. Legacy heroes store eyebrow,
+ *     headlineLine1, headlineLine2Italic, subtitle, ctaPrimary*, ctaSecondary*
+ *     as flat props on HeroSection. V4 represents each as its own Puck
+ *     component (EditableEyebrow / EditableHeading / EditableRichText /
+ *     EditableButton) inside two zones ("hero-main" and "hero-ctas"). This
+ *     migrator lifts flat props into those zones and clears the flat props
+ *     so the hero renders through the zone path instead of the fallback.
+ *     Idempotent: runs only when zones for the hero are empty.
  */
 
 type AnyProps = Record<string, unknown>;
@@ -57,14 +67,144 @@ function normalizeSiteCard(card: AnyProps): AnyProps {
   return card;
 }
 
+/**
+ * Build the two hero zones from a hero's legacy flat props.
+ * Returns null if the hero has no flat content to lift.
+ */
+function buildHeroZones(heroId: string, heroProps: AnyProps): {
+  heroMain: AnyProps[];
+  heroCtas: AnyProps[];
+  remainingProps: AnyProps;
+} | null {
+  const eyebrow = typeof heroProps.eyebrow === 'string' ? heroProps.eyebrow.trim() : '';
+  const line1 = typeof heroProps.headlineLine1 === 'string' ? heroProps.headlineLine1.trim() : '';
+  const line2 = typeof heroProps.headlineLine2Italic === 'string' ? heroProps.headlineLine2Italic.trim() : '';
+  const subtitle = typeof heroProps.subtitle === 'string' ? heroProps.subtitle.trim() : '';
+  const ctaPrimaryLabel = typeof heroProps.ctaPrimaryLabel === 'string' ? heroProps.ctaPrimaryLabel.trim() : '';
+  const ctaPrimaryUrl = typeof heroProps.ctaPrimaryUrl === 'string' ? heroProps.ctaPrimaryUrl : '';
+  const ctaSecondaryLabel = typeof heroProps.ctaSecondaryLabel === 'string' ? heroProps.ctaSecondaryLabel.trim() : '';
+  const ctaSecondaryUrl = typeof heroProps.ctaSecondaryUrl === 'string' ? heroProps.ctaSecondaryUrl : '';
+
+  const hasAny = !!(eyebrow || line1 || line2 || subtitle || ctaPrimaryLabel || ctaSecondaryLabel);
+  if (!hasAny) return null;
+
+  const heroMain: AnyProps[] = [];
+  if (eyebrow) {
+    heroMain.push({
+      type: 'EditableEyebrow',
+      props: {
+        id: `${heroId}-eyebrow`,
+        text: eyebrow,
+        tag: 'div',
+        className: 'hero-eyebrow',
+      },
+    });
+  }
+  if (line1 || line2) {
+    heroMain.push({
+      type: 'EditableHeading',
+      props: {
+        id: `${heroId}-heading`,
+        text: line1 || '',
+        level: 1,
+        italic: false,
+        line2Italic: line2 || '',
+        className: 'hero-hl',
+      },
+    });
+  }
+  if (subtitle) {
+    heroMain.push({
+      type: 'EditableRichText',
+      props: {
+        id: `${heroId}-sub`,
+        html: subtitle,
+        className: 'hero-sub',
+      },
+    });
+  }
+
+  const heroCtas: AnyProps[] = [];
+  if (ctaPrimaryLabel) {
+    heroCtas.push({
+      type: 'EditableButton',
+      props: {
+        id: `${heroId}-cta-primary`,
+        label: ctaPrimaryLabel,
+        url: ctaPrimaryUrl,
+        variant: 'primary',
+        className: '',
+        openInNewTab: false,
+      },
+    });
+  }
+  if (ctaSecondaryLabel) {
+    heroCtas.push({
+      type: 'EditableButton',
+      props: {
+        id: `${heroId}-cta-secondary`,
+        label: ctaSecondaryLabel,
+        url: ctaSecondaryUrl,
+        variant: 'secondary',
+        className: '',
+        openInNewTab: false,
+      },
+    });
+  }
+
+  // Clear lifted flat props so the HeroSection renderer falls through to
+  // the DropZone branch. Keep structural props (background, bgObjectFit,
+  // id, styleFields) intact.
+  const remainingProps: AnyProps = { ...heroProps };
+  for (const key of [
+    'eyebrow', 'headlineLine1', 'headlineLine2Italic', 'subtitle',
+    'ctaPrimaryLabel', 'ctaPrimaryUrl', 'ctaSecondaryLabel', 'ctaSecondaryUrl',
+  ]) {
+    remainingProps[key] = '';
+  }
+
+  return { heroMain, heroCtas, remainingProps };
+}
+
 export function migratePuckData<T extends { content?: unknown[] } | null | undefined>(data: T): T {
   if (!data || typeof data !== 'object') return data;
   const content = (data as any).content;
   if (!Array.isArray(content)) return data;
 
+  const zonesIn: Record<string, unknown[]> = ((data as any).zones && typeof (data as any).zones === 'object')
+    ? { ...(data as any).zones }
+    : {};
+  const zonesOut: Record<string, unknown[]> = { ...zonesIn };
+  let zonesChanged = false;
+
   const nextContent = content.map((item: any) => {
     if (!item || typeof item !== 'object') return item;
     const type = item.type;
+
+    // ── V4 Hero migration: flat props → atoms in zones ──
+    if (type === 'HeroSection') {
+      const heroId = typeof item.props?.id === 'string' ? item.props.id : '';
+      const mainKey = `${heroId}:hero-main`;
+      const ctasKey = `${heroId}:hero-ctas`;
+      const existingMain = zonesIn[mainKey];
+      const existingCtas = zonesIn[ctasKey];
+      const hasZones = Array.isArray(existingMain) && existingMain.length > 0
+        || Array.isArray(existingCtas) && existingCtas.length > 0;
+
+      // Only migrate when we have an id and no zones have been populated yet.
+      if (heroId && !hasZones) {
+        const built = buildHeroZones(heroId, item.props || {});
+        if (built) {
+          zonesOut[mainKey] = built.heroMain;
+          zonesOut[ctasKey] = built.heroCtas;
+          zonesChanged = true;
+          return { ...item, props: built.remainingProps };
+        }
+      }
+      // Hero has zones already (already-migrated) or no content to lift.
+      // Still fall through to legacy array-field normalization below.
+    }
+
     const fields = ARRAY_FIELDS[type];
     if (!fields) return item;
 
@@ -93,5 +233,7 @@ export function migratePuckData<T extends { content?: unknown[] } | null | undef
     return changed ? { ...item, props: nextProps } : item;
   });
 
-  return { ...(data as any), content: nextContent } as T;
+  const result: any = { ...(data as any), content: nextContent };
+  if (zonesChanged) result.zones = zonesOut;
+  return result as T;
 }

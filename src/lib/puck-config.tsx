@@ -19,7 +19,8 @@ import { styleFields, STYLE_DEFAULTS, computeStyle, type StyleProps } from './pu
 
 const puckConfig: Config = {
   categories: {
-    content: { title: 'Content', defaultExpanded: true },
+    atoms: { title: 'Text & Blocks', defaultExpanded: true },
+    content: { title: 'Content' },
     media: { title: 'Media & Heroes' },
     lists: { title: 'Lists & Grids' },
     engagement: { title: 'Engagement' },
@@ -601,6 +602,12 @@ if (puckConfig.components) {
     AmenityGridSection: 'lists',
     InterludeSection: 'media',
     TrustBarSection: 'layout',
+    // V4 atoms — block-level editable units.
+    EditableHeading: 'atoms',
+    EditableRichText: 'atoms',
+    EditableButton: 'atoms',
+    EditableImage: 'atoms',
+    EditableEyebrow: 'atoms',
   };
   for (const [name, cat] of Object.entries(catMap)) {
     const comp = (puckConfig.components as any)[name];

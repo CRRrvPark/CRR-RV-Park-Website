@@ -30,6 +30,7 @@ import {
   AmenityGridSection,
   InterludeSection,
   TrustBarSection,
+  RegionMapSection,
 } from './sections';
 import { ATOM_COMPONENTS } from './atoms';
 
@@ -77,6 +78,7 @@ export const PUCK_SECTIONS = {
   AmenityGridSection: withStyle(AmenityGridSection),
   InterludeSection: withStyle(InterludeSection),
   TrustBarSection: withStyle(TrustBarSection),
+  RegionMapSection: withStyle(RegionMapSection),
   // V4 atoms — registered alongside sections so Puck's palette shows them.
   // Atoms intentionally bypass withStyle(): they have no sectionId / styleFields,
   // and style handling belongs to their parent section shell, not the atom.
@@ -99,6 +101,7 @@ export {
   AmenityGridSection,
   InterludeSection,
   TrustBarSection,
+  RegionMapSection,
 };
 
 export * from './atoms';

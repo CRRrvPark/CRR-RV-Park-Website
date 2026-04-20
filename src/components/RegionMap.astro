@@ -1,0 +1,301 @@
+---
+/**
+ * RegionMap.astro — interactive map for the Area Guide page.
+ *
+ * Wraps the Google Maps SDK with:
+ *   • Category filter pills (Things to Do categories: Families / Active /
+ *     RVers / Dogs / Day Trippers / Winter / Food & Community, plus
+ *     Trails and Local Places categories that the area-guide mixes in).
+ *   • A curated default set (Smith Rock + Steelhead Falls + Crescent Moon
+ *     Alpacas + a couple of featured dining places, filled up to 5–8
+ *     total with a random pick from the rest). This is what the map shows
+ *     on first load.
+ *   • "Clear filter" → back to the curated default.
+ *   • Fits bounds to whatever is currently visible after each filter change.
+ *
+ * Only markers with a lat/lng actually render. Unknown coords are silently
+ * dropped so partially-populated data tables don't crash the widget.
+ *
+ * This component fetches nothing — it takes already-merged pins from the
+ * Astro frontmatter (see PuckRenderer.astro's RegionMapSection branch).
+ * Keeping it data-agnostic means the same widget can later power other
+ * pages (trails+local_places mashup, events map, etc.) without a rewrite.
+ *
+ * Missing PUBLIC_GOOGLE_MAPS_API_KEY → graceful fallback card, not a
+ * broken page. Same contract as GoogleMap.astro.
+ */
+
+export interface FilterPin {
+  id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  category: string;
+  href?: string;
+  iconEmoji?: string;
+  description?: string;
+  /** true = included in the curated default set shown on first load. */
+  isDefault?: boolean;
+}
+
+export interface FilterCategory {
+  key: string;
+  label: string;
+  emoji?: string;
+}
+
+export interface Props {
+  id: string;
+  pins: FilterPin[];
+  categories: FilterCategory[];
+  centerLat: number;
+  centerLng: number;
+  zoom?: number;
+  height?: string;
+}
+
+const {
+  id,
+  pins,
+  categories,
+  centerLat,
+  centerLng,
+  zoom = 10,
+  height = '560px',
+} = Astro.props;
+
+const apiKey =
+  import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
+  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
+  '';
+const hasKey = Boolean(apiKey);
+
+const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
+---
+
+{hasKey ? (
+  <div class="crr-region-map" data-region-map-id={id}>
+    <div
+      class="crr-region-filters"
+      role="tablist"
+      aria-label="Filter map pins by category"
+      style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;"
+    >
+      <button
+        type="button"
+        class="crr-region-filter"
+        data-filter="__default__"
+        aria-pressed="true"
+        style="padding:.45rem .9rem;border:1px solid var(--rust,#C4622D);border-radius:999px;background:var(--rust,#C4622D);color:#fff;cursor:pointer;font-size:.85rem;line-height:1;"
+      >
+        ★ Highlights
+      </button>
+      <button
+        type="button"
+        class="crr-region-filter"
+        data-filter="__all__"
+        aria-pressed="false"
+        style="padding:.45rem .9rem;border:1px solid var(--rust,#C4622D);border-radius:999px;background:#fff;color:var(--rust,#C4622D);cursor:pointer;font-size:.85rem;line-height:1;"
+      >
+        ✨ All
+      </button>
+      {categories.map((c) => (
+        <button
+          type="button"
+          class="crr-region-filter"
+          data-filter={c.key}
+          aria-pressed="false"
+          style="padding:.45rem .9rem;border:1px solid var(--rust,#C4622D);border-radius:999px;background:#fff;color:var(--rust,#C4622D);cursor:pointer;font-size:.85rem;line-height:1;"
+        >
+          {c.emoji ? <span style="margin-right:.3rem;">{c.emoji}</span> : null}{c.label}
+        </button>
+      ))}
+    </div>
+
+    <div
+      class="crr-region-map-wrap"
+      data-map-id={id}
+      data-map-center-lat={centerLat}
+      data-map-center-lng={centerLng}
+      data-map-zoom={zoom}
+      style={`position:relative;width:100%;height:${height};background:#e8e3d8;border-radius:4px;overflow:hidden;`}
+    >
+      <div id={id} style="position:absolute;inset:0;"></div>
+      <div class="crr-map-loading" aria-live="polite" style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(232,227,216,0.85);font-size:.9rem;color:var(--muted,#665040);pointer-events:none;">
+        Loading map…
+      </div>
+      <script
+        type="application/json"
+        id={`${id}-pins`}
+        is:inline
+        set:html={safePins}
+      ></script>
+    </div>
+  </div>
+) : (
+  <div
+    class="crr-map-fallback"
+    style={`width:100%;height:${height};background:var(--sand,#f5efe3);border:1px dashed var(--rust,#C4622D);border-radius:4px;padding:2.5rem;display:grid;place-items:center;text-align:center;`}
+  >
+    <div style="max-width:480px;">
+      <div style="font-family:var(--serif,serif);font-size:1.4rem;color:var(--text,#1f1712);margin-bottom:.75rem;">Regional map will appear here</div>
+      <div style="color:var(--muted,#665040);line-height:1.55;font-size:.95rem;">
+        Set <code>PUBLIC_GOOGLE_MAPS_API_KEY</code> in your Netlify environment
+        variables to enable the map. See <code>AREA-GUIDE-SETUP.md</code>.
+      </div>
+    </div>
+  </div>
+)}
+
+{hasKey && (
+  <script is:inline define:vars={{ apiKey, id }}>
+    (function () {
+      // Shared loader contract — coexist with GoogleMap.astro on the same page
+      // without double-injecting the SDK.
+      if (!window.__crrMapsLoader) {
+        window.__crrMapsLoader = new Promise(function (resolve) {
+          window.__crrMapsReady = resolve;
+        });
+        window.__crrInitMaps = function () { window.__crrMapsReady(); };
+      }
+
+      var wrap = document.querySelector('.crr-region-map[data-region-map-id="' + id + '"]');
+      if (!wrap) return;
+      var mapWrap = wrap.querySelector('.crr-region-map-wrap');
+      var mapEl = document.getElementById(id);
+      var pinsEl = document.getElementById(id + '-pins');
+      if (!mapWrap || !mapEl || !pinsEl) return;
+
+      var allPins = [];
+      try { allPins = JSON.parse(pinsEl.textContent || '[]'); } catch (e) {}
+
+      var map = null;
+      var markers = [];
+      var info = null;
+      var currentFilter = '__default__';
+
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            injectSdk();
+            io.disconnect();
+            return;
+          }
+        }
+      }, { rootMargin: '200px' });
+      io.observe(mapWrap);
+
+      function injectSdk() {
+        if (!document.getElementById('crr-gmaps-sdk')) {
+          var s = document.createElement('script');
+          s.id = 'crr-gmaps-sdk';
+          s.async = true;
+          s.defer = true;
+          s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(apiKey) + '&callback=__crrInitMaps&libraries=marker&v=weekly&loading=async';
+          document.head.appendChild(s);
+        }
+        window.__crrMapsLoader.then(initMap);
+      }
+
+      function initMap() {
+        if (map) return;
+        var loading = mapWrap.querySelector('.crr-map-loading');
+        if (loading) loading.remove();
+        map = new google.maps.Map(mapEl, {
+          center: { lat: parseFloat(mapWrap.dataset.mapCenterLat), lng: parseFloat(mapWrap.dataset.mapCenterLng) },
+          zoom: parseInt(mapWrap.dataset.mapZoom || '10', 10),
+          mapTypeId: 'terrain',
+          mapId: 'CRR_AREA_GUIDE',
+          gestureHandling: 'cooperative',
+          fullscreenControl: true,
+          streetViewControl: false,
+        });
+        info = new google.maps.InfoWindow();
+        applyFilter(currentFilter);
+
+        wrap.querySelectorAll('.crr-region-filter').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var key = btn.dataset.filter;
+            currentFilter = key;
+            wrap.querySelectorAll('.crr-region-filter').forEach(function (b) {
+              var on = b.dataset.filter === key;
+              b.setAttribute('aria-pressed', on ? 'true' : 'false');
+              b.style.background = on ? 'var(--rust,#C4622D)' : '#fff';
+              b.style.color = on ? '#fff' : 'var(--rust,#C4622D)';
+            });
+            applyFilter(key);
+          });
+        });
+      }
+
+      function pinsForFilter(key) {
+        if (key === '__default__') return allPins.filter(function (p) { return p.isDefault; });
+        if (key === '__all__') return allPins;
+        return allPins.filter(function (p) { return p.category === key; });
+      }
+
+      function applyFilter(key) {
+        // Tear down existing markers.
+        markers.forEach(function (m) {
+          if (m && typeof m.setMap === 'function') m.setMap(null);
+          else if (m && m.map !== undefined) m.map = null;
+        });
+        markers = [];
+        if (info) info.close();
+
+        var visible = pinsForFilter(key);
+        var bounds = new google.maps.LatLngBounds();
+        var plotted = 0;
+        visible.forEach(function (p) {
+          if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+          var position = { lat: p.lat, lng: p.lng };
+          var marker;
+          if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+            var label = document.createElement('div');
+            label.style.cssText = 'background:#C4622D;color:#fff;border:2px solid #fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;';
+            label.textContent = p.iconEmoji || '📍';
+            label.setAttribute('aria-label', p.title);
+            marker = new google.maps.marker.AdvancedMarkerElement({
+              map: map, position: position, title: p.title, content: label,
+            });
+          } else {
+            marker = new google.maps.Marker({ map: map, position: position, title: p.title });
+          }
+          marker.addListener('click', function () {
+            info.setContent(buildInfoHtml(p));
+            info.open({ anchor: marker, map: map });
+          });
+          markers.push(marker);
+          bounds.extend(position);
+          plotted++;
+        });
+
+        if (plotted > 1) map.fitBounds(bounds, 60);
+        else if (plotted === 1) {
+          map.setCenter(bounds.getCenter());
+          map.setZoom(12);
+        }
+      }
+
+      function escHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function isSafeHref(h) {
+        if (typeof h !== 'string' || !h) return false;
+        if (h.startsWith('/') && !h.startsWith('//')) return true;
+        if (h.startsWith('https://') || h.startsWith('mailto:') || h.startsWith('tel:')) return true;
+        return false;
+      }
+      function buildInfoHtml(p) {
+        var title = escHtml(p.title);
+        var desc = p.description ? '<div style="margin-top:.3rem;color:#4a3f38;font-size:.85rem;line-height:1.5;">' + escHtml(p.description) + '</div>' : '';
+        var link = isSafeHref(p.href)
+          ? '<div style="margin-top:.5rem;"><a href="' + escHtml(p.href) + '" style="color:#C4622D;font-size:.85rem;text-decoration:none;font-weight:500;">Learn more &rarr;</a></div>'
+          : '';
+        return '<div style="max-width:260px;"><div style="font-family:Cormorant Garamond, Georgia, serif;font-size:1.1rem;color:#1f1712;">' + title + '</div>' + desc + link + '</div>';
+      }
+    })();
+  </script>
+)}

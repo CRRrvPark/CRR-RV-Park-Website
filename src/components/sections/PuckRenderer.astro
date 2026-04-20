@@ -16,6 +16,8 @@
 
 import { serverClient } from '@lib/supabase';
 import { pushStyleProps, renderChildBlock, renderAtom, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
+import { getRegionMapPins, REGION_PIN_CATEGORIES, type RegionPin } from '@lib/area-guide';
+import RegionMap from '@components/RegionMap.astro';
 
 export interface Props {
   pageSlug: string;
@@ -118,6 +120,19 @@ if (hasEventsWidget) {
       .map((item) => item.props.limit ?? 3)
   );
   await fetchEvents(maxLimit);
+}
+
+// Pre-fetch the merged region-map pin set once per render if any
+// RegionMapSection exists on the page. Data comes from trails +
+// things_to_do + local_places joined via @lib/area-guide.
+let regionPins: RegionPin[] = [];
+const hasRegionMap = puckData?.content?.some((item) => item.type === 'RegionMapSection');
+if (hasRegionMap) {
+  try {
+    regionPins = await getRegionMapPins(Math.floor(Date.now() / 60000));
+  } catch (err) {
+    console.warn('[PuckRenderer] getRegionMapPins failed:', err);
+  }
 }
 
 /* ── Helpers ── */
@@ -987,6 +1002,53 @@ function zoneHtml(atoms: any[] | null): string {
                   {p.credit}
                 </div>
               )}
+            </div>
+          </section>
+        );
+      }
+
+      /* ── RegionMapSection ── */
+      if (item.type === 'RegionMapSection') {
+        const mapHeight = p.mapHeight ?? 560;
+        const centerLat = typeof p.centerLat === 'number' ? p.centerLat : 44.3485;
+        const centerLng = typeof p.centerLng === 'number' ? p.centerLng : -121.2055;
+        const zoom = typeof p.zoom === 'number' ? p.zoom : 10;
+        // Only include categories that actually have pins on this page render.
+        const presentCategories = new Set(regionPins.map((pin) => pin.category));
+        const activeCategories = REGION_PIN_CATEGORIES.filter((c) => presentCategories.has(c.key));
+        return (
+          <section {...sectionAttrs(p, 'padding:3rem 3rem 1rem')}>
+            <div class="container">
+              {p.label && <span class="section-label">{p.label}</span>}
+              {(p.headline || p.headlineItalic) && (
+                <h2 class="st" style="margin-top:.4rem;">
+                  {p.headline}
+                  {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                </h2>
+              )}
+              {p.intro && <div class="section-body" set:html={p.intro} />}
+              <div style="margin-top:1.5rem;">
+                {regionPins.length === 0 ? (
+                  <div style={`width:100%;height:${mapHeight}px;background:var(--sand,#f5efe3);border:1px dashed var(--rust,#C4622D);border-radius:4px;display:grid;place-items:center;text-align:center;padding:2rem;color:var(--muted,#665040);`}>
+                    <div style="max-width:440px;">
+                      <div style="font-family:var(--serif,serif);font-size:1.2rem;color:var(--text,#1f1712);margin-bottom:.5rem;">No map pins yet</div>
+                      <div style="font-size:.9rem;line-height:1.5;">
+                        Add coordinates on trails or things-to-do in the <a href="/admin/area-guide">Area Guide admin</a> to populate the map.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <RegionMap
+                    id={`region-map-${item.props.id || 'x'}`}
+                    pins={regionPins}
+                    categories={activeCategories}
+                    centerLat={centerLat}
+                    centerLng={centerLng}
+                    zoom={zoom}
+                    height={`${mapHeight}px`}
+                  />
+                )}
+              </div>
             </div>
           </section>
         );

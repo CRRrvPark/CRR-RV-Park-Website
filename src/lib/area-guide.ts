@@ -280,6 +280,189 @@ export const DIFFICULTY_LABELS: Record<NonNullable<Trail['difficulty']>, string>
   expert: 'Expert',
 };
 
+/**
+ * Merged, category-tagged pin shape consumed by RegionMap.astro on the
+ * Area Guide page. Pulls from trails, things_to_do, and local_places and
+ * flags a curated "highlights" subset used as the default view.
+ *
+ * Categories collapse to a coarser vocabulary than the full Things-to-Do
+ * list (which has 7 audience-personas) because the map UI shows one pill
+ * per category and 10+ pills gets noisy. The map pill set:
+ *   trails           → 🥾 Trails
+ *   food_community   → 🍺 Food & Drink
+ *   places_dining    → 🍴 Dining      (local_places: restaurant/brewery/coffee)
+ *   places_attraction→ 🎡 Attractions (local_places: attraction/shop/other)
+ *   families / active / rvers / dogs / day_trippers / winter → per-persona
+ *
+ * Pins without lat+lng are excluded server-side.
+ */
+export interface RegionPin {
+  id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  category: string;
+  href?: string;
+  iconEmoji?: string;
+  description?: string;
+  isDefault?: boolean;
+}
+
+export interface RegionPinCategory {
+  key: string;
+  label: string;
+  emoji?: string;
+}
+
+export const REGION_PIN_CATEGORIES: RegionPinCategory[] = [
+  { key: 'trails',            label: 'Trails',            emoji: '🥾' },
+  { key: 'places_dining',     label: 'Dining',            emoji: '🍴' },
+  { key: 'places_attraction', label: 'Attractions',       emoji: '🎡' },
+  { key: 'families',          label: 'Families',          emoji: '👨‍👩‍👧' },
+  { key: 'active',            label: 'Active',            emoji: '🥾' },
+  { key: 'rvers',             label: 'RVers',             emoji: '🚐' },
+  { key: 'dogs',              label: 'Dog Owners',        emoji: '🐕' },
+  { key: 'day_trippers',      label: 'Day Trippers',      emoji: '🚗' },
+  { key: 'winter',            label: 'Winter',            emoji: '❄' },
+  { key: 'food_community',    label: 'Food & Community',  emoji: '🍺' },
+];
+
+/** Slugs the owner asked for as always-on defaults when they exist. */
+const DEFAULT_PRIORITY_SLUGS = new Set([
+  'smith-rock', 'smith-rock-state-park',
+  'steelhead-falls', 'steelhead-falls-canyon-trails',
+  'crescent-moon-alpacas', 'crescent-moon-alpaca-farm', 'alpaca-farm',
+]);
+
+/** How many pins to show by default when no filter is active. */
+const DEFAULT_PIN_TARGET = 7;
+
+function mapPlaceCategory(c: LocalPlace['category']): 'places_dining' | 'places_attraction' {
+  return c === 'restaurant' || c === 'brewery' || c === 'coffee' ? 'places_dining' : 'places_attraction';
+}
+
+function placeEmoji(c: LocalPlace['category']): string {
+  if (c === 'restaurant') return '🍴';
+  if (c === 'brewery') return '🍺';
+  if (c === 'coffee') return '☕';
+  if (c === 'shop') return '🛍';
+  return '📍';
+}
+
+function thingEmoji(t: ThingToDo): string {
+  if (typeof t.icon === 'string' && t.icon.trim()) return t.icon.trim();
+  if (t.category === 'families') return '👨‍👩‍👧';
+  if (t.category === 'active') return '🥾';
+  if (t.category === 'rvers') return '🚐';
+  if (t.category === 'dogs') return '🐕';
+  if (t.category === 'winter') return '❄';
+  if (t.category === 'food_community') return '🍺';
+  return '📍';
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  // Deterministic shuffle so builds within the same minute produce the
+  // same "random" layout (prevents HTML churn on rebuild for no reason).
+  const out = arr.slice();
+  let s = seed || 1;
+  for (let i = out.length - 1; i > 0; i--) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/**
+ * Fetch + merge + tag-default the pins the Area Guide map shows. Reads
+ * trails, things_to_do, and local_places, filters to rows that have
+ * lat/lng, tags a curated 5–8 pin default set, and returns pins ready
+ * for serialization into RegionMap.astro.
+ *
+ * Safe to call when Supabase isn't configured (returns []).
+ *
+ * `seed` is used to deterministically pick the random portion of the
+ * default set — pass `Math.floor(Date.now() / 60000)` for a fresh pick
+ * per-minute, or a fixed value in tests.
+ */
+export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
+  if (!SUPABASE_CONFIGURED) return [];
+  const [trails, things, places] = await Promise.all([
+    getTrails(),
+    getThingsToDo(),
+    getLocalPlaces(),
+  ]);
+
+  const pins: RegionPin[] = [];
+
+  for (const t of trails) {
+    if (t.trailhead_lat === null || t.trailhead_lng === null) continue;
+    pins.push({
+      id: `trail:${t.slug}`,
+      lat: t.trailhead_lat,
+      lng: t.trailhead_lng,
+      title: t.name,
+      category: 'trails',
+      href: `/trails/${t.slug}`,
+      iconEmoji: '🥾',
+      description: t.summary ?? undefined,
+    });
+  }
+
+  for (const thing of things) {
+    if (thing.lat === null || thing.lng === null) continue;
+    pins.push({
+      id: `thing:${thing.slug}`,
+      lat: thing.lat,
+      lng: thing.lng,
+      title: thing.title,
+      category: thing.category,
+      href: `/things-to-do/${thing.slug}`,
+      iconEmoji: thingEmoji(thing),
+      description: thing.summary ?? undefined,
+    });
+  }
+
+  for (const p of places) {
+    const loc = p.cached_data?.location;
+    if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') continue;
+    pins.push({
+      id: `place:${p.id}`,
+      lat: loc.latitude,
+      lng: loc.longitude,
+      title: p.name_override ?? p.cached_data?.displayName?.text ?? 'Local place',
+      category: mapPlaceCategory(p.category),
+      href: p.cached_data?.googleMapsUri,
+      iconEmoji: placeEmoji(p.category),
+      description: p.our_description ?? p.cached_data?.editorialSummary?.text ?? undefined,
+    });
+  }
+
+  // Pick defaults: prioritized slugs first, then featured local_places,
+  // then a random fill up to DEFAULT_PIN_TARGET.
+  const picked = new Set<string>();
+  for (const p of pins) {
+    const slug = p.id.includes(':') ? p.id.split(':').slice(1).join(':') : p.id;
+    if (DEFAULT_PRIORITY_SLUGS.has(slug)) picked.add(p.id);
+  }
+  for (const lp of places) {
+    if (!lp.featured) continue;
+    const pinId = `place:${lp.id}`;
+    if (pins.some((q) => q.id === pinId)) picked.add(pinId);
+    if (picked.size >= DEFAULT_PIN_TARGET) break;
+  }
+  if (picked.size < DEFAULT_PIN_TARGET) {
+    const rest = pins.filter((p) => !picked.has(p.id));
+    const shuffled = seededShuffle(rest, seed);
+    for (const p of shuffled) {
+      picked.add(p.id);
+      if (picked.size >= DEFAULT_PIN_TARGET) break;
+    }
+  }
+
+  return pins.map((p) => (picked.has(p.id) ? { ...p, isDefault: true } : p));
+}
+
 export function formatHazard(h: string): string {
   return h
     .replace(/_/g, ' ')

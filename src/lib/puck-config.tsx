@@ -602,6 +602,7 @@ if (puckConfig.components) {
     AmenityGridSection: 'lists',
     InterludeSection: 'media',
     TrustBarSection: 'layout',
+    RegionMapSection: 'media',
     // V4 atoms — block-level editable units.
     EditableHeading: 'atoms',
     EditableRichText: 'atoms',

@@ -1392,6 +1392,93 @@ export const InterludeSection: ComponentConfig = {
   ),
 };
 
+/* ── RegionMapSection ── */
+
+/**
+ * RegionMapSection — interactive Area Guide map with category filters.
+ *
+ * This component can't render a real map in the Puck editor canvas (the
+ * map needs Google's JS SDK + DB-pulled pins that only exist on the public
+ * site). The canvas shows a labelled placeholder plus the admin-controlled
+ * chrome (label, headline, intro) so editors still get a live preview of
+ * the text around the map. PuckRenderer.astro replaces the placeholder
+ * with the real <RegionMap> component on the public site.
+ *
+ * Admin-editable fields:
+ *   • chrome: label, headline, headline-inline-italic, intro (rich text)
+ *   • height of the map element
+ *   • center lat/lng and initial zoom
+ *
+ * The category pill list and the merged pin data are fetched server-side
+ * by PuckRenderer.astro — admins don't pick which categories are shown;
+ * all available categories from the Things-to-Do admin appear as filters.
+ * Owner's intent: any category selectable by editors would quickly drift
+ * out of sync with the /things-to-do category list.
+ */
+export const RegionMapSection: ComponentConfig = {
+  label: 'Region Map (Area Guide)',
+  defaultProps: {
+    ...STYLE_DEFAULTS,
+    label: 'Region map',
+    headline: 'See everything',
+    headlineItalic: 'on one map.',
+    intro:
+      '<p>Every trail and every activity with a location, pinned. Click a pin for details and a link to the full page. Pick a category to filter — or use the Highlights view to see our favorites near the park.</p>',
+    mapHeight: 560,
+    centerLat: 44.3485,
+    centerLng: -121.2055,
+    zoom: 10,
+  },
+  fields: {
+    ...styleFields,
+    label: { type: 'text', label: 'Section label (above the headline)' },
+    headline: { type: 'text', label: 'Headline' },
+    headlineItalic: { type: 'text', label: 'Headline italic tail' },
+    intro: richTextField('Intro paragraph (shown above the map)'),
+    mapHeight: { type: 'number', label: 'Map height (px)', min: 320, max: 1200 },
+    centerLat: { type: 'number', label: 'Default map center — latitude' },
+    centerLng: { type: 'number', label: 'Default map center — longitude' },
+    zoom: { type: 'number', label: 'Default zoom (1-20)', min: 1, max: 20 },
+  },
+  render: ({ label, headline, headlineItalic, intro, mapHeight, puck }: any) => (
+    <section ref={puck.dragRef} style={{ padding: '3rem 3rem 1rem' }}>
+      <div className="container">
+        {label && <span className="section-label">{label}</span>}
+        <h2 className="st" style={{ marginTop: '.4rem' }}>
+          {headline}
+          {headlineItalic && <> <em>{headlineItalic}</em></>}
+        </h2>
+        {intro && <div className="section-body" dangerouslySetInnerHTML={{ __html: intro }} />}
+        <div
+          style={{
+            marginTop: '1.5rem',
+            width: '100%',
+            height: `${mapHeight || 560}px`,
+            background: 'var(--sand, #f5efe3)',
+            border: '1px dashed var(--rust, #C4622D)',
+            borderRadius: 4,
+            display: 'grid',
+            placeItems: 'center',
+            textAlign: 'center',
+            padding: '2rem',
+            color: 'var(--muted, #665040)',
+          }}
+        >
+          <div style={{ maxWidth: 440 }}>
+            <div style={{ fontFamily: 'var(--serif, serif)', fontSize: '1.2rem', color: 'var(--text, #1f1712)', marginBottom: '.5rem' }}>
+              Region Map — rendered on the published site
+            </div>
+            <div style={{ fontSize: '.9rem', lineHeight: 1.5 }}>
+              Category filters and pins are wired live from your Things&nbsp;to&nbsp;Do, Trails, and Local Places data.
+              Edit the text and settings on the right; the map appears when you view the public page.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  ),
+};
+
 /* ── 15. TrustBarSection ── */
 
 export const TrustBarSection: ComponentConfig = {

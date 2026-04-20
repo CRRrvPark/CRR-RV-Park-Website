@@ -613,9 +613,13 @@ function PlacesPanel() {
         <Button onClick={() => setCreating(true)} leading={<IconPlus size={14} />}>Add place</Button>
       </div>
       <div style={{ marginBottom: '1rem', padding: '1rem 1.25rem', background: 'var(--c-surface-alt, #fafaf7)', borderLeft: '3px solid var(--c-rust, #C4622D)', borderRadius: '3px', fontSize: '.85rem' }}>
-        <strong>Tip:</strong> To add a place, look it up on <a href="https://www.google.com/maps" target="_blank" rel="noopener">Google Maps</a>,
-        click the location, then copy the <code>place_id</code> from the URL share dialog (or use the
-        <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener"> Place ID Finder</a>).
+        <strong>Adding a place:</strong> click <em>+ Add place</em>, type the business name into the search field,
+        and pick it from the dropdown — we look up the Google <code>place_id</code> for you. You&apos;ll only need
+        the raw place_id field if the search can&apos;t find it.<br />
+        <strong style={{ color: 'var(--c-rust, #C4622D)' }}>Refresh isn&apos;t pulling Google data?</strong>{' '}
+        It means <code>GOOGLE_MAPS_SERVER_KEY</code> isn&apos;t configured (or the Places API (New) isn&apos;t
+        enabled on your Google Cloud project). The Refresh toast now tells you which. See{' '}
+        <code>AREA-GUIDE-SETUP.md</code> §2.
       </div>
       {loading ? <div>Loading…</div> : (
         <Card>
@@ -704,7 +708,15 @@ function PlaceForm({ initial, onSaved }: { initial?: Place; onSaved: () => void 
 
   return (
     <form onSubmit={submit} style={{ display: 'grid', gap: '.9rem' }}>
-      <TextInput label="Google place_id" required value={f.google_place_id} onChange={(e) => setF({ ...f, google_place_id: e.target.value })} placeholder="ChIJ..." hint="Find it on the Google Maps share dialog or Place ID Finder." />
+      <PlaceSearchField
+        currentId={f.google_place_id}
+        onPick={(pick) => setF({
+          ...f,
+          google_place_id: pick.place_id,
+          // Only auto-fill name_override if the admin hasn't typed their own.
+          name_override: f.name_override || pick.name,
+        })}
+      />
       <TextInput label="Name override (optional — Google's name is used by default)" value={f.name_override} onChange={(e) => setF({ ...f, name_override: e.target.value })} />
       <div className="form-field">
         <label className="form-label">Category</label>
@@ -726,6 +738,196 @@ function PlaceForm({ initial, onSaved }: { initial?: Place; onSaved: () => void 
       <TextInput label="Display order" type="number" value={String(f.display_order)} onChange={(e) => setF({ ...f, display_order: Number(e.target.value) })} />
       <Button type="submit" loading={submitting} leading={<IconCheck size={14} />}>Save</Button>
     </form>
+  );
+}
+
+// ---- Place search helper -------------------------------------------------
+
+interface LookupCandidate {
+  place_id: string;
+  name: string;
+  address: string;
+  rating?: number;
+  userRatingCount?: number;
+  types?: string[];
+}
+
+/**
+ * Search-first place_id picker. Replaces the raw place_id text input.
+ *
+ * Editors type a business name, a debounced call hits
+ * /api/places/lookup?q=... (which proxies to Google Places Text Search),
+ * results render as a dropdown, click picks the place_id. Falls back to
+ * a manual "paste a place_id" input if the user already has one in hand
+ * or the search API isn't configured (GOOGLE_MAPS_SERVER_KEY missing).
+ *
+ * Error states are routed through the search result area, not a toast —
+ * the user is looking right at this input when searching, so an inline
+ * "GOOGLE_MAPS_SERVER_KEY is not set" message is more actionable than a
+ * toast in the corner.
+ */
+function PlaceSearchField({
+  currentId,
+  onPick,
+}: {
+  currentId: string;
+  onPick: (pick: LookupCandidate) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [candidates, setCandidates] = useState<LookupCandidate[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showManual, setShowManual] = useState(false);
+
+  // Debounced search — 350ms after typing stops.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setCandidates([]);
+      setError(null);
+      return;
+    }
+    setSearching(true);
+    setError(null);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiGet<{ candidates: LookupCandidate[]; reason?: string; detail?: string }>(
+          `/api/places/lookup?q=${encodeURIComponent(q)}`,
+        );
+        if (res.reason && res.detail) {
+          setError(res.detail);
+          setCandidates([]);
+        } else {
+          setCandidates(res.candidates);
+        }
+      } catch (err: any) {
+        setError(err?.message || 'Search failed');
+        setCandidates([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const hasId = Boolean(currentId && !currentId.startsWith('TODO_'));
+
+  return (
+    <div className="form-field">
+      <label className="form-label">Google Place</label>
+      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'stretch' }}>
+        <input
+          type="search"
+          className="input"
+          placeholder="Search: &quot;Smith Rock State Park&quot;, &quot;Deschutes Brewery&quot;…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => setShowManual((v) => !v)}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {showManual ? 'Use search' : 'Paste place_id'}
+        </button>
+      </div>
+
+      {showManual ? (
+        <div style={{ marginTop: '.5rem' }}>
+          <TextInput
+            label=""
+            value={currentId}
+            onChange={(e) => onPick({ place_id: e.target.value, name: '', address: '' })}
+            placeholder="ChIJ..."
+            hint="Only needed if Google's search can't find the place (rare)."
+          />
+        </div>
+      ) : (
+        <div style={{ marginTop: '.4rem', fontSize: '.8rem', color: 'var(--c-muted, #665040)' }}>
+          {hasId && !query && (
+            <span>
+              ✓ Place linked (<code style={{ fontSize: '.75rem' }}>{currentId}</code>). Type above to replace it.
+            </span>
+          )}
+          {searching && <span>Searching…</span>}
+          {error && (
+            <div
+              style={{
+                marginTop: '.5rem',
+                padding: '.6rem .8rem',
+                background: '#fdf2e4',
+                border: '1px solid #e8c696',
+                borderRadius: 4,
+                color: '#7a4a10',
+                fontSize: '.82rem',
+                lineHeight: 1.5,
+              }}
+            >
+              {error}
+            </div>
+          )}
+          {!searching && !error && candidates.length > 0 && (
+            <ul
+              style={{
+                marginTop: '.5rem',
+                padding: 0,
+                listStyle: 'none',
+                border: '1px solid #e5dcc4',
+                borderRadius: 4,
+                maxHeight: 280,
+                overflowY: 'auto',
+                background: '#fff',
+              }}
+            >
+              {candidates.map((c) => {
+                const isCurrent = c.place_id === currentId;
+                return (
+                  <li key={c.place_id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onPick(c);
+                        setQuery('');
+                        setCandidates([]);
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '.65rem .85rem',
+                        background: isCurrent ? '#fdf2e4' : 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid #f0ead9',
+                        cursor: 'pointer',
+                        display: 'block',
+                      }}
+                    >
+                      <div style={{ fontWeight: 500, color: '#1f1712', fontSize: '.9rem' }}>
+                        {c.name}
+                        {isCurrent && <span style={{ marginLeft: '.5rem', fontSize: '.7rem', color: '#C4622D' }}>· current</span>}
+                      </div>
+                      <div style={{ fontSize: '.78rem', color: '#665040', marginTop: 2 }}>
+                        {c.address}
+                        {typeof c.rating === 'number' && (
+                          <span style={{ marginLeft: '.6rem' }}>
+                            ★ {c.rating.toFixed(1)}
+                            {c.userRatingCount ? ` (${c.userRatingCount})` : ''}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {!searching && !error && query.trim().length >= 2 && candidates.length === 0 && (
+            <span>No matches. Try a different search term.</span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

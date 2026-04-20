@@ -48,8 +48,21 @@ const PLACES_FIELDS = [
   'types',
 ].join(',');
 
-async function fetchFromGoogle(placeId: string): Promise<Record<string, unknown> | null> {
-  if (!SERVER_KEY) return null;
+interface FetchOutcome {
+  data: Record<string, unknown> | null;
+  reason?: 'missing_server_key' | 'permission_denied' | 'not_found' | 'invalid_argument' | 'google_error';
+  detail?: string;
+}
+
+async function fetchFromGoogle(placeId: string): Promise<FetchOutcome> {
+  if (!SERVER_KEY) {
+    return {
+      data: null,
+      reason: 'missing_server_key',
+      detail:
+        'GOOGLE_MAPS_SERVER_KEY is not set. Add it in Netlify → Environment variables. See AREA-GUIDE-SETUP.md §2 for how to create and scope the server-side Google key.',
+    };
+  }
   // Places API (New): v1/places/{PLACE_ID}
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
   const res = await fetch(url, {
@@ -59,10 +72,29 @@ async function fetchFromGoogle(placeId: string): Promise<Record<string, unknown>
     },
   });
   if (!res.ok) {
-    console.warn(`[places] Google returned ${res.status} for ${placeId}`);
-    return null;
+    const text = await res.text().catch(() => '');
+    console.warn(`[places] Google returned ${res.status} for ${placeId}: ${text.slice(0, 200)}`);
+    let reason: FetchOutcome['reason'] = 'google_error';
+    let detail = `Google returned HTTP ${res.status}. Place ID: ${placeId}.`;
+    try {
+      const body = JSON.parse(text);
+      const status = body?.error?.status;
+      if (status === 'PERMISSION_DENIED') {
+        reason = 'permission_denied';
+        detail = 'Google denied the request. Enable "Places API (New)" in your Google Cloud project and confirm GOOGLE_MAPS_SERVER_KEY has API access for Places API (New).';
+      } else if (status === 'NOT_FOUND') {
+        reason = 'not_found';
+        detail = `Google could not find a place with ID "${placeId}". Verify the place_id is correct (should start with ChIJ...).`;
+      } else if (status === 'INVALID_ARGUMENT') {
+        reason = 'invalid_argument';
+        detail = `Google rejected the request: ${body.error.message || 'invalid argument'}.`;
+      } else if (body?.error?.message) {
+        detail = body.error.message;
+      }
+    } catch { /* non-JSON body; keep generic reason */ }
+    return { data: null, reason, detail };
   }
-  return (await res.json()) as Record<string, unknown>;
+  return { data: (await res.json()) as Record<string, unknown> };
 }
 
 export const GET: APIRoute = async ({ params }) => {
@@ -89,19 +121,23 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     // Cache miss or stale — refresh
-    const fetched = await fetchFromGoogle(place.google_place_id);
-    if (!fetched) {
-      // Fall back to stale cache if we have any; otherwise 503
+    const outcome = await fetchFromGoogle(place.google_place_id);
+    if (!outcome.data) {
+      // Fall back to stale cache if we have any; otherwise 503 with a
+      // specific reason + detail so the admin UI can show what to fix.
       if (place.cached_data) return json({ place, fresh: false, stale: true });
-      return json({ error: 'Place lookup unavailable', reason: SERVER_KEY ? 'google_error' : 'missing_server_key' }, 503);
+      return json(
+        { error: outcome.detail || 'Place lookup unavailable', reason: outcome.reason || 'google_error' },
+        503,
+      );
     }
 
     await sb
       .from('local_places')
-      .update({ cached_data: fetched, cached_at: new Date().toISOString() })
+      .update({ cached_data: outcome.data, cached_at: new Date().toISOString() })
       .eq('id', place.id);
 
-    return json({ place: { ...place, cached_data: fetched, cached_at: new Date().toISOString() }, fresh: true });
+    return json({ place: { ...place, cached_data: outcome.data, cached_at: new Date().toISOString() }, fresh: true });
   } catch (err) {
     return handleError(err);
   }
@@ -125,18 +161,21 @@ export const POST: APIRoute = async ({ params, request }) => {
       return json({ error: 'google_place_id is a placeholder — fill it in first.' }, 400);
     }
 
-    const fetched = await fetchFromGoogle(place.google_place_id);
-    if (!fetched) {
-      return json({ error: 'Google lookup failed', reason: SERVER_KEY ? 'google_error' : 'missing_server_key' }, 502);
+    const outcome = await fetchFromGoogle(place.google_place_id);
+    if (!outcome.data) {
+      return json(
+        { error: outcome.detail || 'Google lookup failed', reason: outcome.reason || 'google_error' },
+        502,
+      );
     }
 
     const nowIso = new Date().toISOString();
     await sb
       .from('local_places')
-      .update({ cached_data: fetched, cached_at: nowIso })
+      .update({ cached_data: outcome.data, cached_at: nowIso })
       .eq('id', place.id);
 
-    return json({ place: { ...place, cached_data: fetched, cached_at: nowIso } });
+    return json({ place: { ...place, cached_data: outcome.data, cached_at: nowIso } });
   } catch (err) {
     return handleError(err);
   }

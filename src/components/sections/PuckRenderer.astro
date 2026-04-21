@@ -317,7 +317,7 @@ function zoneHtml(atoms: any[] | null): string {
         imgStyleParts.push(`object-fit:${p.objectFit || 'cover'}`);
         if (p.borderRadius) imgStyleParts.push(`border-radius:${p.borderRadius}px`);
         const imgEl = p.imageUrl ? (
-          <img src={p.imageUrl} alt={p.alt || ''} loading="lazy" style={imgStyleParts.join(';')} />
+          <img src={p.imageUrl} alt={p.alt || ''} loading="lazy" decoding="async" style={imgStyleParts.join(';')} />
         ) : null;
         const wrapped = p.linkUrl && imgEl ? (<a href={p.linkUrl}>{imgEl}</a>) : imgEl;
         return (
@@ -451,15 +451,33 @@ function zoneHtml(atoms: any[] | null): string {
         // Opt out of lightbox if this image is intentionally a link
         // (e.g., admin set imageLinkUrl) — navigation wins over zoom.
         const twoColImgLightbox = p.image && !p.imageLinkUrl && p.imageLightbox !== false;
-        const twoColImgEl = p.image ? (
+        // Serve a -mobile.webp variant to narrow viewports when one exists
+        // alongside the admin-picked image. Naming convention mirrors the
+        // hero: `/images/foo.jpg` ↔ `/images/foo-mobile.webp`. Files without
+        // a match (e.g., admin-uploaded Supabase URLs) simply fall through
+        // to the full-size `<img>` — the browser ignores any `<source>`
+        // that 404s on srcset match. Section images are a big share of the
+        // "Improve image delivery" savings Lighthouse flags on mobile.
+        const twoColImgBase = typeof p.image === 'string' ? p.image.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+        const twoColImgMobile = twoColImgBase ? `${twoColImgBase}-mobile.webp` : '';
+        const twoColImgWebp = twoColImgBase ? `${twoColImgBase}.webp` : '';
+        const twoColImgTag = p.image ? (
           <img
             src={p.image}
             alt={p.imageCaption || p.headline || ''}
             loading="lazy"
+            decoding="async"
             style={twoColImgStyle.join(';')}
             data-lightbox={twoColImgLightbox ? 'true' : undefined}
             data-lightbox-caption={twoColImgLightbox && p.imageCaption ? p.imageCaption : undefined}
           />
+        ) : null;
+        const twoColImgEl = p.image ? (
+          <picture>
+            {twoColImgMobile && <source media="(max-width:768px)" srcset={twoColImgMobile} type="image/webp" />}
+            {twoColImgWebp && <source srcset={twoColImgWebp} type="image/webp" />}
+            {twoColImgTag}
+          </picture>
         ) : null;
         const twoColImgWrapped = p.imageLinkUrl && twoColImgEl ? (
           <a href={p.imageLinkUrl} target={p.imageLinkUrl.startsWith('http') ? '_blank' : undefined} rel={p.imageLinkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}>{twoColImgEl}</a>
@@ -664,7 +682,7 @@ function zoneHtml(atoms: any[] | null): string {
                   const inner = (
                     <>
                       <div class="ex-vis">
-                        {c.image && <img src={c.image} alt={c.alt || c.title || ''} loading="lazy" />}
+                        {c.image && <img src={c.image} alt={c.alt || c.title || ''} loading="lazy" decoding="async" />}
                         {c.distance && <span class="ex-dist">{c.distance}</span>}
                       </div>
                       <div class="ex-body">

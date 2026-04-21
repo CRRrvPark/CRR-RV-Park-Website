@@ -34,6 +34,16 @@ const {
 
 const fontHref = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap';
 
+// Cache-bust query for /styles/global.css. The stylesheet is served by
+// Netlify with a 7-day immutable-style cache (see netlify.toml), which is
+// great for perf but means CSS changes take up to 7 days to reach repeat
+// visitors unless we change the URL. BUMP this number whenever global.css
+// changes in a way visitors need to see immediately (typography tweaks,
+// bug fixes, new section styles). Hashed bundle filenames would be a
+// cleaner solution but global.css lives in `public/` where Vite doesn't
+// hash it — moving it to `src/styles/` + import is a future tidy-up.
+const CSS_VERSION = 3;
+
 // Derive the Supabase hostname for DNS/preconnect hints. We do this at
 // build time so it's always correct per environment (dev / staging / prod).
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
@@ -107,4 +117,4 @@ try { if (supabaseUrl) supabaseOrigin = new URL(supabaseUrl).origin; } catch {}
 <link rel="stylesheet" href={fontHref} media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href={fontHref}></noscript>
 
-<link rel="stylesheet" href="/styles/global.css">
+<link rel="stylesheet" href={`/styles/global.css?v=${CSS_VERSION}`}>

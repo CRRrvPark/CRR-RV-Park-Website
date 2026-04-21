@@ -93,6 +93,12 @@ h2.st em{font-style:italic;color:var(--rust);}
 /* ---- SETTING LAYOUT ---- */
 .sl{display:grid;grid-template-columns:1fr 1fr;gap:4.5rem;align-items:center;}
 .sv{position:relative;height:460px;border-radius:4px;overflow:hidden;}
+/* PuckRenderer wraps TwoColumnSection images in <picture> for mobile-variant
+   delivery (see 0e87727). Default <picture> display is inline, which
+   collapses to ~20px tall inside .sv — make it behave like the former
+   <img> by filling the .sv box. The inner <img> still picks up .sv img
+   styles below. */
+.sv picture{display:block;width:100%;height:100%;}
 .sv img{width:100%;height:100%;object-fit:cover;}
 .sv-tag{position:absolute;bottom:1.75rem;left:1.75rem;background:rgba(20,12,4,.82);border:1px solid rgba(212,168,83,.2);padding:.7rem 1.15rem;border-radius:3px;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:.95rem;}
 .fl{margin-top:2.25rem;display:flex;flex-direction:column;gap:.9rem;}
@@ -127,8 +133,15 @@ h2.st em{font-style:italic;color:var(--rust);}
 .rate-type-cell{font-weight:500;color:#fff;}
 .rate-price{font-family:var(--serif);font-size:1.3rem;font-weight:300;color:#fff;}
 .site-card .rate-price{color:var(--rust);}
-.rate-note-box{margin-top:1.75rem;padding:1.1rem 1.4rem;background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.14);border-radius:3px;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1.65;}
-.rate-note-box a{color:var(--gold);text-decoration:none;}
+/* Rate note box appears in two contexts: inside the dark RatesTable (where it
+   was originally designed) AND as a standalone HtmlEmbed on the cream body
+   of /golf-stays and /extended-stays. The old styling (faint gold bg, 60%
+   white text) was only legible against the dark rates-table backdrop — on
+   cream it went invisible. New styling works in both: a dark self-contained
+   box with enough contrast regardless of what's behind it. */
+.rate-note-box{margin:1.75rem auto;padding:1.35rem 1.6rem;background:var(--deep);border:1px solid rgba(212,168,83,.3);border-radius:3px;color:rgba(255,255,255,.85);font-size:.9rem;line-height:1.65;text-align:center;max-width:900px;}
+.rate-note-box a{color:var(--gold);text-decoration:underline;text-underline-offset:2px;}
+.rate-note-box a:hover{color:#fff;}
 
 /* ---- AMENITY CARDS ---- */
 .am-intro{max-width:560px;margin-bottom:3rem;}

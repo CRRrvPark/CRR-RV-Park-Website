@@ -761,7 +761,13 @@ function zoneHtml(atoms: any[] | null): string {
 
       /* ── CtaBannerSection ── */
       if (item.type === 'CtaBannerSection') {
-        const dark = p.darkBackground === 'true';
+        // Accept both boolean true and string 'true' — the legacy seed
+        // stored `darkBackground: true` (boolean) while newer scripts
+        // store 'true' (string, for the Puck radio field's select shape).
+        // Previous strict-string check made the golf-course final CTA and
+        // group-sites final CTA render on the light bg even though their
+        // seed data asked for dark.
+        const dark = p.darkBackground === 'true' || p.darkBackground === true;
         return (
           <section {...sectionAttrs(p, `padding:5rem 3rem;background:${dark ? 'var(--deep)' : 'var(--sand)'};text-align:center`)}>
             <div class="container" style="max-width:720px;">

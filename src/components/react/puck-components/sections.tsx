@@ -924,7 +924,9 @@ export const CtaBannerSection: ComponentConfig = {
   // field. Kept on the legacy path until a future session adds inline-style
   // support or an opinionated dark-mode chrome wrapper.
   render: ({ headline, body, ctaLabel, ctaUrl, darkBackground, puck }: any) => {
-    const dark = darkBackground === 'true';
+    // Accept both boolean true and string 'true' — legacy seed stored
+    // booleans while newer scripts use strings.
+    const dark = darkBackground === 'true' || darkBackground === true;
     return (
       <section
         ref={puck.dragRef}

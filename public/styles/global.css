@@ -159,6 +159,11 @@ a.am-link{text-decoration:none;color:inherit;display:block;cursor:pointer;}
 .ex-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.09);}
 a.ex-link{text-decoration:none;color:inherit;display:block;cursor:pointer;}
 .ex-vis{height:150px;position:relative;overflow:hidden;}
+/* When PuckRenderer wraps ExploreGrid thumbnails in <picture> (for
+   responsive mobile variants), the default inline <picture> display
+   collapses inside .ex-vis. Force it to fill the container so the
+   inner <img> still picks up the existing .ex-vis img sizing rule. */
+.ex-vis picture{display:block;width:100%;height:100%;}
 .ex-vis img{width:100%;height:100%;object-fit:cover;}
 .ex-dist{position:absolute;bottom:.65rem;right:.65rem;background:rgba(0,0,0,.58);color:#fff;font-size:.75rem;padding:.22rem .55rem;border-radius:2px;letter-spacing:.06em;z-index:2;}
 .ex-body{padding:1.15rem;}

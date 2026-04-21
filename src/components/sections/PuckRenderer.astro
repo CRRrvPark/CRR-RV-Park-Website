@@ -316,8 +316,22 @@ function zoneHtml(atoms: any[] | null): string {
         if (p.height) imgStyleParts.push(`height:${p.height}px`);
         imgStyleParts.push(`object-fit:${p.objectFit || 'cover'}`);
         if (p.borderRadius) imgStyleParts.push(`border-radius:${p.borderRadius}px`);
-        const imgEl = p.imageUrl ? (
+        // Responsive image delivery: derive -mobile.webp sibling (naming
+        // convention matches hero + TwoColumn) and wrap in <picture> so
+        // phones download the smaller file. Falls back to the raw <img>
+        // when no mobile sibling exists (admin-uploaded Supabase URLs).
+        const imgBlockBase = typeof p.imageUrl === 'string' ? p.imageUrl.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+        const imgBlockMobile = imgBlockBase ? `${imgBlockBase}-mobile.webp` : '';
+        const imgBlockWebp = imgBlockBase ? `${imgBlockBase}.webp` : '';
+        const imgBlockImg = p.imageUrl ? (
           <img src={p.imageUrl} alt={p.alt || ''} loading="lazy" decoding="async" style={imgStyleParts.join(';')} />
+        ) : null;
+        const imgEl = p.imageUrl ? (
+          <picture>
+            {imgBlockMobile && <source media="(max-width:768px)" srcset={imgBlockMobile} type="image/webp" />}
+            {imgBlockWebp && <source srcset={imgBlockWebp} type="image/webp" />}
+            {imgBlockImg}
+          </picture>
         ) : null;
         const wrapped = p.linkUrl && imgEl ? (<a href={p.linkUrl}>{imgEl}</a>) : imgEl;
         return (
@@ -679,10 +693,22 @@ function zoneHtml(atoms: any[] | null): string {
               )}
               <div class="ex-grid">
                 {cards.map((c: any) => {
+                  // Responsive thumbnail: derive -mobile.webp sibling the
+                  // same way hero/TwoColumn/ImageBlock do. Falls through
+                  // to raw <img> for admin-uploaded URLs without siblings.
+                  const cBase = typeof c.image === 'string' ? c.image.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+                  const cMobile = cBase ? `${cBase}-mobile.webp` : '';
+                  const cWebp = cBase ? `${cBase}.webp` : '';
                   const inner = (
                     <>
                       <div class="ex-vis">
-                        {c.image && <img src={c.image} alt={c.alt || c.title || ''} loading="lazy" decoding="async" />}
+                        {c.image && (
+                          <picture>
+                            {cMobile && <source media="(max-width:768px)" srcset={cMobile} type="image/webp" />}
+                            {cWebp && <source srcset={cWebp} type="image/webp" />}
+                            <img src={c.image} alt={c.alt || c.title || ''} loading="lazy" decoding="async" />
+                          </picture>
+                        )}
                         {c.distance && <span class="ex-dist">{c.distance}</span>}
                       </div>
                       <div class="ex-body">

@@ -742,9 +742,13 @@ function zoneHtml(atoms: any[] | null): string {
                 ))}
               </div>
               {(() => {
+                // Fallback = the owner's canonical Google Knowledge Panel
+                // URL (si= encodes the place ID, q= the query slug).
+                // Ephemeral session params stripped. Editors can override
+                // in the Visual Editor's Reviews-section fields.
                 const viewAllHref = typeof p.reviewsLink === 'string' && p.reviewsLink.trim()
                   ? p.reviewsLink
-                  : 'https://www.google.com/maps/place/Crooked+River+Ranch+RV+Park/';
+                  : 'https://www.google.com/search?q=crooked+river+ranch+rv+park&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOaxz-Wa7jb_95ElogqVVpkGrvX3PFXXWIYQiDFelErQ9QQDbJjqpe8ig1hJV3mU4HLSnBpn_GB838KNAuGcAbLVBdoYGwl03XMluXbveXREDWKzs6g%3D%3D';
                 const viewAllLabel = typeof p.reviewsLinkLabel === 'string' && p.reviewsLinkLabel.trim()
                   ? p.reviewsLinkLabel
                   : 'View all reviews on Google';

@@ -790,12 +790,12 @@ export const ReviewsSection: ComponentConfig = {
     headline: 'What Guests',
     headlineItalic: 'Are Saying',
     rating: '4.8',
-    // Default points to a Google Maps search for the park's business
-    // listing so the "View all on Google" CTA still works before the
-    // owner has pasted in their canonical GMB URL. Replace in the editor
-    // with the specific reviews URL (open the Google Maps listing, click
-    // Reviews, copy the URL) for a more direct flow.
-    reviewsLink: 'https://www.google.com/maps/place/Crooked+River+Ranch+RV+Park/',
+    // Owner's canonical Google Knowledge Panel URL for the business —
+    // `si=` is the base64-encoded place ID Google uses to resolve the
+    // reviews drawer; `q=` is the query slug. Ephemeral session params
+    // (sxsrf / ved / biw / bih / dpr / ictx / sca_esv) stripped because
+    // they're tied to the browser session where the URL was copied.
+    reviewsLink: 'https://www.google.com/search?q=crooked+river+ranch+rv+park&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOaxz-Wa7jb_95ElogqVVpkGrvX3PFXXWIYQiDFelErQ9QQDbJjqpe8ig1hJV3mU4HLSnBpn_GB838KNAuGcAbLVBdoYGwl03XMluXbveXREDWKzs6g%3D%3D',
     reviewsLinkLabel: 'View all reviews on Google',
     reviews: [
       { stars: 5, quote: 'A wonderful place to relax.', author: 'Jane D.', meta: 'Google Review' },

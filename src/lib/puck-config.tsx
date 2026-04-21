@@ -35,6 +35,7 @@ const puckConfig: Config = {
       defaultProps: {
         label: '',
         headline: 'Your Headline',
+        headlineItalic: '',
         body: '<p>Start typing here…</p>',
         alignment: 'left',
         maxWidth: 'medium',
@@ -43,6 +44,10 @@ const puckConfig: Config = {
       fields: {
         label: { type: 'text', label: 'Section label (small caps above headline)' },
         headline: { type: 'text', label: 'Headline' },
+        headlineItalic: {
+          type: 'text',
+          label: 'Headline italic tail (optional — renders as " <em>tail</em>")',
+        },
         body: richTextField('Body text'),
         alignment: {
           type: 'radio',
@@ -63,7 +68,15 @@ const puckConfig: Config = {
         },
         ...styleFields,
       },
-      render: ({ label, headline, body, alignment, maxWidth, puck, ...rest }) => {
+      // Headline is intentionally *not* treated as HTML. Pre-V4 seed data
+      // stuffed literal `<em>…</em>` into the headline field, which the
+      // renderer then HTML-escaped — the owner saw "Park guests get
+      // <em>discounted green fees.</em>" on /golf-course. The fix is the
+      // new `headlineItalic` field (same pattern TwoColumnSection,
+      // CardGridSection et al. have used since day one). The data migrator
+      // splits the legacy `<em>…</em>` markup out into `headlineItalic` on
+      // load, so old saves render correctly without touching the DB.
+      render: ({ label, headline, headlineItalic, body, alignment, maxWidth, puck, ...rest }) => {
         const styleProps = rest as StyleProps;
         const widthMap: Record<string, string> = { narrow: '640px', medium: '900px', full: '100%' };
         const baseStyle: React.CSSProperties = {
@@ -74,7 +87,12 @@ const puckConfig: Config = {
           <section style={{ ...baseStyle, ...computeStyle(styleProps) }} ref={puck.dragRef}>
             <div style={{ maxWidth: widthMap[maxWidth] || '900px', margin: '0 auto' }}>
               {label && <span className="section-label">{label}</span>}
-              {headline && <h2 className="st">{headline}</h2>}
+              {(headline || headlineItalic) && (
+                <h2 className="st">
+                  {headline}
+                  {headlineItalic && <> <em>{headlineItalic}</em></>}
+                </h2>
+              )}
               {body && <div className="section-body" style={{ maxWidth: 'none' }} dangerouslySetInnerHTML={{ __html: body }} />}
             </div>
           </section>
@@ -487,27 +505,51 @@ const puckConfig: Config = {
       defaultProps: {
         code: '<div style="padding:20px;background:#f5f0e6;border-radius:4px;text-align:center;color:#665040;">Paste your HTML, CSS, or JS here</div>',
         minHeight: 200,
+        sandbox: false,
       },
       fields: {
         code: { type: 'textarea', label: 'HTML / CSS / JS code' },
-        minHeight: { type: 'number', label: 'Minimum height (px)', min: 50, max: 2000 },
+        sandbox: {
+          type: 'radio',
+          label: 'Rendering mode',
+          options: [
+            { label: 'Inline (inherits site CSS — use for prose, notices, forms)', value: false },
+            { label: 'Sandboxed iframe (isolates custom JS / untrusted HTML)', value: true },
+          ],
+        },
+        minHeight: { type: 'number', label: 'Minimum height (px, sandboxed mode only)', min: 50, max: 2000 },
       },
-      render: ({ code, minHeight, puck }) => (
-        <div ref={puck.dragRef} style={{ padding: '0 3rem' }}>
-          <iframe
-            srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:system-ui,sans-serif;}</style></head><body>${code}</body></html>`}
-            sandbox="allow-scripts"
-            style={{
-              width: '100%',
-              minHeight: `${minHeight}px`,
-              border: '1px solid #e8e3d8',
-              borderRadius: 4,
-              background: '#fff',
-            }}
-            title="Embedded content"
-          />
-        </div>
-      ),
+      // Default is inline — paste raw HTML and have it inherit the site's
+      // typography + container widths, same as any other block. The iframe
+      // mode remains available for cases where you really do want isolation
+      // (a calculator widget with its own JS, an embedded third-party widget,
+      // etc.). Pre-V4 data without the `sandbox` prop renders inline now:
+      // the old iframe behavior was the source of the "broken formatting"
+      // bug on /area-guide and /golf-course. Admins are authenticated and
+      // their HTML is trusted; if that ever changes, switch the default back.
+      render: ({ code, minHeight, sandbox, puck }) => {
+        if (sandbox) {
+          return (
+            <div ref={puck.dragRef} style={{ padding: '0 3rem' }}>
+              <iframe
+                srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:system-ui,sans-serif;}</style></head><body>${code}</body></html>`}
+                sandbox="allow-scripts"
+                style={{
+                  width: '100%',
+                  minHeight: `${minHeight}px`,
+                  border: '1px solid #e8e3d8',
+                  borderRadius: 4,
+                  background: '#fff',
+                }}
+                title="Embedded content"
+              />
+            </div>
+          );
+        }
+        return (
+          <div ref={puck.dragRef} dangerouslySetInnerHTML={{ __html: code || '' }} />
+        );
+      },
     },
 
     VideoEmbed: {

@@ -14,6 +14,7 @@
  */
 
 import { serverClient } from '@lib/supabase';
+import { HIDDEN_ROUTES } from '@lib/site-visibility';
 
 interface NavPage { slug: string; title: string; nav_order: number | null; }
 let dynamicPages: NavPage[] = [];
@@ -78,9 +79,9 @@ if (hasUrl && hasKey) {
       <a href="/area-guide">Area Guide</a>
       <div class="nav-dd-menu">
         <a href="/area-guide">Region Map &amp; Overview</a>
-        <a href="/trails">Hiking Trails</a>
-        <a href="/things-to-do">60 Things to Do</a>
-        {showDining && <a href="/dining">Dining &amp; Local</a>}
+        {!HIDDEN_ROUTES.has('/trails') && <a href="/trails">Hiking Trails</a>}
+        {!HIDDEN_ROUTES.has('/things-to-do') && <a href="/things-to-do">60 Things to Do</a>}
+        {showDining && !HIDDEN_ROUTES.has('/dining') && <a href="/dining">Dining &amp; Local</a>}
         <a href="/events">Events</a>
       </div>
     </div>

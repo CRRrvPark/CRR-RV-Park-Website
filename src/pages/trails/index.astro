@@ -5,11 +5,19 @@
  * Prerendered at build time. Re-renders on publish via the Netlify build
  * hook (same mechanism as every other public page).
  */
-export const prerender = true;
+// Hidden-page guard needs a live request context, so /trails is SSR rather
+// than prerendered while it sits behind the HIDDEN_ROUTES flag. Flip back
+// to `prerender = true` once the page is ready to go public.
+export const prerender = false;
 
 import Base from '@layouts/Base.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getTrails, DIFFICULTY_LABELS, formatDistance, formatElevation } from '@lib/area-guide';
+import { isRouteHidden } from '@lib/site-visibility';
+
+if (isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
 
 const trails = await getTrails();
 const onProperty = trails.filter((t) => t.is_on_property);

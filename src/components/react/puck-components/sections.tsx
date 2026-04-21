@@ -459,7 +459,7 @@ export const TwoColumnSection: ComponentConfig = {
             {label && <span className="section-label">{label}</span>}
             <h2 className="st">
               {headline}
-              {headlineItalic && <> <em>{headlineItalic}</em></>}
+              {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
             </h2>
             {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
           </>
@@ -550,7 +550,7 @@ export const CardGridSection: ComponentConfig = {
               {label && <span className="section-label">{label}</span>}
               <h2 className="st">
                 {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
+                {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
               </h2>
             </>
           ) : (
@@ -633,7 +633,7 @@ export const SiteCardsSection: ComponentConfig = {
               {label && <span className="section-label">{label}</span>}
               <h2 className="st">
                 {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
+                {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
               </h2>
               {intro && <div className="sites-intro" dangerouslySetInnerHTML={{ __html: intro }} />}
             </>
@@ -738,7 +738,7 @@ export const ExploreGridSection: ComponentConfig = {
               {label && <span className="section-label">{label}</span>}
               <h2 className="st">
                 {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
+                {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
               </h2>
               {intro && <div className="section-body" dangerouslySetInnerHTML={{ __html: intro }} />}
             </>
@@ -790,7 +790,13 @@ export const ReviewsSection: ComponentConfig = {
     headline: 'What Guests',
     headlineItalic: 'Are Saying',
     rating: '4.8',
-    reviewsLink: '',
+    // Default points to a Google Maps search for the park's business
+    // listing so the "View all on Google" CTA still works before the
+    // owner has pasted in their canonical GMB URL. Replace in the editor
+    // with the specific reviews URL (open the Google Maps listing, click
+    // Reviews, copy the URL) for a more direct flow.
+    reviewsLink: 'https://www.google.com/maps/place/Crooked+River+Ranch+RV+Park/',
+    reviewsLinkLabel: 'View all reviews on Google',
     reviews: [
       { stars: 5, quote: 'A wonderful place to relax.', author: 'Jane D.', meta: 'Google Review' },
       { stars: 5, quote: 'Beautiful park with great amenities.', author: 'John S.', meta: 'Google Review' },
@@ -803,7 +809,8 @@ export const ReviewsSection: ComponentConfig = {
     headline: { type: 'text', label: 'Headline' },
     headlineItalic: { type: 'text', label: 'Headline italic part' },
     rating: { type: 'text', label: 'Overall rating (e.g. 4.8)' },
-    reviewsLink: linkPickerField('Link to all reviews (optional)'),
+    reviewsLink: linkPickerField('"View all reviews" link (your Google Maps reviews URL)'),
+    reviewsLinkLabel: { type: 'text', label: '"View all reviews" button label' },
     reviews: {
       type: 'array',
       label: 'Reviews',
@@ -827,9 +834,17 @@ export const ReviewsSection: ComponentConfig = {
       },
     },
   },
-  render: ({ label, headline, headlineItalic, rating, reviewsLink, reviews, puck }: any) => {
+  render: ({ label, headline, headlineItalic, rating, reviewsLink, reviewsLinkLabel, reviews, puck }: any) => {
     const items: any[] = safeJson(reviews, []);
     const starStr = (n: number) => '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+    const viewAllHref: string =
+      typeof reviewsLink === 'string' && reviewsLink.trim()
+        ? reviewsLink
+        : 'https://www.google.com/maps/place/Crooked+River+Ranch+RV+Park/';
+    const viewAllLabel: string =
+      typeof reviewsLinkLabel === 'string' && reviewsLinkLabel.trim()
+        ? reviewsLinkLabel
+        : 'View all reviews on Google';
     const legacyChrome = hasLegacyChrome(
       { label, headline, headlineItalic },
       ['label', 'headline', 'headlineItalic']
@@ -844,7 +859,7 @@ export const ReviewsSection: ComponentConfig = {
                   {label && <span className="section-label">{label}</span>}
                   <h2 className="st">
                     {headline}
-                    {headlineItalic && <> <em>{headlineItalic}</em></>}
+                    {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
                   </h2>
                 </>
               ) : (
@@ -868,11 +883,9 @@ export const ReviewsSection: ComponentConfig = {
               </div>
             ))}
           </div>
-          {reviewsLink && (
-            <div className="section-cta" style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-              <a href={reviewsLink}>Read All Reviews</a>
-            </div>
-          )}
+          <div className="section-cta" style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+            <a href={viewAllHref} target="_blank" rel="noopener noreferrer">{viewAllLabel} →</a>
+          </div>
         </div>
       </section>
     );
@@ -1051,7 +1064,7 @@ export const ReserveFormSection: ComponentConfig = {
                   {label && <span className="section-label">{label}</span>}
                   <h2 className="st">
                     {headline}
-                    {headlineItalic && <> <em>{headlineItalic}</em></>}
+                    {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
                   </h2>
                   {body && <div className="section-body" dangerouslySetInnerHTML={{ __html: body }} />}
                 </>
@@ -1277,7 +1290,7 @@ export const AmenityGridSection: ComponentConfig = {
               {label && <span className="section-label">{label}</span>}
               <h2 className="st">
                 {headline}
-                {headlineItalic && <> <em>{headlineItalic}</em></>}
+                {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
               </h2>
             </>
           ) : (
@@ -1446,7 +1459,7 @@ export const RegionMapSection: ComponentConfig = {
         {label && <span className="section-label">{label}</span>}
         <h2 className="st" style={{ marginTop: '.4rem' }}>
           {headline}
-          {headlineItalic && <> <em>{headlineItalic}</em></>}
+          {headlineItalic && <>{' '}<em>{headlineItalic}</em></>}
         </h2>
         {intro && <div className="section-body" dangerouslySetInnerHTML={{ __html: intro }} />}
         <div

@@ -9,6 +9,11 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import LocalPlaceCard from '@components/LocalPlaceCard.astro';
 import { getLocalPlaces } from '@lib/area-guide';
+import { isRouteHidden } from '@lib/site-visibility';
+
+if (isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
 
 const places = await getLocalPlaces();
 

@@ -5,10 +5,18 @@
  * Filtering is client-side via query params + a tiny inline script, so the
  * page stays prerendered and SEO-friendly.
  */
-export const prerender = true;
+// Hidden-page guard needs a live request context, so /things-to-do is SSR
+// rather than prerendered while it sits behind the HIDDEN_ROUTES flag.
+// Flip back to `prerender = true` once the page is ready to go public.
+export const prerender = false;
 
 import Base from '@layouts/Base.astro';
 import { getThingsToDo, CATEGORY_LABELS, type ThingCategory } from '@lib/area-guide';
+import { isRouteHidden } from '@lib/site-visibility';
+
+if (isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
 
 const things = await getThingsToDo();
 

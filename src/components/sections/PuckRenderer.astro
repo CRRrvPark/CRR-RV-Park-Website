@@ -16,6 +16,7 @@
 
 import { serverClient } from '@lib/supabase';
 import { pushStyleProps, renderChildBlock, renderAtom, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
+import { migratePuckData } from '@lib/puck-data-migrate';
 import { getRegionMapPins, REGION_PIN_CATEGORIES, type RegionPin } from '@lib/area-guide';
 import RegionMap from '@components/RegionMap.astro';
 
@@ -75,6 +76,16 @@ if (pageBuilderData) {
   } catch (err) {
     console.warn(`[PuckRenderer] could not fetch page data for "${pageSlug}":`, err);
   }
+}
+
+// Run the same in-memory normalizations we use on the editor-draft path.
+// Covers TextBlock headlines with legacy `<em>…</em>` markup, array-field
+// JSON strings → arrays, Hero and section-chrome flat-prop → atom-zone
+// lifts, etc. Zones-path and legacy-flat-path renderers are byte-identical
+// so this never changes the output for already-migrated data; it only
+// fixes the output for data that hasn't been migrated yet.
+if (puckData) {
+  puckData = migratePuckData(puckData);
 }
 
 /* ── Events data (fetched when EventsWidgetSection is used) ── */
@@ -246,7 +257,12 @@ function zoneHtml(atoms: any[] | null): string {
           <section {...sectionAttrs(p, `padding:5rem 3rem;text-align:${p.alignment || 'left'}`)}>
             <div style={`max-width:${maxW};margin:0 auto;`}>
               {p.label && <span class="section-label">{p.label}</span>}
-              {p.headline && <h2 class="st">{p.headline}</h2>}
+              {(p.headline || p.headlineItalic) && (
+                <h2 class="st">
+                  {p.headline}
+                  {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
+                </h2>
+              )}
               {p.body && <div class="section-body" style="max-width:none;" set:html={p.body} />}
             </div>
           </section>
@@ -270,18 +286,25 @@ function zoneHtml(atoms: any[] | null): string {
 
       /* ── HtmlEmbed ── */
       if (item.type === 'HtmlEmbed') {
-        const srcDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:system-ui,sans-serif;}</style></head><body>${p.code || ''}</body></html>`;
-        return (
-          <div style="padding:0 3rem;">
-            <iframe
-              srcdoc={srcDoc}
-              sandbox="allow-scripts"
-              style={`width:100%;min-height:${p.minHeight ?? 200}px;border:1px solid #e8e3d8;border-radius:4px;background:#fff;`}
-              title="Embedded content"
-              loading="lazy"
-            />
-          </div>
-        );
+        // Default is inline render — HTML inherits the site's CSS, fonts,
+        // and container widths. Only fall back to the sandboxed iframe when
+        // the block explicitly opts in via `sandbox: true`. See the matching
+        // comment in src/lib/puck-config.tsx for the rationale.
+        if (p.sandbox) {
+          const srcDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:system-ui,sans-serif;}</style></head><body>${p.code || ''}</body></html>`;
+          return (
+            <div style="padding:0 3rem;">
+              <iframe
+                srcdoc={srcDoc}
+                sandbox="allow-scripts"
+                style={`width:100%;min-height:${p.minHeight ?? 200}px;border:1px solid #e8e3d8;border-radius:4px;background:#fff;`}
+                title="Embedded content"
+                loading="lazy"
+              />
+            </div>
+          );
+        }
+        return <Fragment set:html={p.code || ''} />;
       }
 
       /* ── ImageBlock ── */
@@ -458,7 +481,7 @@ function zoneHtml(atoms: any[] | null): string {
                 {p.label && <span class="section-label">{p.label}</span>}
                 <h2 class="st">
                   {p.headline}
-                  {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                 </h2>
                 {p.body && <div class="section-body" set:html={p.body} />}
               </>
@@ -517,7 +540,7 @@ function zoneHtml(atoms: any[] | null): string {
                   {p.label && <span class="section-label">{p.label}</span>}
                   <h2 class="st">
                     {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                    {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                   </h2>
                 </>
               )}
@@ -558,7 +581,7 @@ function zoneHtml(atoms: any[] | null): string {
                   {p.label && <span class="section-label">{p.label}</span>}
                   <h2 class="st">
                     {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                    {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                   </h2>
                   {p.intro && <div class="sites-intro" set:html={p.intro} />}
                 </>
@@ -631,7 +654,7 @@ function zoneHtml(atoms: any[] | null): string {
                   {p.label && <span class="section-label">{p.label}</span>}
                   <h2 class="st">
                     {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                    {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                   </h2>
                   {p.intro && <div class="section-body" set:html={p.intro} />}
                 </>
@@ -678,7 +701,7 @@ function zoneHtml(atoms: any[] | null): string {
                       {p.label && <span class="section-label">{p.label}</span>}
                       <h2 class="st">
                         {p.headline}
-                        {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                        {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                       </h2>
                     </>
                   )}
@@ -700,11 +723,19 @@ function zoneHtml(atoms: any[] | null): string {
                   </div>
                 ))}
               </div>
-              {p.reviewsLink && (
-                <div class="section-cta" style="text-align:center;margin-top:2.5rem;">
-                  <a href={p.reviewsLink}>Read All Reviews</a>
-                </div>
-              )}
+              {(() => {
+                const viewAllHref = typeof p.reviewsLink === 'string' && p.reviewsLink.trim()
+                  ? p.reviewsLink
+                  : 'https://www.google.com/maps/place/Crooked+River+Ranch+RV+Park/';
+                const viewAllLabel = typeof p.reviewsLinkLabel === 'string' && p.reviewsLinkLabel.trim()
+                  ? p.reviewsLinkLabel
+                  : 'View all reviews on Google';
+                return (
+                  <div class="section-cta" style="text-align:center;margin-top:2.5rem;">
+                    <a href={viewAllHref} target="_blank" rel="noopener noreferrer">{viewAllLabel} →</a>
+                  </div>
+                );
+              })()}
             </div>
           </section>
         );
@@ -793,7 +824,7 @@ function zoneHtml(atoms: any[] | null): string {
                       {p.label && <span class="section-label">{p.label}</span>}
                       <h2 class="st">
                         {p.headline}
-                        {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                        {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                       </h2>
                       {p.body && <div class="section-body" set:html={p.body} />}
                     </>
@@ -940,7 +971,7 @@ function zoneHtml(atoms: any[] | null): string {
                   {p.label && <span class="section-label">{p.label}</span>}
                   <h2 class="st">
                     {p.headline}
-                    {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                    {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                   </h2>
                 </>
               )}
@@ -1023,7 +1054,7 @@ function zoneHtml(atoms: any[] | null): string {
               {(p.headline || p.headlineItalic) && (
                 <h2 class="st" style="margin-top:.4rem;">
                   {p.headline}
-                  {p.headlineItalic && <> <em>{p.headlineItalic}</em></>}
+                  {p.headlineItalic && <>{' '}<em>{p.headlineItalic}</em></>}
                 </h2>
               )}
               {p.intro && <div class="section-body" set:html={p.intro} />}

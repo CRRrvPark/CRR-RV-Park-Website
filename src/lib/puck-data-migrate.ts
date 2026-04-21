@@ -360,6 +360,31 @@ export function migratePuckData<T extends { content?: unknown[] } | null | undef
     const itemId: string = typeof item.props?.id === 'string' ? item.props.id : '';
     let workingItem = item;
 
+    // ── Legacy TextBlock headlines with inline <em>…</em> markup ──
+    // Pre-V4 seed data stuffed <em> tags into the `headline` field, which
+    // the renderer escaped — user saw raw tags on the public site. Split
+    // them into `headline` + `headlineItalic` on load so the existing
+    // render path handles them correctly.
+    if (type === 'TextBlock') {
+      const p = workingItem.props || {};
+      const h = typeof p.headline === 'string' ? p.headline : '';
+      const hItalic = typeof p.headlineItalic === 'string' ? p.headlineItalic : '';
+      if (h && !hItalic) {
+        const m = h.match(/^(.*?)\s*<em>(.*?)<\/em>\s*(.*)$/i);
+        if (m) {
+          const before = m[1].trim();
+          const italic = m[2].trim();
+          const after = m[3].trim();
+          // Only migrate the clean "{text} <em>{italic}</em>" pattern. If
+          // there's trailing text after </em>, leave the original alone —
+          // the shape is too ambiguous to split safely.
+          if (!after) {
+            workingItem = { ...workingItem, props: { ...p, headline: before, headlineItalic: italic } };
+          }
+        }
+      }
+    }
+
     // ── V4 Hero migration: flat props → atoms in zones ──
     if (type === 'HeroSection') {
       const mainKey = `${itemId}:hero-main`;

@@ -13,6 +13,11 @@ import Base from '@layouts/Base.astro';
 import { getParkSites } from '@lib/area-guide';
 import { ParkSiteMap } from '@components/react/ParkSiteMap.tsx';
 import { serverClient } from '@lib/supabase';
+import { isRouteHidden } from '@lib/site-visibility';
+
+if (isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
 
 const sites = await getParkSites();
 

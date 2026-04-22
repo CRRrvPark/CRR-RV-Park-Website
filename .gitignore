@@ -18,6 +18,12 @@ dist/
 *.log
 *.tmp
 
+# ---- One-shot data backups from destructive migration scripts ----
+# (e.g. scripts/reseed-park-sites-from-firefly.mjs writes a JSON dump
+# here before wiping park_sites. These are local safety snapshots; the
+# migration scripts themselves are the canonical history.)
+scripts/_backups/
+
 # ---- OS noise ----
 .DS_Store
 Thumbs.db

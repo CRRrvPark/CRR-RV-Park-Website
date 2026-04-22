@@ -11,6 +11,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { AdminProviders } from './AdminProviders';
+import { AuthGuard } from './AuthGuard';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
 import { useConfirm } from './ConfirmDialog';
@@ -61,7 +63,7 @@ interface DashboardStats {
   checkedAt: string;
 }
 
-export function Dashboard() {
+function DashboardInner() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
@@ -544,6 +546,16 @@ function ConversionsCard({ stats }: { stats: DashboardStats | null }) {
         Identity is not tracked — visitor counts are session-level only. For heatmaps, scroll depth, and session replays, open the Clarity dashboard.
       </div>
     </Card>
+  );
+}
+
+export function Dashboard() {
+  return (
+    <AdminProviders>
+      <AuthGuard requireCapability="view_content">
+        <DashboardInner />
+      </AuthGuard>
+    </AdminProviders>
   );
 }
 

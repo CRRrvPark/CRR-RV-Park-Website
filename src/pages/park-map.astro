@@ -12,6 +12,7 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import { getParkSites } from '@lib/area-guide';
 import { ParkSiteMap } from '@components/react/ParkSiteMap.tsx';
+import ParkMapPolygons from '@components/ParkMapPolygons.astro';
 import { serverClient } from '@lib/supabase';
 import { isRouteHidden } from '@lib/site-visibility';
 
@@ -21,24 +22,49 @@ if (isRouteHidden(Astro.url.pathname)) {
 
 const sites = await getParkSites();
 
-// Pull the admin-configured map image from runbook_content's settings blob
-// (a future migration could give this its own `site_config` table; for now
-// we piggyback on the existing pattern).
-let mapImageUrl: string | null = null;
+// ── V4 polygon map activation ───────────────────────────────────────────
+// New flow: if an active park_maps row exists AND at least one site has a
+// map_polygon stored, render the server-side SVG polygon overlay
+// (ParkMapPolygons.astro). Otherwise fall back to the pre-existing
+// pin-based React component. Ensures guests see the pin map today and
+// automatically get upgraded to the polygon map once the admin uploads
+// a base image + editor places the first polygon.
+let activeParkMap:
+  | { id: string; slug: string; title: string; image_url: string; natural_width: number; natural_height: number }
+  | null = null;
 try {
   const sb = serverClient();
   const { data } = await sb
-    .from('pages')
-    .select('meta_description')
-    .eq('slug', '__park_map_config')
+    .from('park_maps')
+    .select('id, slug, title, image_url, natural_width, natural_height')
+    .eq('is_active', true)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
-  // Admin stores the map image URL in this page's meta_description as a
-  // simple key=value string. Swap to a proper config table when we have
-  // more settings to store.
-  if (data?.meta_description?.startsWith('map_image_url=')) {
-    mapImageUrl = data.meta_description.slice('map_image_url='.length).trim() || null;
-  }
-} catch {}
+  if (data) activeParkMap = data as unknown as typeof activeParkMap;
+} catch { /* fall through to pin fallback */ }
+
+const polygonSites = sites.filter(
+  (s) => Array.isArray(s.map_polygon) && (s.map_polygon as unknown[]).length > 0 && s.is_published !== false,
+);
+const usePolygonMap = Boolean(activeParkMap) && polygonSites.length > 0;
+
+// Legacy pin-mode map image — only read when we're falling back.
+let mapImageUrl: string | null = null;
+if (!usePolygonMap) {
+  try {
+    const sb = serverClient();
+    const { data } = await sb
+      .from('pages')
+      .select('meta_description')
+      .eq('slug', '__park_map_config')
+      .maybeSingle();
+    if (data?.meta_description?.startsWith('map_image_url=')) {
+      mapImageUrl = data.meta_description.slice('map_image_url='.length).trim() || null;
+    }
+  } catch {}
+}
 
 // Normalize rows to the shape ParkSiteMap expects (strip fields it doesn't need)
 const clientSites = sites.map((s) => ({
@@ -81,6 +107,8 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
         <div style="padding:3rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
           Park sites not configured yet. Admins can set them up at <code>/admin/site-map</code>.
         </div>
+      ) : usePolygonMap && activeParkMap ? (
+        <ParkMapPolygons parkMap={activeParkMap} sites={polygonSites as any} />
       ) : (
         <ParkSiteMap client:load sites={clientSites} mapImageUrl={mapImageUrl} />
       )}

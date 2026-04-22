@@ -11,7 +11,7 @@ import LocalPlaceCard from '@components/LocalPlaceCard.astro';
 import { getLocalPlaces } from '@lib/area-guide';
 import { isRouteHidden } from '@lib/site-visibility';
 
-if (isRouteHidden(Astro.url.pathname)) {
+if (await isRouteHidden(Astro.url.pathname)) {
   return new Response('Not Found', { status: 404 });
 }
 

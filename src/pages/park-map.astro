@@ -16,7 +16,7 @@ import ParkMapPolygons from '@components/ParkMapPolygons.astro';
 import { serverClient } from '@lib/supabase';
 import { isRouteHidden } from '@lib/site-visibility';
 
-if (isRouteHidden(Astro.url.pathname)) {
+if (await isRouteHidden(Astro.url.pathname)) {
   return new Response('Not Found', { status: 404 });
 }
 

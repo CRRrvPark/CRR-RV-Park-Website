@@ -14,7 +14,7 @@
  */
 
 import { serverClient } from '@lib/supabase';
-import { HIDDEN_ROUTES } from '@lib/site-visibility';
+import { getHiddenPageSlugs } from '@lib/site-visibility';
 
 interface NavPage { slug: string; title: string; nav_order: number | null; }
 let dynamicPages: NavPage[] = [];
@@ -24,6 +24,8 @@ let dynamicPages: NavPage[] = [];
 // the admin fills in real data so guests don't click into an empty/broken
 // page. Auto-reveals the moment a real place is saved.
 let showDining = false;
+
+const hiddenSlugs = await getHiddenPageSlugs();
 
 const hasUrl = Boolean(import.meta.env.PUBLIC_SUPABASE_URL ?? (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined));
 const hasKey = Boolean((import.meta.env as any).SUPABASE_SERVICE_ROLE_KEY ?? (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined));
@@ -79,9 +81,9 @@ if (hasUrl && hasKey) {
       <a href="/area-guide">Area Guide</a>
       <div class="nav-dd-menu">
         <a href="/area-guide">Region Map &amp; Overview</a>
-        {!HIDDEN_ROUTES.has('/trails') && <a href="/trails">Hiking Trails</a>}
-        {!HIDDEN_ROUTES.has('/things-to-do') && <a href="/things-to-do">60 Things to Do</a>}
-        {showDining && !HIDDEN_ROUTES.has('/dining') && <a href="/dining">Dining &amp; Local</a>}
+        {!hiddenSlugs.has('trails') && <a href="/trails">Hiking Trails</a>}
+        {!hiddenSlugs.has('things-to-do') && <a href="/things-to-do">60 Things to Do</a>}
+        {showDining && !hiddenSlugs.has('dining') && <a href="/dining">Dining &amp; Local</a>}
         <a href="/events">Events</a>
       </div>
     </div>

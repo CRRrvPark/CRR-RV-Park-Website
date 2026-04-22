@@ -34,7 +34,7 @@ const { site } = Astro.props;
 // If the whole /park-map branch is hidden, hide every /sites/[code] too —
 // consistent visibility story, no "you can't reach the map but you can
 // still hit a site's detail" dead ends.
-if (isRouteHidden('/park-map')) {
+if (await isRouteHidden('/park-map')) {
   return new Response('Not Found', { status: 404 });
 }
 

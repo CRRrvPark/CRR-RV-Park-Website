@@ -12,7 +12,7 @@
  */
 
 import { serverClient } from './supabase';
-import { HIDDEN_ROUTES } from './site-visibility';
+import { getHiddenPageSlugs } from './site-visibility';
 
 const SUPABASE_CONFIGURED = Boolean(
   import.meta.env.PUBLIC_SUPABASE_URL ??
@@ -431,8 +431,9 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
   // Drop per-pin hrefs when their destination page is hidden — otherwise
   // the map popup's "Learn more →" link would 404. The pin itself still
   // renders; only the click-through is suppressed.
-  const trailsHidden = HIDDEN_ROUTES.has('/trails');
-  const thingsHidden = HIDDEN_ROUTES.has('/things-to-do');
+  const hiddenSlugs = await getHiddenPageSlugs();
+  const trailsHidden = hiddenSlugs.has('trails');
+  const thingsHidden = hiddenSlugs.has('things-to-do');
 
   for (const t of trails) {
     if (t.trailhead_lat === null || t.trailhead_lng === null) continue;

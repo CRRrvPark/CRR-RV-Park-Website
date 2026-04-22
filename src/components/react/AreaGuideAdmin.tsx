@@ -968,9 +968,11 @@ const STATUS_OPTIONS: { value: Site['status']; label: string }[] = [
 
 function SitesPanel() {
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [rows, setRows] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Site | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -987,11 +989,29 @@ function SitesPanel() {
     return m;
   }, [rows]);
 
+  const removeSite = async (s: Site) => {
+    const ok = await confirm({
+      title: `Delete ${s.site_number}?`,
+      message: `Permanently remove site ${s.site_number} (loop ${s.loop}). This also removes any polygon placement and photos attached to it. Cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await apiDelete(`/api/area-guide/park-sites/${s.id}`);
+      toast.success(`Deleted ${s.site_number}`);
+      setRows((prev) => prev.filter((r) => r.id !== s.id));
+    } catch (err: any) { toast.error('Delete failed', { detail: err?.message }); }
+  };
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 400, margin: 0 }}>Park Sites</h2>
-        <div style={{ fontSize: '.85rem', color: 'var(--c-text-muted)' }}>{rows.length} sites across {Object.keys(byLoop).length} loops</div>
+        <div style={{ display: 'flex', gap: '.75rem', alignItems: 'center' }}>
+          <div style={{ fontSize: '.85rem', color: 'var(--c-text-muted)' }}>{rows.length} sites across {Object.keys(byLoop).length} loops</div>
+          <Button onClick={() => setCreating(true)} leading={<IconPlus size={14} />}>New site</Button>
+        </div>
       </div>
       <div style={{ marginBottom: '1rem', padding: '1rem 1.25rem', background: 'var(--c-surface-alt, #fafaf7)', borderLeft: '3px solid var(--c-rust, #C4622D)', borderRadius: '3px', fontSize: '.85rem' }}>
         <strong>Polygon editor:</strong> the new interactive park map on <code>/park-map</code> uses per-site polygons
@@ -1033,6 +1053,16 @@ function SitesPanel() {
                     <td style={{ padding: '.55rem .7rem', fontSize: '.75rem', color: s.firefly_deep_link ? '#4A7C59' : 'var(--c-text-muted)' }}>
                       {s.firefly_deep_link ? '✓ Deep link' : 'Generic'}
                     </td>
+                    <td style={{ padding: '.55rem .4rem', textAlign: 'right' }}>
+                      <button
+                        onClick={() => removeSite(s)}
+                        className="btn btn-ghost btn-sm"
+                        title={`Delete ${s.site_number}`}
+                        style={{ color: 'var(--c-danger, #b43c3c)', padding: '.25rem .4rem' }}
+                      >
+                        <IconTrash size={12} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1043,6 +1073,11 @@ function SitesPanel() {
       {editing && (
         <RecordDrawer title={`Edit site ${editing.site_number}`} onClose={() => setEditing(null)}>
           <SiteForm initial={editing} onSaved={() => { setEditing(null); load(); }} />
+        </RecordDrawer>
+      )}
+      {creating && (
+        <RecordDrawer title="Add new site" onClose={() => setCreating(false)}>
+          <NewSiteForm onSaved={() => { setCreating(false); load(); }} />
         </RecordDrawer>
       )}
     </>
@@ -1230,6 +1265,63 @@ function SiteForm({ initial, onSaved }: { initial: Site; onSaved: () => void }) 
         <label><input type="checkbox" checked={f.is_published} onChange={(e) => setF({ ...f, is_published: e.target.checked })} /> Published</label>
       </div>
       <Button type="submit" loading={submitting} leading={<IconCheck size={14} />}>Save</Button>
+    </form>
+  );
+}
+
+function NewSiteForm({ onSaved }: { onSaved: () => void }) {
+  const { toast } = useToast();
+  const [site_number, setSiteNumber] = useState('');
+  const [loop, setLoop] = useState('A');
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = site_number.trim();
+    if (!code) { toast.error('Site number required'); return; }
+    if (!loop.trim()) { toast.error('Loop required'); return; }
+    setSubmitting(true);
+    try {
+      await apiPost('/api/area-guide/park-sites', {
+        site_number: code,
+        loop: loop.trim(),
+        pull_through: false,
+        is_available: true,
+        is_published: true,
+        status: 'available',
+        gallery_image_urls: [],
+        features: [],
+      });
+      toast.success(`Added ${code}`);
+      onSaved();
+    } catch (err: any) {
+      toast.error('Create failed', { detail: err?.message });
+    } finally { setSubmitting(false); }
+  };
+
+  return (
+    <form onSubmit={submit} style={{ display: 'grid', gap: '.9rem' }}>
+      <div style={{ padding: '.85rem 1rem', background: 'var(--c-surface-alt, #fafaf7)', borderLeft: '2px solid var(--c-rust, #C4622D)', borderRadius: 3, fontSize: '.82rem', color: 'var(--c-text-muted)' }}>
+        Creates a minimal record with status = available. Open the site after creating to fill in length,
+        amp service, description, photos, and polygon placement.
+      </div>
+      <TextInput
+        label="Site number (e.g. A16, D43, DC5)"
+        required
+        value={site_number}
+        onChange={(e) => setSiteNumber(e.target.value)}
+        placeholder="A16"
+        hint="Must be unique across all park_sites. Convention is letter prefix + number (no dash, no zero-padding)."
+      />
+      <TextInput
+        label="Loop"
+        required
+        value={loop}
+        onChange={(e) => setLoop(e.target.value)}
+        placeholder="A, B, C, D, DC, T, G"
+        hint="One of: A, B, C, D, DC, T, G."
+      />
+      <Button type="submit" loading={submitting} leading={<IconPlus size={14} />}>Create site</Button>
     </form>
   );
 }

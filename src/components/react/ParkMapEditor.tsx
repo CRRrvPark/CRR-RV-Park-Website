@@ -202,21 +202,36 @@ function Inner() {
     setCursor(stageCoords(e));
   };
 
+  /**
+   * 4-click polygon placement:
+   *   Click 1 → store point 1
+   *   Click 2 → store point 2 (preview shows line ending at cursor)
+   *   Click 3 → store point 3 (preview shows triangle with closing edge to cursor)
+   *   Click 4 → store point 4 → auto-sort by angle from centroid → save
+   *
+   * Auto-sort picks a convex ordering regardless of click order so the
+   * polygon never renders as a self-intersecting bowtie. Irregular site
+   * shapes (non-rectangular trapezoids, angled pads) are supported by
+   * clicking the actual four corners instead of a bounding rectangle.
+   */
   const onStageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (mode !== 'placing') return;
     const pt = stageCoords(e);
-    if (inProgress.length === 0) {
-      setInProgress([pt]);
-    } else {
-      // Finalize — axis-aligned rectangle using the two corners.
-      const [a] = inProgress;
-      const x0 = Math.min(a[0], pt[0]);
-      const x1 = Math.max(a[0], pt[0]);
-      const y0 = Math.min(a[1], pt[1]);
-      const y1 = Math.max(a[1], pt[1]);
-      const poly: Point[] = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
-      savePolygon(poly);
+    const next = [...inProgress, pt];
+    if (next.length < 4) {
+      setInProgress(next);
+      return;
     }
+    // 4 clicks captured — sort by angle from centroid so the polygon
+    // winding order produces a valid convex shape regardless of click
+    // order.
+    const cx = next.reduce((s, p) => s + p[0], 0) / next.length;
+    const cy = next.reduce((s, p) => s + p[1], 0) / next.length;
+    const sorted = next
+      .map((p) => ({ p, ang: Math.atan2(p[1] - cy, p[0] - cx) }))
+      .sort((a, b) => a.ang - b.ang)
+      .map((o) => o.p);
+    savePolygon(sorted as Point[]);
   };
 
   // ---- rendering ----
@@ -304,14 +319,12 @@ function Inner() {
               )}
             </div>
 
-            {mode === 'placing' && inProgress.length === 0 && (
+            {mode === 'placing' && (
               <span style={{ color: 'var(--c-rust, #C4622D)', fontSize: '.85rem' }}>
-                Click the <strong>first corner</strong> on the map.
-              </span>
-            )}
-            {mode === 'placing' && inProgress.length === 1 && (
-              <span style={{ color: 'var(--c-rust, #C4622D)', fontSize: '.85rem' }}>
-                Click the <strong>opposite corner</strong> to save. Esc to cancel.
+                {inProgress.length === 0 && <>Click <strong>corner 1 of 4</strong>.</>}
+                {inProgress.length === 1 && <>Click <strong>corner 2 of 4</strong>.</>}
+                {inProgress.length === 2 && <>Click <strong>corner 3 of 4</strong>.</>}
+                {inProgress.length === 3 && <>Click <strong>corner 4 of 4</strong> to save. Esc cancels.</>}
               </span>
             )}
 
@@ -368,16 +381,33 @@ function Inner() {
                   </g>
                 );
               })}
-              {/* In-progress placement preview */}
-              {mode === 'placing' && inProgress.length === 1 && (
-                <rect
-                  x={Math.min(inProgress[0][0], cursor[0]) * SVG_SCALE}
-                  y={Math.min(inProgress[0][1], cursor[1]) * SVG_SCALE}
-                  width={Math.abs(cursor[0] - inProgress[0][0]) * SVG_SCALE}
-                  height={Math.abs(cursor[1] - inProgress[0][1]) * SVG_SCALE}
-                  style={{ fill: 'rgba(74, 124, 89, 0.35)', stroke: '#4A7C59', strokeWidth: 2, strokeDasharray: '4 2' }}
+              {/* In-progress placement preview: shows a polygon built from
+                 whatever points have been clicked so far plus the current
+                 cursor as the next corner. Lets the editor see the shape
+                 building up as they click each of the 4 corners. */}
+              {mode === 'placing' && inProgress.length >= 1 && (() => {
+                const preview: Point[] = [...inProgress, cursor];
+                const pts = preview.map(([x, y]) => `${(x * SVG_SCALE).toFixed(1)},${(y * SVG_SCALE).toFixed(1)}`).join(' ');
+                // While the user is still placing, render as a polyline
+                // (open path) for 1-2 points, and as a polygon (closed,
+                // filled) once we have 3+ points so the user sees the
+                // shape forming.
+                if (preview.length < 3) {
+                  return <polyline points={pts} style={{ fill: 'none', stroke: '#4A7C59', strokeWidth: 2, strokeDasharray: '4 2' }} />;
+                }
+                return <polygon points={pts} style={{ fill: 'rgba(74, 124, 89, 0.35)', stroke: '#4A7C59', strokeWidth: 2, strokeDasharray: '4 2' }} />;
+              })()}
+              {/* Already-clicked points shown as small dots so the editor
+                 can visually count remaining clicks. */}
+              {mode === 'placing' && inProgress.map(([x, y], i) => (
+                <circle
+                  key={i}
+                  cx={x * SVG_SCALE}
+                  cy={y * SVG_SCALE}
+                  r={6}
+                  style={{ fill: '#4A7C59', stroke: '#fff', strokeWidth: 2 }}
                 />
-              )}
+              ))}
               {/* Crosshair */}
               {mode === 'placing' && (
                 <>

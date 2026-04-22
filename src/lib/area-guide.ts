@@ -104,6 +104,14 @@ export interface PlaceCachedData {
   location?: { latitude: number; longitude: number };
 }
 
+export type ParkSiteStatus =
+  | 'available'
+  | 'camp_host'
+  | 'staff_only'
+  | 'maintenance'
+  | 'reserved'
+  | 'seasonal_closed';
+
 export interface ParkSite {
   id: string;
   site_number: string;
@@ -126,6 +134,8 @@ export interface ParkSite {
   firefly_deep_link: string | null;
   is_available: boolean;
   is_published: boolean;
+  status: ParkSiteStatus;
+  status_note: string | null;
 }
 
 // ---- Readers (published-only — public-site flavored) ----
@@ -228,6 +238,28 @@ export async function getParkSites(): Promise<ParkSite[]> {
   } catch (err) {
     console.warn('[area-guide] getParkSites failed:', err);
     return [];
+  }
+}
+
+/**
+ * Fetch a single published ParkSite by its code (e.g. "A-01", "1C").
+ * Returns null when the site doesn't exist, is unpublished, or Supabase
+ * isn't configured. Used by the /sites/[code] detail page.
+ */
+export async function getParkSiteByCode(siteNumber: string): Promise<ParkSite | null> {
+  if (!SUPABASE_CONFIGURED) return null;
+  try {
+    const sb = serverClient();
+    const { data } = await sb
+      .from('park_sites')
+      .select('*')
+      .eq('site_number', siteNumber)
+      .eq('is_published', true)
+      .maybeSingle();
+    return (data as ParkSite) ?? null;
+  } catch (err) {
+    console.warn(`[area-guide] getParkSiteByCode failed for ${siteNumber}:`, err);
+    return null;
   }
 }
 

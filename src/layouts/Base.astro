@@ -16,6 +16,7 @@ import Footer from '@components/Footer.astro';
 import JsonLd from '@components/JsonLd.astro';
 import ClarityScript from '@components/ClarityScript.astro';
 import ConversionTracker from '@components/ConversionTracker.astro';
+import GoogleTagManager from '@components/GoogleTagManager.astro';
 import Lightbox from '@components/Lightbox.astro';
 
 export interface Props {
@@ -54,9 +55,17 @@ const {
     robots={robots}
   />
   {schemas.length > 0 && <JsonLd schemas={schemas} />}
+  {/* Google Tag Manager — loads as high in <head> as possible per Google's
+     recommendation so early events fire with GTM already initialised.
+     Gated by `noAnalytics` for parity with Clarity: admin pages pass
+     `noAnalytics={true}` and neither tracker loads there. */}
+  {!noAnalytics && <GoogleTagManager enabled={true} slot="script" />}
   {!noAnalytics && <ClarityScript />}
 </head>
 <body>
+  {/* Google Tag Manager noscript fallback — must be the first element
+     inside <body> per Google's install docs. */}
+  {!noAnalytics && <GoogleTagManager enabled={true} slot="noscript" />}
   <!--
     Auth-hash fallback: if a user arrives on a public page with
     `#type=invite` or `#type=recovery` in the URL hash (e.g., they clicked

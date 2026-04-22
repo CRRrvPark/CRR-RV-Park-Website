@@ -51,7 +51,11 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.clarity.ms https://c.bing.com https://*.supabase.co https://*.zoho.com https://*.zohousercontent.com; frame-src https://www.google.com; connect-src 'self' https://*.clarity.ms https://c.bing.com https://*.supabase.co wss://*.supabase.co https://accounts.zoho.com https://workdrive.zoho.com https://calendar.zoho.com https://mail.zoho.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+    # GTM + Google Ads domains added below. GTM itself loads from
+    # googletagmanager.com (script + iframe). Google Ads conversion
+    # pixels fire to googleadservices.com + doubleclick.net + google.com.
+    # GA4 (if added inside GTM later) loads from google-analytics.com.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.clarity.ms https://c.bing.com https://*.supabase.co https://*.zoho.com https://*.zohousercontent.com https://*.google-analytics.com https://www.googletagmanager.com https://*.doubleclick.net https://www.google.com https://*.google.com https://*.googleadservices.com; frame-src https://www.google.com https://www.googletagmanager.com https://*.doubleclick.net https://*.googleadservices.com; connect-src 'self' https://*.clarity.ms https://c.bing.com https://*.supabase.co wss://*.supabase.co https://accounts.zoho.com https://workdrive.zoho.com https://calendar.zoho.com https://mail.zoho.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.doubleclick.net https://*.googleadservices.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"

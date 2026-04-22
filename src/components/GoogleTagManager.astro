@@ -1,0 +1,65 @@
+---
+/**
+ * GoogleTagManager — loads GTM on public pages.
+ *
+ * GTM is the container layer: it handles its own tag loading (Google Ads
+ * conversion pixels, optional GA4, Facebook, etc.) from the GTM web UI
+ * without needing code pushes to this site. Any change to "what tags
+ * fire and when" happens in tagmanager.google.com -> publish -> it's live.
+ *
+ * Two pieces per Google's install docs:
+ *   1. A script tag inside the document head, loads GTM asynchronously
+ *   2. A noscript + iframe pair immediately after body-open, fallback
+ *      for users with JS disabled (vanishingly small share, but Google
+ *      recommends it so it's here)
+ *
+ * Both are exported via named slots so Base.astro can place each piece
+ * in the right DOM location. This component doesn't render anything
+ * itself apart from the selected slot.
+ *
+ * Omitted on admin pages for the same reason Clarity is — admins
+ * don't need to show up in Ads audience data or skew analytics.
+ */
+
+export interface Props {
+  /** Whether to emit the script + iframe. Pass false on admin pages. */
+  enabled?: boolean;
+  /** Which piece to render: 'script' for the head loader, 'noscript' for the body-top iframe fallback. */
+  slot: 'script' | 'noscript';
+}
+
+const { enabled = true, slot } = Astro.props;
+
+// GTM container ID — owner-supplied. Moving this to an env var would
+// let us differentiate staging vs prod containers later; for now a
+// single prod container is fine since only the live site has public
+// traffic.
+const GTM_ID = 'GTM-P6VT2RXS';
+---
+
+{enabled && slot === 'script' && (
+  <script is:inline define:vars={{ GTM_ID }}>
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', GTM_ID);
+  </script>
+)}
+
+{enabled && slot === 'noscript' && (
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+      title="Google Tag Manager"
+    />
+  </noscript>
+)}

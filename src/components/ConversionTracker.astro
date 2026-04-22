@@ -33,9 +33,27 @@
       return null;
     }
 
-    function track(event) {
+    function track(event, href) {
       try {
         var params = new URLSearchParams(window.location.search);
+
+        // GTM dataLayer push — this is what Google Tag Manager (and
+        // therefore Google Ads conversion tags configured inside GTM)
+        // listens to. Trigger a GTM "Custom Event" with the event name
+        // below (book_now_click / golf_tee_click / call_click /
+        // email_click) and attach a Google Ads Conversion Tracking tag.
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: event,
+          event_path: window.location.pathname,
+          event_href: href || undefined,
+          utm_source: params.get('utm_source') || undefined,
+          utm_campaign: params.get('utm_campaign') || undefined,
+        });
+
+        // Internal analytics beacon — powers the admin dashboard's
+        // book_now_click / golf_tee_click / call_click counts. Kept
+        // because it's already wired and independent of GTM.
         var payload = JSON.stringify({
           event: event,
           path: window.location.pathname,
@@ -65,8 +83,9 @@
       var target = ev.target;
       while (target && target !== document) {
         if (target.tagName === 'A') {
-          var event = classify(target.getAttribute('href'));
-          if (event) track(event);
+          var href = target.getAttribute('href');
+          var event = classify(href);
+          if (event) track(event, href);
           return;
         }
         target = target.parentNode;

@@ -13,6 +13,10 @@ const ALLOWED_FIELDS = [
   'hero_image_url', 'gallery_image_urls', 'description', 'features',
   'map_position_x', 'map_position_y', 'map_polygon',
   'firefly_deep_link', 'is_available', 'is_published',
+  // V4 park-map status fields (migration 016). CHECK constraint on
+  // park_sites.status enforces the allowed vocabulary — invalid values
+  // come back as a 400 from Supabase, which surfaces as the admin toast.
+  'status', 'status_note',
 ] as const;
 
 function sanitize(body: Record<string, unknown>): Record<string, unknown> {

@@ -948,7 +948,23 @@ interface Site {
   firefly_deep_link: string | null;
   is_available: boolean;
   is_published: boolean;
+  // V4 fields (migration 016 + Phase 3.3 admin extensions)
+  status: 'available' | 'camp_host' | 'staff_only' | 'maintenance' | 'reserved' | 'seasonal_closed';
+  status_note: string | null;
+  hero_image_url: string | null;
+  gallery_image_urls: string[];
+  description: string | null;
+  features: string[];
 }
+
+const STATUS_OPTIONS: { value: Site['status']; label: string }[] = [
+  { value: 'available',       label: 'Available (bookable)' },
+  { value: 'staff_only',      label: 'Staff booking only (shows phone CTA)' },
+  { value: 'camp_host',       label: 'Camp Host (permanent, non-bookable)' },
+  { value: 'maintenance',     label: 'Maintenance (temporary)' },
+  { value: 'reserved',        label: 'Reserved (annual / group hold)' },
+  { value: 'seasonal_closed', label: 'Seasonal closed' },
+];
 
 function SitesPanel() {
   const { toast } = useToast();
@@ -978,7 +994,10 @@ function SitesPanel() {
         <div style={{ fontSize: '.85rem', color: 'var(--c-text-muted)' }}>{rows.length} sites across {Object.keys(byLoop).length} loops</div>
       </div>
       <div style={{ marginBottom: '1rem', padding: '1rem 1.25rem', background: 'var(--c-surface-alt, #fafaf7)', borderLeft: '3px solid var(--c-rust, #C4622D)', borderRadius: '3px', fontSize: '.85rem' }}>
-        <strong>Map image:</strong> the clickable park map on <code>/park-map</code> needs a background image. Upload it in the Media Library, then set the URL on the site-map config page (coming in a future iteration — for now, edit <code>park_sites</code> rows directly).
+        <strong>Polygon editor:</strong> the new interactive park map on <code>/park-map</code> uses per-site polygons
+        you draw on the base image. Open the{' '}
+        <a href="/admin/park-map" style={{ color: 'var(--c-rust, #C4622D)', fontWeight: 500 }}>Park Map Editor</a>{' '}
+        to upload the base image and place a rectangle for each site. Status, photos, description, and features for each site are edited below.
       </div>
       {loading ? <div>Loading…</div> : Object.keys(byLoop).sort().map((loop) => (
         <div key={loop} style={{ marginBottom: '2rem' }}>
@@ -1044,13 +1063,34 @@ function SiteForm({ initial, onSaved }: { initial: Site; onSaved: () => void }) 
     firefly_deep_link: initial.firefly_deep_link ?? '',
     is_available: initial.is_available,
     is_published: initial.is_published,
+    // V4 — status + content (Phase 3.3)
+    status: (initial.status ?? 'available') as Site['status'],
+    status_note: initial.status_note ?? '',
+    hero_image_url: initial.hero_image_url ?? '',
+    gallery_image_urls: initial.gallery_image_urls ?? [],
+    description: initial.description ?? '',
+    features: (initial.features ?? []).join(', '),
   });
   const [submitting, setSubmitting] = useState(false);
+
+  const addGalleryImage = (url: string) => {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    if (f.gallery_image_urls.includes(trimmed)) return;  // dedupe
+    setF({ ...f, gallery_image_urls: [...f.gallery_image_urls, trimmed] });
+  };
+  const removeGalleryImage = (url: string) => {
+    setF({ ...f, gallery_image_urls: f.gallery_image_urls.filter((u) => u !== url) });
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const featuresList = f.features
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       const payload = {
         site_type: f.site_type || null,
         length_feet: f.length_feet === '' ? null : Number(f.length_feet),
@@ -1063,6 +1103,12 @@ function SiteForm({ initial, onSaved }: { initial: Site; onSaved: () => void }) 
         firefly_deep_link: f.firefly_deep_link || null,
         is_available: f.is_available,
         is_published: f.is_published,
+        status: f.status,
+        status_note: f.status_note.trim() || null,
+        hero_image_url: f.hero_image_url || null,
+        gallery_image_urls: f.gallery_image_urls,
+        description: f.description.trim() || null,
+        features: featuresList,
       };
       await apiPatch(`/api/area-guide/park-sites/${initial.id}`, payload);
       toast.success('Saved');
@@ -1076,6 +1122,26 @@ function SiteForm({ initial, onSaved }: { initial: Site; onSaved: () => void }) 
       <div style={{ padding: '.6rem .85rem', background: 'var(--c-surface-alt)', borderRadius: '3px', fontSize: '.85rem' }}>
         Site <strong>{initial.site_number}</strong> · Loop {initial.loop}
       </div>
+
+      <div>
+        <label className="form-label" style={{ display: 'block', marginBottom: 4, fontSize: '.82rem' }}>Status</label>
+        <select
+          value={f.status}
+          onChange={(e) => setF({ ...f, status: e.target.value as Site['status'] })}
+          style={{ width: '100%', padding: '.5rem .6rem', border: '1px solid var(--c-border)', borderRadius: 3, background: '#fff', fontSize: '.88rem' }}
+        >
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+      <TextInput
+        label="Status note (optional — shown in popup and detail page)"
+        value={f.status_note}
+        onChange={(e) => setF({ ...f, status_note: e.target.value })}
+        placeholder='e.g. "Under repair through May 15"'
+      />
+
       <TextInput label="Site type" value={f.site_type} onChange={(e) => setF({ ...f, site_type: e.target.value })} placeholder="standard, premium, …" />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }}>
         <TextInput label="Length (ft)" type="number" value={String(f.length_feet)} onChange={(e) => setF({ ...f, length_feet: e.target.value })} />
@@ -1091,8 +1157,76 @@ function SiteForm({ initial, onSaved }: { initial: Site; onSaved: () => void }) 
         <TextInput label="Map Y (%)" type="number" step="0.1" value={String(f.map_position_y)} onChange={(e) => setF({ ...f, map_position_y: Number(e.target.value) })} />
       </div>
       <TextInput label="Firefly deep link (optional, per-site)" value={f.firefly_deep_link} onChange={(e) => setF({ ...f, firefly_deep_link: e.target.value })} placeholder="https://app.fireflyreservations.com/..." />
+
+      {/* ---- Content: hero, gallery, description, features ------------- */}
+      <div style={{ padding: '.85rem 1rem', background: 'var(--c-surface-alt, #fafaf7)', borderLeft: '2px solid var(--c-rust, #C4622D)', borderRadius: '3px', fontSize: '.82rem', color: 'var(--c-text-muted)' }}>
+        Content below appears on <code>/sites/{initial.site_number}</code> — the detail page linked from the park map's popover "Site info" link.
+      </div>
+      <TextInput
+        label="Hero photo URL"
+        value={f.hero_image_url}
+        onChange={(e) => setF({ ...f, hero_image_url: e.target.value })}
+        placeholder="https://…supabase.co/storage/v1/… or /images/…"
+        hint="Paste a URL from the Media Library (/admin/media) or any public image URL."
+      />
+      <div>
+        <label className="form-label" style={{ display: 'block', marginBottom: 4, fontSize: '.82rem' }}>Gallery photos</label>
+        {f.gallery_image_urls.length > 0 && (
+          <ul style={{ margin: '0 0 .5rem', padding: 0, listStyle: 'none', display: 'grid', gap: '.3rem' }}>
+            {f.gallery_image_urls.map((u) => (
+              <li key={u} style={{ display: 'flex', gap: '.5rem', alignItems: 'center', fontSize: '.78rem' }}>
+                <code style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '.3rem .5rem', background: '#fff', border: '1px solid var(--c-border)', borderRadius: 2 }}>{u}</code>
+                <button type="button" onClick={() => removeGalleryImage(u)} className="btn btn-ghost btn-sm" title="Remove">
+                  <IconTrash size={12} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <input
+            type="url"
+            placeholder="Paste gallery image URL, then press Add"
+            style={{ flex: 1, padding: '.45rem .6rem', border: '1px solid var(--c-border)', borderRadius: 3, fontSize: '.82rem' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addGalleryImage((e.currentTarget as HTMLInputElement).value);
+                (e.currentTarget as HTMLInputElement).value = '';
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={(e) => {
+              const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+              addGalleryImage(input.value);
+              input.value = '';
+            }}
+          >
+            <IconPlus size={12} /> Add
+          </button>
+        </div>
+      </div>
+      <div>
+        <label className="form-label" style={{ display: 'block', marginBottom: 4, fontSize: '.82rem' }}>Description (shown on detail page)</label>
+        <RichTextEditor
+          value={f.description}
+          onChange={(html: string) => setF({ ...f, description: html })}
+          minHeight={120}
+        />
+      </div>
+      <TextInput
+        label="Features (comma-separated)"
+        value={f.features}
+        onChange={(e) => setF({ ...f, features: e.target.value })}
+        placeholder="e.g. full hookup, shade, back-in, patio"
+        hint="Shown as chips on the detail page."
+      />
+
       <div style={{ display: 'flex', gap: '1.5rem' }}>
-        <label><input type="checkbox" checked={f.is_available} onChange={(e) => setF({ ...f, is_available: e.target.checked })} /> Available</label>
+        <label><input type="checkbox" checked={f.is_available} onChange={(e) => setF({ ...f, is_available: e.target.checked })} /> Available (legacy flag)</label>
         <label><input type="checkbox" checked={f.is_published} onChange={(e) => setF({ ...f, is_published: e.target.checked })} /> Published</label>
       </div>
       <Button type="submit" loading={submitting} leading={<IconCheck size={14} />}>Save</Button>

@@ -1,0 +1,12 @@
+---
+export const prerender = false;
+import AdminBase from '@layouts/AdminBase.astro';
+import { ParkMapEditor } from '@components/react/ParkMapEditor.tsx';
+---
+<AdminBase
+  title="Park Map Editor"
+  subtitle="Upload the base map image and place a polygon for each RV site"
+  active="area-guide"
+>
+  <ParkMapEditor client:load />
+</AdminBase>

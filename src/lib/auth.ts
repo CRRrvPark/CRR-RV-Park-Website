@@ -73,10 +73,23 @@ export async function verifyRequestUser(req: Request): Promise<AuthedUser | null
 
   const { data } = await sb
     .from('app_users')
-    .select('id, email, display_name, role, is_active')
+    .select('id, email, display_name, role, is_active, last_login_at')
     .eq('id', user.id)
     .single();
   if (!data || !data.is_active) return null;
+
+  // Throttled last-seen touch. Updates last_login_at at most once every
+  // 2 minutes per user so the Users admin screen reflects active sessions
+  // (not just the original invite click, which is what sign-in magic-link
+  // users were stuck showing). Fire-and-forget: do not block auth on it.
+  const STALE_MS = 2 * 60 * 1000;
+  const lastSeen = data.last_login_at ? new Date(data.last_login_at).getTime() : 0;
+  if (Date.now() - lastSeen > STALE_MS) {
+    sb.from('app_users')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', user.id)
+      .then(() => {}, () => {});
+  }
 
   return {
     id: data.id,

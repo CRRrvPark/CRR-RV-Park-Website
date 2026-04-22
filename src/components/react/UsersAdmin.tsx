@@ -186,7 +186,7 @@ function UsersAdminInner() {
                   <th>User</th>
                   <th>Role</th>
                   <th>Status</th>
-                  <th>Last sign-in</th>
+                  <th>Last seen</th>
                   {canManage && <th style={{ width: 120 }}></th>}
                 </tr>
               </thead>
@@ -237,7 +237,7 @@ function UsersAdminInner() {
                       )}
                     </td>
                     <td className="text-sm text-muted">
-                      {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}
+                      {u.last_login_at ? relativeTime(u.last_login_at) : 'Never'}
                     </td>
                     {canManage && (
                       <td style={{ textAlign: 'right' }}>
@@ -354,6 +354,20 @@ function InviteUserModal({ onClose, onInvited }: { onClose: () => void; onInvite
       </div>
     </Modal>
   );
+}
+
+function relativeTime(iso: string): string {
+  const d = new Date(iso).getTime();
+  const diff = Date.now() - d;
+  const s = Math.round(diff / 1000);
+  if (s < 60) return 'just now';
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const days = Math.round(h / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 export function UsersAdmin() {

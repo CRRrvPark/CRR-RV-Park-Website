@@ -339,6 +339,9 @@ export interface RegionPin {
   iconEmoji?: string;
   description?: string;
   isDefault?: boolean;
+  /** Hero image URL (for the popover thumbnail). Already proxied
+   *  through /api/place-photo when sourced from Google. */
+  thumbnailUrl?: string;
 }
 
 export interface RegionPinCategory {
@@ -446,6 +449,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       href: trailsHidden ? undefined : `/trails/${t.slug}`,
       iconEmoji: '🥾',
       description: t.summary ?? undefined,
+      thumbnailUrl: t.hero_image_url ?? undefined,
     });
   }
 
@@ -460,12 +464,17 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       href: thingsHidden ? undefined : `/things-to-do/${thing.slug}`,
       iconEmoji: thingEmoji(thing),
       description: thing.summary ?? undefined,
+      thumbnailUrl: thing.hero_image_url ?? undefined,
     });
   }
 
   for (const p of places) {
     const loc = p.cached_data?.location;
     if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') continue;
+    // Synthesize a thumbnail URL from the first cached Place photo (proxy
+    // hides the API key — same approach LocalPlaceCard uses).
+    const photoName = p.cached_data?.photos?.[0]?.name;
+    const thumbnailUrl = photoName ? `/api/place-photo?name=${encodeURIComponent(photoName)}&w=480` : undefined;
     pins.push({
       id: `place:${p.id}`,
       lat: loc.latitude,
@@ -475,6 +484,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       href: p.cached_data?.googleMapsUri,
       iconEmoji: placeEmoji(p.category),
       description: p.our_description ?? p.cached_data?.editorialSummary?.text ?? undefined,
+      thumbnailUrl,
     });
   }
 

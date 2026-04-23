@@ -5,25 +5,24 @@
  * Uses Google's cached_data for name, rating, address, photo, hours, and
  * link to Maps. Falls back to name_override when Google data is missing.
  *
- * For photos we don't proxy the bytes — we render Google's photo reference
- * URL directly. Photos auto-refresh when cached_data is refreshed.
+ * Photos go through our /api/place-photo proxy so the Places API key
+ * stays server-side (the previous implementation embedded the key in
+ * the rendered HTML — a leaked-secret + restriction-mismatch bug).
  */
 import type { LocalPlace } from '@lib/area-guide';
 
 export interface Props {
   place: LocalPlace;
-  /** Optional API key exposed to the browser for rendering Places photos. */
-  apiKey?: string;
 }
 
-const { place, apiKey } = Astro.props;
+const { place } = Astro.props;
 const g = place.cached_data ?? {};
 
-// Google's photo reference is a `photos[].name` string; we compose the media URL.
-// If no API key is provided we fall back to the Google Maps listing.
+// Google's photo reference is `photos[].name` (e.g. "places/<id>/photos/<ref>").
+// /api/place-photo redirects to the signed Google CDN URL with our server key.
 const photo = g.photos?.[0];
-const photoUrl = photo?.name && apiKey
-  ? `https://places.googleapis.com/v1/${photo.name}/media?maxHeightPx=420&key=${apiKey}`
+const photoUrl = photo?.name
+  ? `/api/place-photo?name=${encodeURIComponent(photo.name)}&w=600`
   : null;
 
 const displayName = g.displayName?.text ?? place.name_override ?? '(Unnamed place)';

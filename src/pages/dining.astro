@@ -17,12 +17,6 @@ if (await isRouteHidden(Astro.url.pathname)) {
 
 const places = await getLocalPlaces();
 
-// Public Maps key is safe to include (domain-restricted server-side config).
-const publicMapsKey =
-  import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
-  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
-  '';
-
 const title = 'Local Dining & Places near Crooked River Ranch RV Park';
 const description = 'Restaurants, breweries, coffee, and local shops near our Central Oregon RV park. Live hours, ratings, and directions from Google — no outdated lists to maintain.';
 const canonical = 'https://www.crookedriverranchrv.com/dining';
@@ -73,7 +67,7 @@ const sections: { key: keyof typeof byCategory; label: string }[] = [
             <span class="section-label">{s.label}</span>
             <h2 class="st" style="margin-top:.4rem;">{s.label === 'Restaurants' ? 'Where to eat.' : s.label === 'Breweries' ? 'Where to drink.' : s.label === 'Coffee' ? 'Where to caffeinate.' : s.label === 'Local shops' ? 'Where to browse.' : s.label === 'Attractions' ? 'Where to wander.' : 'Other worth a stop.'}</h2>
             <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
-              {byCategory[s.key].map((p) => <LocalPlaceCard place={p} apiKey={publicMapsKey} />)}
+              {byCategory[s.key].map((p) => <LocalPlaceCard place={p} />)}
             </div>
           </div>
         </section>

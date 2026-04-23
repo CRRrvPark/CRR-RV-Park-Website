@@ -254,20 +254,26 @@ const polygons = sites.map((s) => {
       pinnedOnMobile = false;
     }
 
-    wrap.addEventListener('pointerenter', (e) => {
+    // Desktop hover model. pointermove fires constantly inside the wrap;
+    // we recompute on every move so the popover only shows while the
+    // cursor is actually over a polygon, hides the moment it leaves one
+    // (without waiting for the cursor to exit the whole wrap), and
+    // swaps content cleanly when moving directly between two polygons.
+    wrap.addEventListener('pointermove', (e) => {
       if (isTouch) return;
       const link = e.target.closest('.ppm-link');
-      if (!link) return;
-      activeLink = link;
-      try { populate(JSON.parse(link.dataset.site.replace(/&#39;/g, "'"))); } catch {}
-      showAt(e.clientX, e.clientY);
-    }, true);
-
-    wrap.addEventListener('pointermove', (e) => {
-      if (isTouch || !activeLink) return;
-      showAt(e.clientX, e.clientY);
+      if (link) {
+        if (link !== activeLink) {
+          activeLink = link;
+          try { populate(JSON.parse(link.dataset.site.replace(/&#39;/g, "'"))); } catch {}
+        }
+        showAt(e.clientX, e.clientY);
+      } else if (activeLink) {
+        hide();
+      }
     });
 
+    // Cursor leaves the wrap entirely → ensure popover is closed.
     wrap.addEventListener('pointerleave', () => {
       if (isTouch) return;
       hide();
@@ -372,6 +378,16 @@ const polygons = sites.map((s) => {
     pointer-events: auto;
     font-size: 0.9rem;
     line-height: 1.4;
+  }
+  /* Desktop hover model: popover is informational only — desktop users
+     navigate by clicking the polygon directly, so the popover should not
+     intercept pointer events from polygons beneath it. Touch devices keep
+     pointer-events:auto so the in-popover Site info / Book / Call buttons
+     remain tappable. */
+  @media (hover: hover) {
+    .ppm-popover {
+      pointer-events: none;
+    }
   }
   .ppm-popover[hidden] { display: none; }
   .ppm-pop-title {

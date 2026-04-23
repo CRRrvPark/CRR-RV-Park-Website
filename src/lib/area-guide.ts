@@ -357,11 +357,66 @@ export const REGION_PIN_CATEGORIES: RegionPinCategory[] = [
   { key: 'families',          label: 'Families',          emoji: '👨‍👩‍👧' },
   { key: 'active',            label: 'Active',            emoji: '🥾' },
   { key: 'rvers',             label: 'RVers',             emoji: '🚐' },
-  { key: 'dogs',              label: 'Dog Owners',        emoji: '🐕' },
+  // 'dogs' filter intentionally removed (owner 2026-04-23) — not
+  // useful as its own map filter; dog-friendly trails still surface
+  // via the Trails / Active categories.
   { key: 'day_trippers',      label: 'Day Trippers',      emoji: '🚗' },
   { key: 'winter',            label: 'Winter',            emoji: '❄' },
   { key: 'food_community',    label: 'Food & Community',  emoji: '🍺' },
 ];
+
+/**
+ * Geofence + exception list for the Area Guide region map.
+ *
+ * Default rule: any pin more than ~50 straight-line miles from the
+ * RV park is dropped (≈ 60 minutes drive in central Oregon). Pins
+ * for major destinations that are worth showing despite a longer
+ * drive are kept via the FAR_EXCEPTION_SLUGS set (ski resorts,
+ * national parks/monuments, the Cascade Lakes scenic byway, etc.).
+ */
+const PARK_LAT = 44.4462;
+const PARK_LNG = -121.2978;
+const MAX_PIN_MILES = 50;
+const FAR_EXCEPTION_SLUGS = new Set<string>([
+  // National parks + monuments
+  'crater-lake-drive',
+  'painted-hills',
+  'newberry-obsidian-flows',
+  // Ski + sno-park
+  'mt-bachelor-skiing',
+  'snowshoeing',
+  // Major byway / fishery / rafting destinations
+  'cascade-lakes-scenic-byway',
+  'cascade-lakes-flyfishing',
+  'sparks-lake-paddle',
+  'crane-prairie-boating',
+  'deschutes-flyfishing',
+  'whitewater-rafting-deschutes',
+  'metolius-river-flyfishing',
+  'alder-springs-trail',
+  'tumalo-falls',
+  'black-butte-summit',
+  'black-butte-stables',
+]);
+
+function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (d: number) => d * Math.PI / 180;
+  const R = 3958.8;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/**
+ * True if this pin should appear on the Area Guide region map.
+ * `slugBase` is the row's slug (without the source prefix).
+ */
+function isPinInScope(category: string, lat: number, lng: number, slugBase: string): boolean {
+  if (category === 'dogs') return false;
+  if (FAR_EXCEPTION_SLUGS.has(slugBase)) return true;
+  return haversineMiles(PARK_LAT, PARK_LNG, lat, lng) <= MAX_PIN_MILES;
+}
 
 /** Slugs the owner asked for as always-on defaults when they exist. */
 const DEFAULT_PRIORITY_SLUGS = new Set([
@@ -440,6 +495,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
 
   for (const t of trails) {
     if (t.trailhead_lat === null || t.trailhead_lng === null) continue;
+    if (!isPinInScope('trails', t.trailhead_lat, t.trailhead_lng, t.slug)) continue;
     pins.push({
       id: `trail:${t.slug}`,
       lat: t.trailhead_lat,
@@ -455,6 +511,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
 
   for (const thing of things) {
     if (thing.lat === null || thing.lng === null) continue;
+    if (!isPinInScope(thing.category, thing.lat, thing.lng, thing.slug)) continue;
     pins.push({
       id: `thing:${thing.slug}`,
       lat: thing.lat,
@@ -471,6 +528,8 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
   for (const p of places) {
     const loc = p.cached_data?.location;
     if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') continue;
+    const placeCategory = mapPlaceCategory(p.category);
+    if (!isPinInScope(placeCategory, loc.latitude, loc.longitude, p.slug)) continue;
     // Synthesize a thumbnail URL from the first cached Place photo (proxy
     // hides the API key — same approach LocalPlaceCard uses).
     const photoName = p.cached_data?.photos?.[0]?.name;
@@ -480,7 +539,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       lat: loc.latitude,
       lng: loc.longitude,
       title: p.name_override ?? p.cached_data?.displayName?.text ?? 'Local place',
-      category: mapPlaceCategory(p.category),
+      category: placeCategory,
       href: p.cached_data?.googleMapsUri,
       iconEmoji: placeEmoji(p.category),
       description: p.our_description ?? p.cached_data?.editorialSummary?.text ?? undefined,

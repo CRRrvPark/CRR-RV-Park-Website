@@ -5,7 +5,8 @@
  * Rules (from HANDOFF.md §4.2, §10):
  *   - "Reservations" is a gold-outlined CTA button (.nav-cta) — NEVER "Book Now"
  *   - Golf dropdown contains only: Golf Stays, Golf Course
- *   - Park Map is NEVER in the nav — it lives at /book-now.html#park-map
+ *   - Park Map is a top-level link (added 2026-04-23 by owner request — was
+ *     previously a #anchor on /book-now.html, now a proper page).
  *   - Mobile breakpoint at 980px (hamburger menu)
  *
  * Dynamic pages with show_in_main_nav=true are inserted between the
@@ -90,6 +91,7 @@ if (hasUrl && hasKey) {
     {dynamicPages.map((p) => (
       <a href={`/${p.slug}`}>{p.title}</a>
     ))}
+    {!hiddenSlugs.has('park-map') && <a href="/park-map">Park Map</a>}
     <a href="/book-now.html" class="nav-cta">Reservations</a>
   </div>
   <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>

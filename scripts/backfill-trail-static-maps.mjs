@@ -49,7 +49,10 @@ const sbHeaders = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-
     // Zoom 14 for in-canyon trails, 13 for longer regional trails.
     const longish = ['crooked-river-loop', 'tam-a-lau-trail', 'alder-springs-trail'].includes(t.slug);
     const zoom = longish ? 13 : 14;
-    const newHero = `/api/static-map?lat=${t.trailhead_lat.toFixed(6)}&lng=${t.trailhead_lng.toFixed(6)}&zoom=${zoom}&w=1200&h=750`;
+    // Google Static Maps free tier caps size at 640×640 per request;
+    // scale=2 makes the delivered image 1280×800 (plenty for the card
+    // hero). Endpoint already clamps but keep URL params at the cap.
+    const newHero = `/api/static-map?lat=${t.trailhead_lat.toFixed(6)}&lng=${t.trailhead_lng.toFixed(6)}&zoom=${zoom}&w=640&h=400`;
 
     // Demote the previous Place-photo hero into the gallery (front of array)
     // unless it's already there. Skip strings that look like our own static-map

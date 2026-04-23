@@ -39,8 +39,11 @@ export const GET: APIRoute = async ({ url }) => {
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return new Response('lat/lng out of range', { status: 400 });
 
   const zoom = clamp(parseInt(url.searchParams.get('zoom') || '14', 10) | 0, 1, 20);
-  const w = clamp(parseInt(url.searchParams.get('w') || '1200', 10) | 0, 64, 2048);
-  const h = clamp(parseInt(url.searchParams.get('h') || '750', 10) | 0, 64, 2048);
+  // Google Static Maps free tier caps size at 640x640 per request.
+  // With scale=2 below, Google renders the delivered image at 2x
+  // (so size=640x400 → 1280x800 actual image on Retina screens).
+  const w = clamp(parseInt(url.searchParams.get('w') || '640', 10) | 0, 64, 640);
+  const h = clamp(parseInt(url.searchParams.get('h') || '400', 10) | 0, 64, 640);
   const maptype = (url.searchParams.get('maptype') || 'terrain').replace(/[^a-z]/g, '');
   const labelChar = (url.searchParams.get('label') || '').replace(/[^A-Z0-9]/g, '').slice(0, 1);
 

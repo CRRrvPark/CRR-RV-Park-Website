@@ -320,7 +320,15 @@ function zoneHtml(atoms: any[] | null): string {
         // convention matches hero + TwoColumn) and wrap in <picture> so
         // phones download the smaller file. Falls back to the raw <img>
         // when no mobile sibling exists (admin-uploaded Supabase URLs).
-        const imgBlockBase = typeof p.imageUrl === 'string' ? p.imageUrl.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+        // Only derive -mobile.webp / .webp variants for local static
+        // image files where those siblings might actually exist. Dynamic
+        // URLs (/api/*) and external (http…) URLs don't have a webp
+        // sibling — appending .webp breaks query params and 404s, and
+        // on /api/place-photo specifically produced 64-px thumbnails
+        // because the suffix got parsed into the ?w= value as NaN→0.
+        const imgBlockBase = typeof p.imageUrl === 'string' && /^\/images\/.+\.(webp|jpe?g|png|avif)$/i.test(p.imageUrl)
+          ? p.imageUrl.replace(/\.(webp|jpe?g|png|avif)$/i, '')
+          : '';
         const imgBlockMobile = imgBlockBase ? `${imgBlockBase}-mobile.webp` : '';
         const imgBlockWebp = imgBlockBase ? `${imgBlockBase}.webp` : '';
         const imgBlockImg = p.imageUrl ? (
@@ -472,7 +480,11 @@ function zoneHtml(atoms: any[] | null): string {
         // to the full-size `<img>` — the browser ignores any `<source>`
         // that 404s on srcset match. Section images are a big share of the
         // "Improve image delivery" savings Lighthouse flags on mobile.
-        const twoColImgBase = typeof p.image === 'string' ? p.image.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+        // See ImgBlock comment above — skip webp variants for dynamic
+        // /api/* and external URLs.
+        const twoColImgBase = typeof p.image === 'string' && /^\/images\/.+\.(webp|jpe?g|png|avif)$/i.test(p.image)
+          ? p.image.replace(/\.(webp|jpe?g|png|avif)$/i, '')
+          : '';
         const twoColImgMobile = twoColImgBase ? `${twoColImgBase}-mobile.webp` : '';
         const twoColImgWebp = twoColImgBase ? `${twoColImgBase}.webp` : '';
         const twoColImgTag = p.image ? (
@@ -696,7 +708,11 @@ function zoneHtml(atoms: any[] | null): string {
                   // Responsive thumbnail: derive -mobile.webp sibling the
                   // same way hero/TwoColumn/ImageBlock do. Falls through
                   // to raw <img> for admin-uploaded URLs without siblings.
-                  const cBase = typeof c.image === 'string' ? c.image.replace(/\.(webp|jpe?g|png|avif)$/i, '') : '';
+                  // See ImgBlock comment — skip webp variants for
+                  // dynamic /api/* and external URLs.
+                  const cBase = typeof c.image === 'string' && /^\/images\/.+\.(webp|jpe?g|png|avif)$/i.test(c.image)
+                    ? c.image.replace(/\.(webp|jpe?g|png|avif)$/i, '')
+                    : '';
                   const cMobile = cBase ? `${cBase}-mobile.webp` : '';
                   const cWebp = cBase ? `${cBase}.webp` : '';
                   const inner = (

@@ -16,8 +16,7 @@
 export const prerender = true;
 
 import Base from '@layouts/Base.astro';
-import { getParkSites, getParkSiteByCode, type ParkSite, type ParkSiteStatus } from '@lib/area-guide';
-import { isRouteHidden } from '@lib/site-visibility';
+import { getParkSites, type ParkSite, type ParkSiteStatus } from '@lib/area-guide';
 
 export async function getStaticPaths() {
   const sites = await getParkSites();
@@ -30,13 +29,6 @@ export async function getStaticPaths() {
 interface Props { site: ParkSite; }
 
 const { site } = Astro.props;
-
-// If the whole /park-map branch is hidden, hide every /sites/[code] too —
-// consistent visibility story, no "you can't reach the map but you can
-// still hit a site's detail" dead ends.
-if (await isRouteHidden('/park-map')) {
-  return new Response('Not Found', { status: 404 });
-}
 
 const statusLabels: Record<ParkSiteStatus, string> = {
   available: 'Available for booking',

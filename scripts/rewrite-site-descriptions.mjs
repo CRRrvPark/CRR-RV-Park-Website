@@ -67,15 +67,15 @@ function specLine(site) {
 // Tent loop — grassy, shaded, quiet, canyon-rim sunsets.
 function describeT(site) {
   return (
-    "Pitch your tent in CRR's grassy south field — soft turf underfoot, " +
+    "Pitch your tent in CRR's grassy tent field — soft turf underfoot, " +
     "shade trees scattered through the loop, and just enough quiet that " +
     "you'll hear the wind shift through the leaves. Set up the camp chairs, " +
-    "let the kids run between sites, and walk over to the saltwater pool, the " +
-    "gazebo, or the courts whenever you feel like it. As the day winds down, " +
-    "the sunset slips slow over the canyon rim to the west and the air cools " +
-    "just enough to remind you you're in the high desert. No hookups at the " +
-    "site itself, but the park's Wi-Fi reaches the loop — so it's just the " +
-    "canopy of the trees, the sky, and everything you came out here to find."
+    "let the kids run between sites, and wander over to the gazebo, the " +
+    "saltwater pool, or the courts whenever you feel like it. As the day winds " +
+    "down, the sunset slips slow over the canyon rim and the air cools just " +
+    "enough to remind you you're in the high desert. No hookups at the site " +
+    "itself, but the park's Wi-Fi reaches the loop — so it's just the canopy " +
+    "of the trees, the sky, and everything you came out here to find."
   );
 }
 
@@ -86,13 +86,13 @@ function describeA(site) {
     : "A back-in site for smaller rigs and travel trailers, ";
   return (
     lengthBit +
-    "tucked beneath mature shade trees with the canyon-rim gazebo just across " +
-    "the open green. Hook up to power and water, set the picnic table where " +
-    "the light's right, and you're a few-minute walk from the saltwater pool, " +
-    "the courts, the dog run, and the golf course. Let the kids play catch in " +
-    "the grass between sites, watch the long evening light filter through the " +
-    "leaves, breathe in the high-desert air, and let the stress of the road " +
-    "fade with the falling sun. Both slide-outs accommodated."
+    "tucked beneath mature shade trees with the canyon-rim gazebo across the " +
+    "open green. Hook up to power and water, set the picnic table where the " +
+    "light's right, and the park's saltwater pool, courts, dog run, and golf " +
+    "course are all an easy walk away. Let the kids play catch in the grass " +
+    "between sites, watch the long evening light filter through the leaves, " +
+    "breathe in the high-desert air, and let the stress of the road fade " +
+    "with the falling sun. Both slide-outs accommodated."
   );
 }
 
@@ -106,17 +106,17 @@ function describeB(site) {
     "— long enough for big rigs, easy enough you'll be set up and unwinding " +
     "before the afternoon turns to evening. Sage and juniper screens between " +
     "the sites give you privacy; mature trees frame the view; the canyon bluff " +
-    "and the sunset settle in to the west. Step outside the rig and the kids " +
-    "are a short walk from the pool and the courts; you're a few minutes from " +
-    "the golf course; the gazebo and bathhouses are right around the bend. " +
-    "Hook up, level once, breathe in the high-desert air — this is the kind of " +
-    "site that makes a long trip feel restful."
+    "and the sunset settle in to the west. Step outside the rig and the pool, " +
+    "the courts, the dog run, the gazebo, and the bathhouses are all an easy " +
+    "walk; the golf course is right there too. Hook up, level once, breathe in " +
+    "the high-desert air — this is the kind of site that makes a long trip " +
+    "feel restful."
   );
 }
 
 const SPECIAL = {
   MAGIC:
-    "The MAGIC site — our regulars named it. A special tent spot tucked beneath " +
+    "The MAGIC site — named by our campers. A special tent spot tucked beneath " +
     "the deepest deciduous shade on the corner of the tent loop, with soft grass " +
     "under the canopy and the most cover from the afternoon sun in the whole " +
     "tent area. Quiet, intimate, a little hidden from the rest of the park, and " +

@@ -3,32 +3,30 @@
  * /sites/[code] — per-site detail page.
  *
  * Linked from the polygon map popover ("Site info →") and from polygon
- * click-through on desktop. Shows full specs, photo gallery, admin-edited
+ * click-through on desktop. Shows full specs, photo gallery (when admin
+ * has uploaded any) or a "Coming soon" placeholder, admin-edited
  * description + features, and a status-aware CTA (Book / Call / info-only).
  *
- * Pre-rendered at build time for every published park_sites row, so each
- * page is a static HTML file with instant TTFB. Re-renders on the next
- * build whenever content changes (just like /trails/[slug] and
- * /things-to-do/[slug]). Routes like /sites/A-01, /sites/1C, /sites/D-14-B
- * all resolve cleanly — the URL segment is whatever's in site_number.
+ * Server-rendered (not prerendered) so the moment the admin saves a
+ * hero or gallery image on the site row, the next visitor sees the
+ * real photos instead of the placeholder — no rebuild needed. Was
+ * previously prerendered at build time, but that meant admin uploads
+ * stayed invisible until the next deploy.
  */
 
-export const prerender = true;
+export const prerender = false;
 
 import Base from '@layouts/Base.astro';
-import { getParkSites, type ParkSite, type ParkSiteStatus } from '@lib/area-guide';
+import { getParkSiteByCode, type ParkSiteStatus } from '@lib/area-guide';
 
-export async function getStaticPaths() {
-  const sites = await getParkSites();
-  return sites.map((s) => ({
-    params: { code: s.site_number },
-    props: { site: s },
-  }));
+const code = Astro.params.code as string | undefined;
+if (!code) {
+  return new Response('Not Found', { status: 404 });
 }
-
-interface Props { site: ParkSite; }
-
-const { site } = Astro.props;
+const site = await getParkSiteByCode(code);
+if (!site) {
+  return new Response('Not Found', { status: 404 });
+}
 
 const statusLabels: Record<ParkSiteStatus, string> = {
   available: 'Available for booking',

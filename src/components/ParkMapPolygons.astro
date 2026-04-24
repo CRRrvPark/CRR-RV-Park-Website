@@ -46,6 +46,7 @@ interface SiteRow {
   status_note: string | null;
   map_polygon: [number, number][] | null;
   firefly_deep_link: string | null;
+  hero_image_url: string | null;
 }
 
 export interface Props {
@@ -96,6 +97,7 @@ const polygons = sites.map((s) => {
     detailUrl: `/sites/${encodeURIComponent(s.site_number)}`,
     bookUrl: canBook ? bookUrl : null,
     phone: s.status === 'staff_only' ? '541-923-1441' : null,
+    heroImage: s.hero_image_url ?? null,
   };
   return {
     siteCode: s.site_number,
@@ -154,6 +156,11 @@ const polygons = sites.map((s) => {
   {/* Single floating popover, driven by the inline script below. Hidden
      by default; positioned JS-side on hover/tap and shown. */}
   <div class="ppm-popover" role="dialog" aria-hidden="true" hidden>
+    {/* Hero image (admin-uploaded). The wrapper stays in DOM but is
+        toggled hidden when no hero is set; populate() sets the src. */}
+    <div class="ppm-pop-hero" hidden>
+      <img class="ppm-pop-hero-img" alt="" loading="lazy" decoding="async" />
+    </div>
     <h3 class="ppm-pop-title"></h3>
     <div class="ppm-pop-status"></div>
     <div class="ppm-pop-note"></div>
@@ -187,6 +194,17 @@ const polygons = sites.map((s) => {
     let pinnedOnMobile = false;
 
     function populate(data) {
+      // Hero image — only show when admin has uploaded one for this site.
+      const heroWrap = popover.querySelector('.ppm-pop-hero');
+      const heroImg = popover.querySelector('.ppm-pop-hero-img');
+      if (data.heroImage) {
+        heroImg.src = data.heroImage;
+        heroImg.alt = 'Site ' + (data.code || '');
+        heroWrap.hidden = false;
+      } else {
+        heroImg.removeAttribute('src');
+        heroWrap.hidden = true;
+      }
       popover.querySelector('.ppm-pop-title').textContent = 'Site ' + (data.code || '');
       const status = popover.querySelector('.ppm-pop-status');
       const statusLabels = {
@@ -390,6 +408,24 @@ const polygons = sites.map((s) => {
     }
   }
   .ppm-popover[hidden] { display: none; }
+  /* Hero image at the top of the popover — same trick as the
+     /sites/[code] cinema-marquee placeholder: extends to the popover
+     padding edges by negative-margin then adds back rounded corners
+     on the top so it joins flush with the white card body. */
+  .ppm-pop-hero {
+    margin: -0.85rem -1rem 0.7rem;
+    height: 130px;
+    overflow: hidden;
+    background: #ede5d8;
+    border-radius: 6px 6px 0 0;
+  }
+  .ppm-pop-hero[hidden] { display: none; }
+  .ppm-pop-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .ppm-pop-title {
     margin: 0 0 0.25rem;
     font-family: var(--serif, Georgia, serif);

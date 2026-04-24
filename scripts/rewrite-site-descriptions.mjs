@@ -73,9 +73,9 @@ function describeT(site) {
     "let the kids run between sites, and walk over to the saltwater pool, the " +
     "gazebo, or the courts whenever you feel like it. As the day winds down, " +
     "the sunset slips slow over the canyon rim to the west and the air cools " +
-    "just enough to remind you you're in the high desert. No hookups, no power, " +
-    "no Wi-Fi up here at the rig — just the canopy of the trees, the sky, and " +
-    "everything you came out here to find."
+    "just enough to remind you you're in the high desert. No hookups at the " +
+    "site itself, but the park's Wi-Fi reaches the loop — so it's just the " +
+    "canopy of the trees, the sky, and everything you came out here to find."
   );
 }
 

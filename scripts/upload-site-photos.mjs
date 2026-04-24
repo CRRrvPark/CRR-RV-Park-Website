@@ -54,9 +54,14 @@ function mapFilenameToSite(name) {
   if (stem.startsWith('unknown_')) return null;
   if (stem === 'gazebo') return null;
   if (stem === 'MAGIC') return { site: 'MAGIC', alt: false };
-  const altMatch = stem.match(/^([TA])-(\d+)_alt$/);
+  // Loop-letter prefixed (T-9, A-12, B-3, C-7, D-25 …) with optional
+  // _alt suffix or iPhone parenthesized duplicate suffix like B-7(2).
+  // The duplicate variants are treated as skipped (the un-parenthesized
+  // file wins for hero assignment).
+  if (/^([A-Z])-(\d+)\(\d+\)$/.test(stem)) return null; // duplicate take
+  const altMatch = stem.match(/^([A-Z])-(\d+)_alt$/);
   if (altMatch) return { site: altMatch[1] + altMatch[2], alt: true };
-  const mainMatch = stem.match(/^([TA])-(\d+)$/);
+  const mainMatch = stem.match(/^([A-Z])-(\d+)$/);
   if (mainMatch) return { site: mainMatch[1] + mainMatch[2], alt: false };
   return null;
 }

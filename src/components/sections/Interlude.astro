@@ -1,5 +1,5 @@
 ---
-import { blockText, blockHtml, blockUrl, blockImage, blockBool, type BlockMap } from '@lib/section-blocks';
+import { blockText, blockHtml, blockUrl, blockImage, blockBool, blockJson, type BlockMap } from '@lib/section-blocks';
 export interface Props { blocks: BlockMap; }
 const { blocks } = Astro.props;
 const eyebrow = blockText(blocks, 'eyebrow', '');
@@ -10,6 +10,8 @@ const bg = blockImage(blocks, 'background_image', { url: '/images/stars.jpg', al
 const ctaLabel = blockText(blocks, 'cta_label', '');
 const ctaUrl = blockUrl(blocks, 'cta_url', '#');
 const enableLightbox = blockBool(blocks, 'image_lightbox', false);
+interface GalleryItem { image: string; alt?: string; }
+const gallery = (blockJson<GalleryItem[]>(blocks, 'gallery', [])).filter((g) => g && g.image);
 ---
 <section class="interlude">
   <div
@@ -29,6 +31,21 @@ const enableLightbox = blockBool(blocks, 'image_lightbox', false);
     <h2 class="interlude-headline" set:html={headline}></h2>
     {body && <p class="interlude-body" set:html={body}></p>}
     {credit && <p class="interlude-credit">{credit}</p>}
+    {gallery.length > 0 && (
+      <div class="interlude-gallery">
+        {gallery.map((g) => (
+          <img
+            src={g.image}
+            alt={g.alt ?? ''}
+            loading="lazy"
+            data-lightbox="true"
+            data-lightbox-src={g.image}
+            data-lightbox-alt={g.alt ?? ''}
+            data-lightbox-caption={g.alt ?? credit}
+          />
+        ))}
+      </div>
+    )}
     {ctaLabel && (
       <div class="section-cta section-cta-dark" style="margin-top:2rem;">
         <a href={ctaUrl} target={ctaUrl.startsWith('http') ? '_blank' : undefined} rel={ctaUrl.startsWith('http') ? 'noopener noreferrer' : undefined}>{ctaLabel}</a>

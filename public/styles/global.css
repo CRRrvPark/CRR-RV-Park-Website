@@ -245,6 +245,9 @@ a.res-link:hover{border-color:rgba(196,98,45,.35);transform:translateY(-2px);}
 .interlude-headline em{font-style:italic;color:var(--gold);}
 .interlude-body{font-size:1rem;color:rgba(255,255,255,.8);line-height:1.75;max-width:520px;margin:0 auto;}
 .interlude-credit{margin-top:1.5rem;font-size:.78rem;color:rgba(255,255,255,.38);letter-spacing:.06em;}
+.interlude-gallery{margin-top:2rem;display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
+.interlude-gallery img{width:120px;height:90px;object-fit:cover;border-radius:4px;cursor:zoom-in;border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform .2s ease,border-color .2s ease;}
+.interlude-gallery img:hover,.interlude-gallery img:focus-visible{transform:translateY(-2px);border-color:var(--gold);}
 
 /* ---- DARK SECTIONS ---- */
 .sec-dark{background:var(--dark);color:#fff;}

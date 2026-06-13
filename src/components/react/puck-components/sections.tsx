@@ -1325,8 +1325,10 @@ export const InterludeSection: ComponentConfig = {
     credit: '',
     backgroundImageUrl: '/images/hero.jpg',
     bgObjectFit: 'cover',
+    bgLightbox: false,
     ctaLabel: '',
     ctaUrl: '#',
+    gallery: [],
   },
   fields: {
     ...styleFields,
@@ -1340,10 +1342,28 @@ export const InterludeSection: ComponentConfig = {
       render: MediaPickerField,
     },
     bgObjectFit: objectFitField,
+    bgLightbox: {
+      type: 'radio',
+      label: 'Open background full-size on click',
+      options: [
+        { label: 'No', value: false },
+        { label: 'Yes', value: true },
+      ],
+    },
     ctaLabel: { type: 'text', label: 'CTA label' },
     ctaUrl: linkPickerField('CTA URL'),
+    gallery: {
+      type: 'array',
+      label: 'Photo gallery (optional)',
+      getItemSummary: (item: any, i?: number) => item?.alt || `Photo ${((i ?? 0) + 1)}`,
+      defaultItemProps: { image: '', alt: '' },
+      arrayFields: {
+        image: { type: 'custom', label: 'Image', render: MediaPickerField as any },
+        alt: { type: 'text', label: 'Image alt text' },
+      },
+    },
   },
-  render: ({ eyebrow, headline, body, credit, backgroundImageUrl, bgObjectFit, ctaLabel, ctaUrl, puck }: any) => (
+  render: ({ eyebrow, headline, body, credit, backgroundImageUrl, bgObjectFit, bgLightbox, ctaLabel, ctaUrl, gallery, puck }: any) => (
     <section
       ref={puck.dragRef}
       style={{
@@ -1359,6 +1379,12 @@ export const InterludeSection: ComponentConfig = {
         <div
           className="hero-bg"
           style={bgImageStyle(backgroundImageUrl, bgObjectFit)}
+          data-lightbox={bgLightbox && !puck?.isEditing ? 'true' : undefined}
+          data-lightbox-src={bgLightbox && !puck?.isEditing ? backgroundImageUrl : undefined}
+          data-lightbox-caption={bgLightbox && !puck?.isEditing ? (credit || undefined) : undefined}
+          role={bgLightbox && !puck?.isEditing ? 'button' : undefined}
+          tabIndex={bgLightbox && !puck?.isEditing ? 0 : undefined}
+          aria-label={bgLightbox && !puck?.isEditing ? 'View larger image' : undefined}
         />
       )}
       <div className="hero-overlay" />
@@ -1400,6 +1426,20 @@ export const InterludeSection: ComponentConfig = {
         {credit && (
           <div style={{ marginTop: '2rem', fontSize: '.72rem', color: 'rgba(255,255,255,.4)', letterSpacing: '.08em' }}>
             {credit}
+          </div>
+        )}
+        {Array.isArray(gallery) && gallery.filter((g: any) => g?.image).length > 0 && (
+          <div className="interlude-gallery">
+            {gallery.filter((g: any) => g?.image).map((g: any, i: number) => (
+              <img
+                key={i}
+                src={g.image}
+                alt={g.alt || ''}
+                loading="lazy"
+                data-lightbox={!puck?.isEditing ? 'true' : undefined}
+                data-lightbox-caption={!puck?.isEditing ? (g.alt || credit || undefined) : undefined}
+              />
+            ))}
           </div>
         )}
       </div>

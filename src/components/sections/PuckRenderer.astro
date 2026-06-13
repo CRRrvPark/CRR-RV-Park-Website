@@ -1069,29 +1069,69 @@ function zoneHtml(atoms: any[] | null): string {
 
       /* ── InterludeSection ── */
       if (item.type === 'InterludeSection') {
-        // Always render a dark backdrop so the white overlay text stays
-        // readable even when no image is set. If a URL is present, use it;
-        // otherwise paint a deep-navy gradient that evokes the night sky.
-        const interludeBgStyle = p.backgroundImageUrl
+        // When real guest photos are attached, they ARE the visual: render a
+        // calm night-sky band with the photographs shown large below the
+        // copy. A background "hero" image is intentionally suppressed in that
+        // mode so the photos stand on their own rather than competing with a
+        // darkened backdrop. With no gallery, keep the classic centered
+        // interlude (optional background image, else a deep-navy gradient).
+        const interludeGallery: any[] = safeJson(p.gallery, []).filter((g: any) => g && g.image);
+        const hasGallery = interludeGallery.length > 0;
+        const interludeBgStyle = !hasGallery && p.backgroundImageUrl
           ? `background-image:url(${p.backgroundImageUrl});background-size:cover;background-position:center;`
           : 'background:linear-gradient(135deg,#0b1220 0%,#1b2340 45%,#242b4a 100%);';
+        const interludeBase = hasGallery
+          ? 'position:relative;padding:5.5rem 3rem;overflow:hidden;background:#0b1220'
+          : 'position:relative;min-height:50vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0b1220';
+        const interludeInner = hasGallery
+          ? 'position:relative;z-index:2;text-align:center;max-width:1160px;margin:0 auto;'
+          : 'position:relative;z-index:2;text-align:center;padding:5rem 3rem;max-width:780px;';
         return (
-          <section {...sectionAttrs(p, 'position:relative;min-height:50vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0b1220')}>
+          <section {...sectionAttrs(p, interludeBase)}>
             <div class="hero-bg" style={interludeBgStyle} />
             <div class="hero-overlay" />
-            <div style="position:relative;z-index:2;text-align:center;padding:5rem 3rem;max-width:780px;">
+            <div style={interludeInner}>
               {p.eyebrow && <div class="hero-eyebrow" style="justify-content:center;">{p.eyebrow}</div>}
               {p.headline && (
                 <div
-                  style="font-family:var(--serif);font-size:clamp(1.8rem, 4vw, 3rem);font-weight:300;font-style:italic;color:#fff;line-height:1.25;margin-bottom:1.5rem;"
+                  style="font-family:var(--serif);font-size:clamp(1.8rem, 4vw, 3rem);font-weight:300;font-style:italic;color:#fff;line-height:1.25;margin-bottom:1.5rem;max-width:680px;margin-left:auto;margin-right:auto;"
                   set:html={p.headline}
                 />
               )}
               {p.body && (
                 <div
-                  style="color:rgba(255,255,255,.75);font-size:1rem;line-height:1.7;margin-bottom:1.5rem;"
+                  style="color:rgba(255,255,255,.75);font-size:1rem;line-height:1.7;margin-bottom:1.5rem;max-width:560px;margin-left:auto;margin-right:auto;"
                   set:html={p.body}
                 />
+              )}
+              {hasGallery && (
+                <div class="interlude-gallery">
+                  {interludeGallery.map((g: any) => {
+                    const gBase = typeof g.image === 'string' && /^\/images\/.+\.(webp|jpe?g|png|avif)$/i.test(g.image)
+                      ? g.image.replace(/\.(webp|jpe?g|png|avif)$/i, '')
+                      : '';
+                    const gMobile = gBase ? `${gBase}-mobile.webp` : '';
+                    const gWebp = gBase ? `${gBase}.webp` : '';
+                    return (
+                      <figure>
+                        <picture>
+                          {gMobile && <source media="(max-width:768px)" srcset={gMobile} type="image/webp" />}
+                          {gWebp && <source srcset={gWebp} type="image/webp" />}
+                          <img
+                            src={g.image}
+                            alt={g.alt || ''}
+                            loading="lazy"
+                            decoding="async"
+                            data-lightbox="true"
+                            data-lightbox-src={g.image}
+                            data-lightbox-alt={g.alt || ''}
+                            data-lightbox-caption={g.alt || p.credit || ''}
+                          />
+                        </picture>
+                      </figure>
+                    );
+                  })}
+                </div>
               )}
               {p.ctaLabel && (
                 <div class="section-cta section-cta-dark">

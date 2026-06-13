@@ -245,9 +245,18 @@ a.res-link:hover{border-color:rgba(196,98,45,.35);transform:translateY(-2px);}
 .interlude-headline em{font-style:italic;color:var(--gold);}
 .interlude-body{font-size:1rem;color:rgba(255,255,255,.8);line-height:1.75;max-width:520px;margin:0 auto;}
 .interlude-credit{margin-top:1.5rem;font-size:.78rem;color:rgba(255,255,255,.38);letter-spacing:.06em;}
-.interlude-gallery{margin-top:2rem;display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
-.interlude-gallery img{width:120px;height:90px;object-fit:cover;border-radius:4px;cursor:zoom-in;border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform .2s ease,border-color .2s ease;}
-.interlude-gallery img:hover,.interlude-gallery img:focus-visible{transform:translateY(-2px);border-color:var(--gold);}
+/* Northern-lights photo feature: the guest aurora photos are shown large,
+   as real photographs in their own band below the copy — never thumbnails
+   floated over a background hero. */
+.interlude.has-gallery{min-height:auto;}
+.interlude.has-gallery .interlude-content{max-width:1160px;}
+.interlude.has-gallery .interlude-headline{max-width:680px;margin-left:auto;margin-right:auto;}
+.interlude-gallery{margin-top:2.75rem;display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;}
+.interlude-gallery figure{margin:0;}
+.interlude-gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;cursor:zoom-in;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 50px rgba(0,0,0,.45);transition:transform .25s ease,border-color .25s ease;}
+.interlude-gallery img:hover,.interlude-gallery img:focus-visible{transform:translateY(-3px);border-color:var(--gold);}
+.interlude-gallery figcaption{margin-top:.55rem;font-size:.72rem;color:rgba(255,255,255,.45);letter-spacing:.04em;line-height:1.4;text-align:center;}
+@media(max-width:820px){.interlude-gallery{grid-template-columns:1fr;max-width:460px;margin-left:auto;margin-right:auto;gap:1.4rem;}}
 
 /* ---- DARK SECTIONS ---- */
 .sec-dark{background:var(--dark);color:#fff;}

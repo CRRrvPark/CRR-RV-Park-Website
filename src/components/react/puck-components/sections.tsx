@@ -1363,19 +1363,27 @@ export const InterludeSection: ComponentConfig = {
       },
     },
   },
-  render: ({ eyebrow, headline, body, credit, backgroundImageUrl, bgObjectFit, bgLightbox, ctaLabel, ctaUrl, gallery, puck }: any) => (
+  render: ({ eyebrow, headline, body, credit, backgroundImageUrl, bgObjectFit, bgLightbox, ctaLabel, ctaUrl, gallery, puck }: any) => {
+    const galleryItems = Array.isArray(gallery) ? gallery.filter((g: any) => g?.image) : [];
+    const hasGallery = galleryItems.length > 0;
+    // With photos attached, suppress the background hero so the photographs
+    // are the visual; otherwise keep the classic centered interlude.
+    const showBg = backgroundImageUrl && !hasGallery;
+    return (
     <section
       ref={puck.dragRef}
       style={{
         position: 'relative',
-        minHeight: '50vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        minHeight: hasGallery ? undefined : '50vh',
+        padding: hasGallery ? '5.5rem 3rem' : undefined,
+        display: hasGallery ? undefined : 'flex',
+        alignItems: hasGallery ? undefined : 'center',
+        justifyContent: hasGallery ? undefined : 'center',
+        background: '#0b1220',
         overflow: 'hidden',
       }}
     >
-      {backgroundImageUrl && (
+      {showBg ? (
         <div
           className="hero-bg"
           style={bgImageStyle(backgroundImageUrl, bgObjectFit)}
@@ -1386,6 +1394,11 @@ export const InterludeSection: ComponentConfig = {
           tabIndex={bgLightbox && !puck?.isEditing ? 0 : undefined}
           aria-label={bgLightbox && !puck?.isEditing ? 'View larger image' : undefined}
         />
+      ) : (
+        <div
+          className="hero-bg"
+          style={{ background: 'linear-gradient(135deg,#0b1220 0%,#1b2340 45%,#242b4a 100%)' }}
+        />
       )}
       <div className="hero-overlay" />
       <div
@@ -1393,8 +1406,9 @@ export const InterludeSection: ComponentConfig = {
           position: 'relative',
           zIndex: 2,
           textAlign: 'center',
-          padding: '5rem 3rem',
-          maxWidth: 780,
+          padding: hasGallery ? undefined : '5rem 3rem',
+          maxWidth: hasGallery ? 1160 : 780,
+          margin: '0 auto',
         }}
       >
         {eyebrow && <div className="hero-eyebrow" style={{ justifyContent: 'center' }}>{eyebrow}</div>}
@@ -1408,19 +1422,32 @@ export const InterludeSection: ComponentConfig = {
               color: '#fff',
               lineHeight: 1.25,
               marginBottom: '1.5rem',
+              maxWidth: 680,
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
             dangerouslySetInnerHTML={{ __html: headline }}
           />
         )}
         {body && (
           <div
-            style={{ color: 'rgba(255,255,255,.75)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '1.5rem' }}
+            style={{ color: 'rgba(255,255,255,.75)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '1.5rem', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}
             dangerouslySetInnerHTML={{ __html: body }}
           />
         )}
-        {ctaLabel && (
-          <div className="section-cta section-cta-dark">
-            <a href={ctaUrl || '#'}>{ctaLabel}</a>
+        {hasGallery && (
+          <div className="interlude-gallery">
+            {galleryItems.map((g: any, i: number) => (
+              <figure key={i}>
+                <img
+                  src={g.image}
+                  alt={g.alt || ''}
+                  loading="lazy"
+                  data-lightbox={!puck?.isEditing ? 'true' : undefined}
+                  data-lightbox-caption={!puck?.isEditing ? (g.alt || credit || undefined) : undefined}
+                />
+              </figure>
+            ))}
           </div>
         )}
         {credit && (
@@ -1428,23 +1455,15 @@ export const InterludeSection: ComponentConfig = {
             {credit}
           </div>
         )}
-        {Array.isArray(gallery) && gallery.filter((g: any) => g?.image).length > 0 && (
-          <div className="interlude-gallery">
-            {gallery.filter((g: any) => g?.image).map((g: any, i: number) => (
-              <img
-                key={i}
-                src={g.image}
-                alt={g.alt || ''}
-                loading="lazy"
-                data-lightbox={!puck?.isEditing ? 'true' : undefined}
-                data-lightbox-caption={!puck?.isEditing ? (g.alt || credit || undefined) : undefined}
-              />
-            ))}
+        {ctaLabel && (
+          <div className="section-cta section-cta-dark" style={{ marginTop: '1.5rem' }}>
+            <a href={ctaUrl || '#'}>{ctaLabel}</a>
           </div>
         )}
       </div>
     </section>
-  ),
+    );
+  },
 };
 
 /* ── RegionMapSection ── */

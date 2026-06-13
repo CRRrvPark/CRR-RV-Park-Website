@@ -125,19 +125,19 @@ begin
     on conflict (section_id, key) do nothing;
 
   -- ----- STARGAZING INTERLUDE -----
-  insert into content_blocks (section_id, key, display_name, block_type, display_order, value_text, value_html, value_json, value_boolean, value_image_url, value_image_alt, value_image_width, value_image_height) values
-    (v_sec_stars, 'eyebrow', 'Eyebrow label', 'plain_text', 0, 'Dark Skies', null, null, null, null, null, null, null),
+  -- The three guest aurora photos ARE the feature here: they render as a
+  -- large photo band below the copy on a calm night-sky backdrop. No
+  -- "hero" background image is set, so the photographs stand on their own
+  -- rather than sitting behind a darkened overlay.
+  insert into content_blocks (section_id, key, display_name, block_type, display_order, value_text, value_html, value_json) values
+    (v_sec_stars, 'eyebrow', 'Eyebrow label', 'plain_text', 0, 'Dark Skies', null, null),
     (v_sec_stars, 'headline', 'Headline (multi-line)', 'rich_text', 10, null,
-     'The canyon by day<br>is dramatic. At night,<br>it''s <em>something else.</em>', null, null, null, null, null, null),
+     'The canyon by day<br>is dramatic. At night,<br>it''s <em>something else.</em>', null),
     (v_sec_stars, 'body', 'Body paragraph', 'rich_text', 20, null,
-     'On the nights the aurora reaches this far south, the canyon rim has a front-row seat. A guest stepped out of their RV and caught these — the northern lights over the park, no light pollution in the frame. Just sky.', null, null, null, null, null, null),
-    (v_sec_stars, 'background_image', 'Background image', 'image', 25, null, null, null, null,
-     '/images/aurora.jpg', 'Northern lights over Crooked River Ranch RV Park, with an RV beneath green and magenta aurora', 1420, 1894),
-    (v_sec_stars, 'image_lightbox', 'Open image full-size on click', 'boolean', 28, null, null, null, true, null, null, null, null),
-    (v_sec_stars, 'credit', 'Image credit line', 'plain_text', 30, 'Northern lights over the park — photographed by guest Chris Olson', null, null, null, null, null, null, null),
+     'On the nights the aurora reaches this far south, the canyon rim has a front-row seat. A guest stepped out of their RV and caught these — the northern lights over the park, no light pollution in the frame. Just sky.', null),
+    (v_sec_stars, 'credit', 'Image credit line', 'plain_text', 30, 'Northern lights over the park — photographed by guest Chris Olson', null, null),
     (v_sec_stars, 'gallery', 'Photo gallery', 'json', 40, null, null,
-     '[{"image":"/images/aurora_junipers.jpg","alt":"Aurora glowing teal and purple behind lit juniper trees at the park"},{"image":"/images/aurora_rim.jpg","alt":"Purple aurora over the canyon rim with distant valley lights"}]'::jsonb,
-     null, null, null, null, null)
+     '[{"image":"/images/aurora.jpg","alt":"An RV beneath green and magenta northern lights at Crooked River Ranch RV Park"},{"image":"/images/aurora_junipers.jpg","alt":"Aurora glowing teal and purple behind lit juniper trees at the park"},{"image":"/images/aurora_rim.jpg","alt":"Purple aurora over the canyon rim with distant valley lights"}]'::jsonb)
     on conflict (section_id, key) do nothing;
 
   -- ----- SITE TYPES (4 cards) -----

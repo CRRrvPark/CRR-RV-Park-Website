@@ -9,7 +9,7 @@
 
 ## How Mathew will trigger this
 
-He'll plug in his Z: drive (or the network share is already mounted) at `Z:\RV Park\Matts\`, open a Claude Code session at `Z:\RV Park\Matts\` (or `C:\Claude Workspace\RV Park Website\` if he's already pre-extracted), and tell me something like *"run the office setup runbook."*
+He'll plug in his Z: drive (or the network share is already mounted) at `Z:\RV Park\Matts\RV Park Website - Office Transfer\`, open a Claude Code session at `Z:\RV Park\Matts\RV Park Website - Office Transfer\` (or `C:\Claude Workspace\RV Park Website\` if he's already pre-extracted), and tell me something like *"run the office setup runbook."*
 
 When he does that, execute the steps below **in order**. After each phase, give him a one-line status update — silent execution is not the right pattern when the user is watching a setup take 5–10 minutes.
 
@@ -20,20 +20,20 @@ When he does that, execute the steps below **in order**. After each phase, give 
 Run these in order; the first one that succeeds is the scenario:
 
 1. Does `C:\Claude Workspace\RV Park Website\CLAUDE.md` already exist and contain "Iron-Forged"? → **Scenario B: already-extracted.** Skip to Phase 4.
-2. Does `Z:\RV Park\Matts\workspace\RV Park Website\CLAUDE.md` exist? → **Scenario A: fresh-from-Z.** Continue with Phase 1.
-3. Neither? → Tell Mathew the transfer package isn't found at `Z:\RV Park\Matts\` and stop. Don't guess.
+2. Does `Z:\RV Park\Matts\RV Park Website - Office Transfer\workspace\RV Park Website\CLAUDE.md` exist? → **Scenario A: fresh-from-Z.** Continue with Phase 1. (Mathew may also open the session directly at `Z:\RV Park\Matts\RV Park Website - Office Transfer\` and read this runbook from there — same scenario, same steps.)
+3. Neither? → Tell Mathew the transfer package isn't found at `Z:\RV Park\Matts\RV Park Website - Office Transfer\` and stop. Don't guess.
 
 ---
 
 ## Phase 1 — Mirror the workspace from Z: to C:
 
-Source: `Z:\RV Park\Matts\workspace\`
+Source: `Z:\RV Park\Matts\RV Park Website - Office Transfer\workspace\`
 Destination: `C:\Claude Workspace\`
 
 If `C:\Claude Workspace\` doesn't exist, create it. If it exists and contains other project workspaces (RPMS, Rimrock, etc.), **do not overwrite** them — robocopy only the files we're bringing.
 
 ```powershell
-robocopy "Z:\RV Park\Matts\workspace" "C:\Claude Workspace" /E /COPY:DAT /R:1 /W:1 /XD node_modules dist .netlify /NFL /NDL /NJH /NJS /NP
+robocopy "Z:\RV Park\Matts\RV Park Website - Office Transfer\workspace" "C:\Claude Workspace" /E /COPY:DAT /R:1 /W:1 /XD node_modules dist .netlify /NFL /NDL /NJH /NJS /NP
 ```
 
 Robocopy exit codes 0–7 = success. 8+ = error (report exact code to Mathew and stop).
@@ -42,11 +42,11 @@ Robocopy exit codes 0–7 = success. 8+ = error (report exact code to Mathew and
 
 ## Phase 2 — Drop `.env` into the project
 
-Source: `Z:\RV Park\Matts\env\.env`
+Source: `Z:\RV Park\Matts\RV Park Website - Office Transfer\env\.env`
 Destination: `C:\Claude Workspace\RV Park Website\.env`
 
 ```powershell
-Copy-Item "Z:\RV Park\Matts\env\.env" "C:\Claude Workspace\RV Park Website\.env" -Force
+Copy-Item "Z:\RV Park\Matts\RV Park Website - Office Transfer\env\.env" "C:\Claude Workspace\RV Park Website\.env" -Force
 ```
 
 Then verify with `Test-Path` and report file size to Mathew (should be 2–3 KB).
@@ -60,7 +60,7 @@ The memory dir's path-key depends on the project's working directory. Old machin
 ```powershell
 $dest = "$env:USERPROFILE\.claude\projects\C--Claude Workspace-RV Park Website\memory"
 New-Item -ItemType Directory -Path $dest -Force | Out-Null
-Copy-Item "Z:\RV Park\Matts\claude_memory\*" $dest -Recurse -Force
+Copy-Item "Z:\RV Park\Matts\RV Park Website - Office Transfer\claude_memory\*" $dest -Recurse -Force
 ```
 
 Verify 5 files in `$dest`: MEMORY.md + 4 individual memory files.

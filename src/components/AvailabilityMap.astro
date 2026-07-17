@@ -1,0 +1,586 @@
+---
+/**
+ * AvailabilityMap — guest-facing "Check Availability" map.
+ *
+ * Reuses the ParkMapPolygons.astro pattern: a server-rendered base <img>
+ * with an inline SVG overlay of normalised (0–1) polygons, scaled into a
+ * 0..1000 viewBox. The difference from ParkMapPolygons is behavioural:
+ *
+ *   • A search form (arrival / departure / RV length / slides / site type)
+ *     sits above the map.
+ *   • On search, a tiny inline script calls the same-origin proxy
+ *     (/api/availability) which fetches Rimrock server-side, then repaints
+ *     each polygon available (green) / unavailable (grey).
+ *   • Clicking an AVAILABLE site opens the Firefly reservation deep-link in
+ *     a new tab. Unavailable / blocked sites are dimmed and not reservable.
+ *   • NO pricing is shown anywhere (deliberate — this page is availability
+ *     only; rates live on the booking flow).
+ *
+ * Framework-light on purpose: no React island, ~2 KB of inline JS, matching
+ * the existing polygon map. The map ALWAYS renders from Supabase park_sites
+ * so the page works even when the Rimrock API is unreachable — availability
+ * is layered on top only when the proxy responds.
+ *
+ * The base image is the CSP-allowed Supabase park_maps active image (same
+ * image the polygons were normalised against, so overlay + image stay
+ * aligned). The proxy also exposes the RR base blob same-origin, but using
+ * the Supabase image keeps the overlay perfectly registered.
+ */
+
+const SVG_SCALE = 1000;
+
+interface ParkMap {
+  image_url: string;
+  title: string;
+  natural_width: number;
+  natural_height: number;
+}
+
+interface SiteRow {
+  site_number: string;
+  loop: string;
+  site_type: string | null;
+  length_feet: number | null;
+  amp_service: number | null;
+  pull_through: boolean;
+  status: string;
+  map_polygon: [number, number][] | null;
+  firefly_deep_link: string | null;
+}
+
+export interface Props {
+  parkMap: ParkMap;
+  /** Sites that carry a polygon (caller pre-filters). */
+  sites: SiteRow[];
+}
+
+const { parkMap, sites } = Astro.props;
+
+const FIREFLY_FALLBACK = 'https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK';
+
+function pointsFor(poly: [number, number][]): string {
+  return poly.map(([x, y]) => `${(x * SVG_SCALE).toFixed(1)},${(y * SVG_SCALE).toFixed(1)}`).join(' ');
+}
+function centroidFor(poly: [number, number][]): { x: number; y: number } {
+  const x = poly.reduce((s, p) => s + p[0], 0) / poly.length;
+  const y = poly.reduce((s, p) => s + p[1], 0) / poly.length;
+  return { x: x * SVG_SCALE, y: y * SVG_SCALE };
+}
+
+// Dates for the form defaults / min attributes (America park is fine with
+// the server's date; guests can change it).
+const today = new Date();
+const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const todayIso = iso(today);
+const tomorrowIso = iso(tomorrow);
+
+const polygons = sites.map((s) => {
+  const poly = s.map_polygon as [number, number][];
+  const centroid = centroidFor(poly);
+  // status==='available' sites participate in availability painting; any
+  // other status (camp_host, staff_only, maintenance, reserved, seasonal_
+  // closed) is never guest-reservable → rendered permanently blocked.
+  const bookable = s.status === 'available';
+  const payload = {
+    code: s.site_number,
+    loop: s.loop,
+    type: s.site_type,
+    length: s.length_feet,
+    amp: s.amp_service,
+    pullThrough: s.pull_through,
+    status: s.status,
+    firefly: s.firefly_deep_link || FIREFLY_FALLBACK,
+  };
+  return {
+    code: s.site_number,
+    points: pointsFor(poly),
+    centroid,
+    initialClass: bookable ? 'av-unknown' : 'av-blocked',
+    dataSite: JSON.stringify(payload).replace(/'/g, '&#39;'),
+  };
+});
+---
+
+<div class="av-tool">
+  <form class="av-form" id="avForm" novalidate>
+    <div class="av-form-grid">
+      <div class="fg">
+        <label for="avFrom">Arrival</label>
+        <input type="date" id="avFrom" name="from" value={todayIso} min={todayIso} required />
+      </div>
+      <div class="fg">
+        <label for="avTo">Departure</label>
+        <input type="date" id="avTo" name="to" value={tomorrowIso} min={tomorrowIso} required />
+      </div>
+      <div class="fg">
+        <label for="avType">Site type</label>
+        <select id="avType" name="type">
+          <option value="any">Any type</option>
+          <option value="full-hookup">Full hookup</option>
+          <option value="water_electric">Water + electric</option>
+          <option value="dry">Dry (no hookups)</option>
+          <option value="tent">Tent</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label for="avRig">RV length (ft)</label>
+        <input type="number" id="avRig" name="rigLengthFt" min="1" max="99" inputmode="numeric" placeholder="e.g. 32" />
+      </div>
+      <div class="fg">
+        <label for="avSlides">Slides</label>
+        <select id="avSlides" name="slides">
+          <option value="any">Doesn't matter</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="fg av-form-submit">
+        <label aria-hidden="true">&nbsp;</label>
+        <button type="submit" class="btn-sub" id="avSubmit">Check availability</button>
+      </div>
+    </div>
+    <div class="av-status" id="avStatus" role="status" aria-live="polite">
+      Pick your dates and search to see what's open. Green sites are available for your dates.
+    </div>
+  </form>
+
+  <div class="av-legend" aria-hidden="true">
+    <span class="av-legend-item"><span class="av-swatch av-swatch--avail"></span>Available</span>
+    <span class="av-legend-item"><span class="av-swatch av-swatch--unavail"></span>Unavailable</span>
+    <span class="av-legend-item"><span class="av-swatch av-swatch--unknown"></span>Search to check</span>
+    <span class="av-legend-item"><span class="av-swatch av-swatch--blocked"></span>Not bookable online</span>
+  </div>
+
+  <div class="av-wrap" data-natural-w={parkMap.natural_width} data-natural-h={parkMap.natural_height}>
+    <img
+      src={parkMap.image_url}
+      alt={`Map of Crooked River Ranch RV Park — ${parkMap.title}`}
+      class="av-bg"
+      width={parkMap.natural_width}
+      height={parkMap.natural_height}
+      loading="eager"
+      decoding="async"
+    />
+    <svg
+      class="av-overlay"
+      viewBox={`0 0 ${SVG_SCALE} ${SVG_SCALE}`}
+      preserveAspectRatio="none"
+      aria-label="Interactive availability map"
+    >
+      {polygons.map((p) => (
+        <g class="av-site" data-site-code={p.code} data-site={p.dataSite} role="button" tabindex="0" aria-label={`Site ${p.code}`}>
+          <polygon points={p.points} class={`av-poly ${p.initialClass}`} />
+          <text
+            x={p.centroid.x}
+            y={p.centroid.y}
+            class="av-label"
+            text-anchor="middle"
+            dominant-baseline="central"
+          >{p.code}</text>
+        </g>
+      ))}
+    </svg>
+
+    <div class="av-popover" role="dialog" aria-hidden="true" hidden>
+      <h3 class="av-pop-title"></h3>
+      <div class="av-pop-status"></div>
+      <div class="av-pop-chips"></div>
+      <div class="av-pop-actions">
+        <a class="av-pop-book" href="#" target="_blank" rel="noopener noreferrer">Reserve on Firefly →</a>
+        <div class="av-pop-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var tool = document.currentScript.closest('.av-tool') || document.querySelector('.av-tool');
+    if (!tool) return;
+    var form = tool.querySelector('#avForm');
+    var statusEl = tool.querySelector('#avStatus');
+    var submitBtn = tool.querySelector('#avSubmit');
+    var wrap = tool.querySelector('.av-wrap');
+    var popover = tool.querySelector('.av-popover');
+    if (!form || !wrap || !popover) return;
+
+    var sites = Array.prototype.slice.call(wrap.querySelectorAll('.av-site'));
+    var isTouch = matchMedia('(hover: none)').matches;
+    var activeEl = null;
+    var pinned = false;
+
+    function parseData(el) {
+      try { return JSON.parse(el.dataset.site.replace(/&#39;/g, "'")); } catch (e) { return null; }
+    }
+    function siteState(el) {
+      var poly = el.querySelector('.av-poly');
+      if (poly.classList.contains('av-avail')) return 'avail';
+      if (poly.classList.contains('av-unavail')) return 'unavail';
+      if (poly.classList.contains('av-blocked')) return 'blocked';
+      return 'unknown';
+    }
+    function fmtDate(s) {
+      // s = YYYY-MM-DD → "Jul 17"
+      var parts = s.split('-');
+      if (parts.length !== 3) return s;
+      var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // ---- Popover ----------------------------------------------------------
+    function populate(data, state, reason) {
+      popover.querySelector('.av-pop-title').textContent = 'Site ' + (data.code || '');
+
+      var st = popover.querySelector('.av-pop-status');
+      var labels = {
+        avail: 'Available', unavail: 'Unavailable',
+        blocked: 'Not bookable online', unknown: 'Search dates to check',
+      };
+      st.textContent = labels[state] || '';
+      st.className = 'av-pop-status av-pop-status--' + state;
+
+      var chips = popover.querySelector('.av-pop-chips');
+      chips.innerHTML = '';
+      function chip(t) { var e = document.createElement('span'); e.className = 'av-chip'; e.textContent = t; chips.appendChild(e); }
+      if (data.loop) chip('Loop ' + data.loop);
+      if (data.type) chip(data.type);
+      if (data.length) chip(data.length + ' ft');
+      if (data.amp) chip(data.amp + ' amp');
+      if (data.pullThrough) chip('pull-through');
+
+      var book = popover.querySelector('.av-pop-book');
+      var msg = popover.querySelector('.av-pop-msg');
+      if (state === 'avail') {
+        book.href = data.firefly;
+        book.hidden = false;
+        msg.hidden = true;
+      } else {
+        book.hidden = true;
+        msg.hidden = false;
+        if (state === 'unavail') msg.textContent = reason || 'Not available for the selected dates.';
+        else if (state === 'blocked') msg.textContent = 'Call the office at 541-923-1441 to book this site.';
+        else msg.textContent = 'Pick your dates above and search to check this site.';
+      }
+    }
+    function showAt(clientX, clientY) {
+      var rect = wrap.getBoundingClientRect();
+      var x = clientX - rect.left, y = clientY - rect.top;
+      var popW = 250, popH = popover.offsetHeight || 150;
+      popover.style.left = Math.min(Math.max(x + 14, 8), rect.width - popW - 8) + 'px';
+      popover.style.top = Math.min(Math.max(y - 10, 8), rect.height - popH - 8) + 'px';
+      popover.hidden = false;
+      popover.setAttribute('aria-hidden', 'false');
+    }
+    function hide() {
+      popover.hidden = true;
+      popover.setAttribute('aria-hidden', 'true');
+      activeEl = null;
+      pinned = false;
+    }
+    function reasonFor(el) { return el.dataset.reason || ''; }
+
+    // Desktop hover.
+    wrap.addEventListener('pointermove', function (e) {
+      if (isTouch) return;
+      var el = e.target.closest ? e.target.closest('.av-site') : null;
+      if (el) {
+        if (el !== activeEl) {
+          activeEl = el;
+          populate(parseData(el), siteState(el), reasonFor(el));
+        }
+        showAt(e.clientX, e.clientY);
+      } else if (activeEl) {
+        hide();
+      }
+    });
+    wrap.addEventListener('pointerleave', function () { if (!isTouch) hide(); });
+
+    // Click: available → open Firefly; otherwise show info popover.
+    function activate(el, clientX, clientY) {
+      var data = parseData(el);
+      var state = siteState(el);
+      if (state === 'avail' && data) {
+        window.open(data.firefly, '_blank', 'noopener');
+        return;
+      }
+      activeEl = el;
+      pinned = true;
+      populate(data, state, reasonFor(el));
+      if (typeof clientX === 'number') {
+        showAt(clientX, clientY);
+      } else {
+        var poly = el.querySelector('polygon');
+        var r = poly.getBoundingClientRect();
+        showAt(r.left + r.width / 2, r.top + r.height / 2);
+      }
+    }
+    wrap.addEventListener('click', function (e) {
+      if (e.target.closest('.av-popover')) return;
+      var el = e.target.closest ? e.target.closest('.av-site') : null;
+      if (!el) return;
+      e.preventDefault();
+      activate(el, isTouch ? undefined : e.clientX, e.clientY);
+    });
+    // Keyboard: Enter/Space on a focused site.
+    wrap.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var el = e.target.closest ? e.target.closest('.av-site') : null;
+      if (!el) return;
+      e.preventDefault();
+      activate(el);
+    });
+    document.addEventListener('click', function (e) {
+      if (!pinned) return;
+      if (e.target.closest('.av-popover') || e.target.closest('.av-site')) return;
+      hide();
+    });
+
+    // ---- Repaint ----------------------------------------------------------
+    function resetToUnknown() {
+      sites.forEach(function (el) {
+        var poly = el.querySelector('.av-poly');
+        if (poly.classList.contains('av-blocked')) return; // stays blocked
+        poly.classList.remove('av-avail', 'av-unavail');
+        poly.classList.add('av-unknown');
+        el.removeAttribute('data-reason');
+      });
+    }
+    function paint(list) {
+      var byCode = {};
+      list.forEach(function (s) { byCode[s.code] = s; });
+      var availCount = 0;
+      sites.forEach(function (el) {
+        var poly = el.querySelector('.av-poly');
+        if (poly.classList.contains('av-blocked')) return;
+        var code = el.getAttribute('data-site-code');
+        var rec = byCode[code];
+        poly.classList.remove('av-unknown', 'av-avail', 'av-unavail');
+        if (rec && rec.available) {
+          poly.classList.add('av-avail');
+          el.removeAttribute('data-reason');
+          availCount++;
+        } else {
+          poly.classList.add('av-unavail');
+          if (rec && rec.reason) el.setAttribute('data-reason', rec.reason);
+          else el.removeAttribute('data-reason');
+        }
+      });
+      return availCount;
+    }
+
+    function setStatus(msg, kind) {
+      statusEl.textContent = msg;
+      statusEl.className = 'av-status' + (kind ? ' av-status--' + kind : '');
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      hide();
+      var from = form.from.value;
+      var to = form.to.value;
+      if (!from || !to) { setStatus('Please choose both an arrival and a departure date.', 'warn'); return; }
+      if (to <= from) { setStatus('Your departure date must be after your arrival date.', 'warn'); return; }
+
+      var qs = new URLSearchParams({ from: from, to: to });
+      if (form.type.value && form.type.value !== 'any') qs.set('type', form.type.value);
+      if (form.rigLengthFt.value) qs.set('rigLengthFt', form.rigLengthFt.value);
+      if (form.slides.value && form.slides.value !== 'any') qs.set('slides', form.slides.value);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Checking…';
+      setStatus('Checking availability…');
+
+      fetch('/api/availability?' + qs.toString(), { headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.ok) {
+            resetToUnknown();
+            setStatus(
+              (data && data.reason ? data.reason + ' ' : '') +
+              'Live availability is temporarily unavailable — please call the office at 541-923-1441 or try again shortly.',
+              'warn'
+            );
+            return;
+          }
+          var n = paint(data.sites || []);
+          var range = fmtDate(from) + ' – ' + fmtDate(to);
+          if (n === 0) {
+            setStatus('No sites match those dates and filters for ' + range + '. Try different dates or call 541-923-1441.', 'warn');
+          } else {
+            setStatus(n + (n === 1 ? ' site is' : ' sites are') + ' available for ' + range + '. Tap a green site to reserve on Firefly.', 'ok');
+          }
+        })
+        .catch(function () {
+          resetToUnknown();
+          setStatus('Live availability is temporarily unavailable — please call the office at 541-923-1441 or try again shortly.', 'warn');
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Check availability';
+        });
+    });
+  })();
+</script>
+
+<style>
+  .av-tool { --av-green: #4A7C59; --av-grey: #9a938a; }
+
+  .av-form {
+    background: var(--cream, #F5EFE6);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 4px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .av-form-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.85rem;
+    align-items: end;
+  }
+  .av-form .fg { margin-bottom: 0; }
+  .av-form-submit .btn-sub { white-space: nowrap; }
+  @media (max-width: 900px) {
+    .av-form-grid { grid-template-columns: 1fr 1fr; }
+    .av-form-submit { grid-column: 1 / -1; }
+  }
+  @media (max-width: 520px) {
+    .av-form-grid { grid-template-columns: 1fr; }
+  }
+
+  .av-status {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--muted, #665040);
+    padding: 0.6rem 0.85rem;
+    background: var(--sand, #EDE5D8);
+    border-left: 3px solid rgba(0,0,0,0.15);
+    border-radius: 3px;
+  }
+  .av-status--ok   { border-left-color: var(--av-green); color: #2f5238; background: rgba(74,124,89,0.08); }
+  .av-status--warn { border-left-color: var(--rust, #C4622D); color: #7a3a18; background: rgba(196,98,45,0.07); }
+
+  .av-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.8rem;
+    color: var(--muted, #665040);
+  }
+  .av-legend-item { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .av-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
+  .av-swatch--avail   { background: rgba(74,124,89,0.55); border-color: var(--av-green); }
+  .av-swatch--unavail { background: rgba(154,147,138,0.4); border-color: var(--av-grey); }
+  .av-swatch--unknown { background: rgba(196,98,45,0.22); border-color: var(--rust, #C4622D); }
+  .av-swatch--blocked { background: rgba(100,100,100,0.25); border-color: #555; }
+
+  .av-wrap {
+    position: relative;
+    width: 100%;
+    background: var(--sand, #EDE5D8);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.07);
+  }
+  .av-bg { display: block; width: 100%; height: auto; }
+  .av-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .av-site { pointer-events: auto; cursor: pointer; outline: none; }
+  .av-site:focus-visible .av-poly { stroke-width: 3; stroke: var(--rust, #C4622D); }
+
+  .av-poly {
+    stroke-width: 1.2;
+    transition: fill 120ms ease, stroke-width 120ms ease, opacity 120ms ease;
+  }
+  /* Neutral (pre-search) — amber outline, the "search to check" state. */
+  .av-unknown { fill: rgba(196,98,45,0.16); stroke: var(--rust, #C4622D); }
+  .av-unknown:hover { fill: rgba(196,98,45,0.34); stroke-width: 2; }
+  /* Available — green, inviting. */
+  .av-avail { fill: rgba(74,124,89,0.48); stroke: #35603f; stroke-width: 1.4; }
+  .av-avail:hover { fill: rgba(74,124,89,0.68); stroke-width: 2.4; }
+  /* Unavailable — dimmed grey, visibly not reservable. */
+  .av-unavail { fill: rgba(154,147,138,0.32); stroke: #8a837a; opacity: 0.75; }
+  .av-unavail:hover { fill: rgba(154,147,138,0.45); }
+  /* Blocked (never bookable online). */
+  .av-blocked { fill: rgba(100,100,100,0.22); stroke: #555; stroke-dasharray: 4 3; opacity: 0.7; }
+  .av-blocked:hover { fill: rgba(100,100,100,0.36); }
+
+  .av-label {
+    fill: #fff;
+    font-family: var(--sans, system-ui);
+    font-size: 15px;
+    font-weight: 500;
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.55);
+    stroke-width: 3;
+    pointer-events: none;
+  }
+
+  .av-popover {
+    position: absolute;
+    min-width: 220px;
+    max-width: 260px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(15,23,42,0.14);
+    padding: 0.85rem 1rem;
+    z-index: 40;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  @media (hover: hover) { .av-popover { pointer-events: none; } }
+  .av-popover[hidden] { display: none; }
+  .av-pop-title {
+    margin: 0 0 0.3rem;
+    font-family: var(--serif, Georgia, serif);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--dark, #1E1008);
+  }
+  .av-pop-status {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.5rem;
+    border-radius: 2px;
+    margin-bottom: 0.55rem;
+    background: rgba(0,0,0,0.06);
+    color: #444;
+  }
+  .av-pop-status--avail   { background: rgba(74,124,89,0.14); color: #2f5238; }
+  .av-pop-status--unavail { background: rgba(154,147,138,0.2); color: #5c554d; }
+  .av-pop-status--blocked { background: rgba(100,100,100,0.15); color: #444; }
+  .av-pop-status--unknown { background: rgba(196,98,45,0.12); color: #7a3a18; }
+
+  .av-pop-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.65rem; }
+  .av-chip {
+    background: var(--sand, #EDE5D8);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 0.12rem 0.55rem;
+    font-size: 0.72rem;
+    color: var(--muted, #665040);
+  }
+  .av-pop-actions { display: flex; flex-direction: column; gap: 0.35rem; }
+  .av-pop-book {
+    display: block;
+    text-align: center;
+    padding: 0.5rem 0.8rem;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    background: var(--rust, #C4622D);
+    color: #fff;
+    transition: background 0.15s;
+  }
+  .av-pop-book:hover { background: var(--rust-dark, #9A4A20); }
+  .av-pop-book[hidden] { display: none; }
+  .av-pop-msg { font-size: 0.82rem; color: var(--muted, #665040); }
+  .av-pop-msg[hidden] { display: none; }
+</style>

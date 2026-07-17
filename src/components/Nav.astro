@@ -92,6 +92,7 @@ if (hasUrl && hasKey) {
       <a href={`/${p.slug}`}>{p.title}</a>
     ))}
     {!hiddenSlugs.has('park-map') && <a href="/park-map">Park Map</a>}
+    {!hiddenSlugs.has('availability') && <a href="/availability">Check Availability</a>}
     <a href="/book-now.html" class="nav-cta">Reservations</a>
   </div>
   <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>

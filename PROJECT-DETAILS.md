@@ -91,6 +91,9 @@ Operational data remains editable in `/admin`.
 - Propane fire features only; follow current fire restrictions.
 - The golf course is adjacent and independently managed.
 - Preserve distinct, truthful imagery and accurate alternative text.
+- Guest-review quotes and ratings must come live from Google Places API (New).
+  Never hand-type, paraphrase, seed, or cache testimonials. If the API is
+  unavailable, link to Google Maps without showing substitute review content.
 
 ## Stack
 

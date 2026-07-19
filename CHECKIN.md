@@ -44,6 +44,9 @@ Completed:
   records.
 - Google Maps CSP sources are present; an optional configured map ID enables
   advanced markers and the compatible classic-marker fallback remains active.
+- Guest testimonials now come from the live, no-store Google Places review
+  endpoint with author/source attribution; the fail-soft state contains no
+  quotes or rating.
 - Retired files remain available under `_Archive/`.
 
 ## Approval path

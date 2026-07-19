@@ -3,26 +3,13 @@ export interface Props {
   compact?: boolean;
 }
 const { compact = false } = Astro.props;
-const reviewsUrl = 'https://www.google.com/search?q=crooked+river+ranch+rv+park&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOaxz-Wa7jb_95ElogqVVpkGrvX3PFXXWIYQiDFelErQ9QQDbJjqpe8ig1hJV3mU4HLSnBpn_GB838KNAuGcAbLVBdoYGwl03XMluXbveXREDWKzs6g%3D%3D';
-const reviews = [
-  {
-    quote: 'The campground is so pretty and peaceful. The sites are spacious and set among lovely juniper trees.',
-    author: 'Karen McCarthy',
-    meta: 'Google review · family stay',
-  },
-  {
-    quote: 'Great place, great amenities, highly recommend!',
-    author: 'Matt Bashaw',
-    meta: 'Google review · friends trip',
-  },
-  {
-    quote: 'Love the ease of being able to book online now—we were able to drive in, pick our spot, and then book the one we wanted.',
-    author: 'Janell Wittrig',
-    meta: 'Google review · family stay',
-  },
-];
+const reviewsUrl = 'https://www.google.com/maps?cid=4960049674782183446';
 ---
-<section class:list={['crr-reviews', { 'crr-reviews-compact': compact }]}>
+<section
+  class:list={['crr-reviews', { 'crr-reviews-compact': compact }]}
+  data-google-review-feed
+  data-reviews-url={reviewsUrl}
+>
   <div class="v2-shell">
     <div class="v2-section-heading v2-reveal">
       <div>
@@ -30,19 +17,184 @@ const reviews = [
         <h2>What stays with<br />people after the trip.</h2>
       </div>
       <div class="crr-review-intro">
-        <p>Real guest comments help answer the questions photos cannot: how the park feels, how the sites fit, and whether the stay was easy.</p>
-        <a class="v2-inline-link" href={reviewsUrl} target="_blank" rel="noreferrer">Read reviews on Google <span aria-hidden="true">↗</span></a>
+        <p data-review-summary>Current guest reviews are loaded directly from Google Maps when this section comes into view.</p>
+        <a class="v2-inline-link" data-reviews-link href={reviewsUrl} target="_blank" rel="noopener noreferrer">Read all reviews on Google Maps <span aria-hidden="true">&nearr;</span></a>
       </div>
     </div>
-    <div class="crr-review-grid">
-      {reviews.map((review) => (
-        <article class="crr-review-card v2-reveal">
-          <div class="crr-review-stars" aria-label="Five out of five stars">★★★★★</div>
-          <blockquote>“{review.quote}”</blockquote>
-          <strong>{review.author}</strong>
-          <small>{review.meta}</small>
-        </article>
-      ))}
+    <div class="crr-review-grid" data-review-grid aria-live="polite" aria-busy="true">
+      <div class="crr-review-status">
+        <span class="crr-review-loader" aria-hidden="true"></span>
+        <p>Loading current reviews from Google Maps...</p>
+      </div>
     </div>
+    <p class="crr-review-attribution" data-review-attribution hidden>
+      Reviews supplied by <span translate="no">Google Maps</span>. Showing the first three reviews returned, ordered by relevance.
+    </p>
+    <noscript>
+      <p class="crr-review-noscript">
+        Review text requires JavaScript. <a href={reviewsUrl} target="_blank" rel="noopener noreferrer">Read current reviews on Google Maps</a>.
+      </p>
+    </noscript>
   </div>
 </section>
+
+<script>
+  interface GoogleReview {
+    text: string;
+    rating: number;
+    authorName: string;
+    authorUrl: string;
+    authorPhotoUrl: string | null;
+    relativeDate: string | null;
+    publishTime: string | null;
+    sourceUrl: string;
+    reportUrl: string | null;
+  }
+
+  interface GoogleReviewResponse {
+    ok: boolean;
+    rating?: number | null;
+    reviewCount?: number | null;
+    reviewsUrl: string;
+    reviews?: GoogleReview[];
+  }
+
+  const makeExternalLink = (href: string, className?: string) => {
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    if (className) link.className = className;
+    return link;
+  };
+
+  const renderFallback = (root: HTMLElement) => {
+    const grid = root.querySelector<HTMLElement>('[data-review-grid]');
+    const summary = root.querySelector<HTMLElement>('[data-review-summary]');
+    const reviewsLink = root.querySelector<HTMLAnchorElement>('[data-reviews-link]');
+    const fallbackUrl = root.dataset.reviewsUrl || reviewsLink?.href || '#';
+    if (!grid || !summary) return;
+
+    grid.replaceChildren();
+    grid.removeAttribute('aria-busy');
+    grid.classList.add('crr-review-grid-fallback');
+    summary.textContent = 'Current guest feedback is available directly on Google Maps.';
+
+    const panel = document.createElement('div');
+    panel.className = 'crr-review-fallback';
+    const heading = document.createElement('strong');
+    heading.textContent = 'Read the latest guest reviews';
+    const copy = document.createElement('p');
+    copy.textContent = 'Google review details are temporarily unavailable here. No cached or substitute testimonials are being shown.';
+    const link = makeExternalLink(fallbackUrl, 'v2-button v2-button-primary');
+    link.textContent = 'Open Google Maps reviews';
+    panel.append(heading, copy, link);
+    grid.append(panel);
+  };
+
+  const renderReviews = (root: HTMLElement, data: GoogleReviewResponse) => {
+    const grid = root.querySelector<HTMLElement>('[data-review-grid]');
+    const summary = root.querySelector<HTMLElement>('[data-review-summary]');
+    const attribution = root.querySelector<HTMLElement>('[data-review-attribution]');
+    const reviewsLink = root.querySelector<HTMLAnchorElement>('[data-reviews-link]');
+    const reviews = data.reviews ?? [];
+    if (!grid || !summary || reviews.length === 0) {
+      renderFallback(root);
+      return;
+    }
+
+    if (reviewsLink && data.reviewsUrl) reviewsLink.href = data.reviewsUrl;
+    if (typeof data.rating === 'number' && typeof data.reviewCount === 'number') {
+      summary.textContent = `${data.rating.toFixed(1)} from ${data.reviewCount.toLocaleString()} Google reviews. Every quote below is loaded live from Google Maps.`;
+    } else {
+      summary.textContent = 'Every quote below is loaded live from Google Maps.';
+    }
+
+    const cards = reviews.map((review) => {
+      const card = document.createElement('article');
+      card.className = 'crr-review-card';
+
+      const stars = document.createElement('div');
+      stars.className = 'crr-review-stars';
+      stars.setAttribute('aria-label', `${review.rating} out of 5 stars`);
+      stars.textContent = '\u2605'.repeat(review.rating) + '\u2606'.repeat(5 - review.rating);
+
+      const quote = document.createElement('blockquote');
+      const quoteText = document.createElement('p');
+      quoteText.textContent = review.text;
+      quote.append(quoteText);
+
+      const authorRow = document.createElement('div');
+      authorRow.className = 'crr-review-author';
+      if (review.authorPhotoUrl) {
+        const photo = document.createElement('img');
+        photo.src = review.authorPhotoUrl;
+        photo.alt = '';
+        photo.loading = 'lazy';
+        photo.referrerPolicy = 'no-referrer';
+        authorRow.append(photo);
+      }
+
+      const authorText = document.createElement('div');
+      const author = makeExternalLink(review.authorUrl);
+      author.textContent = review.authorName;
+      const meta = document.createElement('small');
+      meta.textContent = review.relativeDate
+        ? `${review.relativeDate} on Google Maps`
+        : 'Google Maps review';
+      authorText.append(author, meta);
+      authorRow.append(authorText);
+
+      const actions = document.createElement('div');
+      actions.className = 'crr-review-actions';
+      const source = makeExternalLink(review.sourceUrl);
+      source.textContent = 'View original review';
+      actions.append(source);
+      if (review.reportUrl) {
+        const separator = document.createTextNode(' \u00b7 ');
+        const report = makeExternalLink(review.reportUrl);
+        report.textContent = 'Report';
+        actions.append(separator, report);
+      }
+
+      card.append(stars, quote, authorRow, actions);
+      return card;
+    });
+
+    grid.replaceChildren(...cards);
+    grid.removeAttribute('aria-busy');
+    attribution?.removeAttribute('hidden');
+  };
+
+  const loadReviews = async (root: HTMLElement) => {
+    if (root.dataset.reviewsLoaded === 'true') return;
+    root.dataset.reviewsLoaded = 'true';
+    try {
+      const response = await fetch('/api/google-reviews', {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+      const data = await response.json() as GoogleReviewResponse;
+      if (!response.ok || !data.ok) {
+        renderFallback(root);
+        return;
+      }
+      renderReviews(root, data);
+    } catch {
+      renderFallback(root);
+    }
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-google-review-feed]').forEach((root) => {
+    if (!('IntersectionObserver' in window)) {
+      void loadReviews(root);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      void loadReviews(root);
+    }, { rootMargin: '500px 0px' });
+    observer.observe(root);
+  });
+</script>

@@ -14,7 +14,7 @@ site is [crookedriverranchrv.com](https://www.crookedriverranchrv.com).
 | Zoho Calendar | Upstream public-event calendar |
 | Rimrock | Live availability snapshot |
 | Firefly Reservations | Reservations, payments, confirmations, guest portal |
-| Google Maps / Places | Maps, directions, and current place details |
+| Google Maps / Places | Maps, directions, current place details, and live guest reviews |
 
 ## Change the public website
 
@@ -83,6 +83,20 @@ auto-create new curated places merely because an API search returns them.
   `/api/availability`.
 - Reservation, payment, confirmation, or guest-login issue: use Firefly.
 - The website does not own or alter reservation records.
+
+### Check the Google review feed
+
+- Public review text comes only from the live Google Places API (New) response
+  at `/api/google-reviews`; it is not stored in Supabase or source files.
+- Set `GOOGLE_MAPS_SERVER_KEY` in Netlify with Places API (New) access. The
+  public park Place ID is stored in source to avoid a billed Text Search on
+  every cold start; `GOOGLE_RV_PARK_PLACE_ID` is an optional override.
+- Put a quota cap and billing alert on the server-side Google key.
+- If Google or the key is unavailable, the site intentionally shows a direct
+  Google Maps link and no quotes or rating. This is the correct fail-soft state.
+- Preserve the Google Maps attribution, author links, original-review links,
+  relevance-order disclosure, and `no-store` response when changing this
+  component.
 
 ## Recovery
 

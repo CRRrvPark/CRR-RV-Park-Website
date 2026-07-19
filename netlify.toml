@@ -29,7 +29,7 @@
   # The SECRET values (service role key, build-hook URL, Zoho client secret +
   # refresh token, Google server keys, SCHEDULED_FN_SECRET) stay under scanner
   # protection.
-  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY,SITE_URL,ADMIN_EMAIL_FROM,ZOHO_REDIRECT_URI,ZOHO_ACCOUNT_DOMAIN,ZOHO_WORKDRIVE_MEDIA_FOLDER_ID,ZOHO_CALENDAR_PUBLIC_EVENTS_ID,ZOHO_CLIENT_ID,PUBLIC_GOOGLE_MAPS_API_KEY,PUBLIC_GOOGLE_MAPS_MAP_ID"
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY,SITE_URL,ADMIN_EMAIL_FROM,ZOHO_REDIRECT_URI,ZOHO_ACCOUNT_DOMAIN,ZOHO_WORKDRIVE_MEDIA_FOLDER_ID,ZOHO_CALENDAR_PUBLIC_EVENTS_ID,ZOHO_CLIENT_ID,PUBLIC_GOOGLE_MAPS_API_KEY,PUBLIC_GOOGLE_MAPS_MAP_ID,PUBLIC_GOOGLE_SITE_VERIFICATION"
 
   # Skip scanning our own documentation — they mention env-var NAMES and
   # shaped placeholders but not real values. NOTE: `.env.example` is
@@ -93,6 +93,16 @@
   [headers.values]
     Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
 
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
 # Admin routes must never be cached
 [[headers]]
   for = "/admin/*"
@@ -117,6 +127,12 @@
 # With output:'server', Astro emits pages at their slug (no .html suffix)
 # so these redirects keep any old inbound links working. Harmless if the
 # target already serves.
+[[redirects]]
+  from = "https://www.crookedriverranchrv.com/*"
+  to = "https://crookedriverranchrv.com/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/book-now.html"
   to = "/book-now"

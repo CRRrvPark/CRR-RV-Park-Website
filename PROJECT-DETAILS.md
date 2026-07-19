@@ -57,6 +57,26 @@ production navigation.
 Every external dependency must fail softly. A temporary data-service failure
 must not take down the rest of the public site.
 
+## Search architecture
+
+- Canonical origin: `https://crookedriverranchrv.com`; the redirecting `www`
+  host is never emitted as a canonical or sitemap URL.
+- `HeadMeta.astro` owns unique page metadata, canonical, crawler preview
+  controls, social cards, favicon/manifest, and optional Search Console
+  verification.
+- `Base.astro` adds a WebPage entity and both visible and JSON-LD breadcrumbs
+  to every indexable public page.
+- Home adds accurate Campground and WebSite entities. No fabricated rating,
+  review, award, opening-hours, or logo properties are allowed.
+- `/sitemap.xml` is generated from the static route inventory and current
+  published Supabase site/trail/activity rows. It includes image discovery and
+  fails softly to the static route set if Supabase is unavailable.
+- `/privacy`, `/terms`, `/robots.txt`, and `/sitemap.xml` remain public and
+  directly discoverable. Admin, API, and concept routes remain out of search.
+- `scripts/verify-seo.mjs` checks emitted prerendered HTML;
+  `scripts/verify-seo-live.mjs` crawls every sitemap URL and validates HTTP,
+  metadata, canonical, H1, schema, breadcrumb, and legal-link contracts.
+
 ## Editing architecture
 
 The former Puck/Tiptap/Monaco WYSIWYG system is retired and preserved under:

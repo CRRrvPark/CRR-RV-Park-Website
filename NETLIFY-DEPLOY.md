@@ -46,6 +46,12 @@ Before merging:
   and the extended-stay Netlify form.
 - Confirm external links open the intended official service.
 - Confirm no staging or concept route is indexed.
+- Run `npm run seo:check` after the production build.
+- With the preview or local server available, run
+  `npm run seo:check:live -- <base-url>` and confirm every sitemap URL,
+  canonical, breadcrumb, schema block, legal link, and hard-404 contract.
+- Confirm `www.crookedriverranchrv.com` redirects once to the canonical apex
+  host and does not serve a competing 200 response.
 
 ## Rollback
 

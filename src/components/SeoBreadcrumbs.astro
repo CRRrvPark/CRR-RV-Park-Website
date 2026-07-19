@@ -1,0 +1,25 @@
+---
+import type { BreadcrumbItem } from '@lib/seo';
+
+export interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+---
+{items.length > 0 && (
+  <nav class="crr-breadcrumbs" aria-label="Breadcrumb">
+    <div class="v2-shell">
+      <ol>
+        <li><a href="/">Home</a></li>
+        {items.map((item, index) => (
+          <li aria-current={index === items.length - 1 ? 'page' : undefined}>
+            {item.href && index !== items.length - 1
+              ? <a href={item.href}>{item.name}</a>
+              : <span>{item.name}</span>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </nav>
+)}

@@ -52,6 +52,8 @@ copy .env.example .env
 npm run dev
 npm run check
 npm run build
+npm run seo:check
+npm run seo:check:live -- http://127.0.0.1:4321
 ```
 
 Astro runs at `http://localhost:4321`. Node 20 is the production baseline.

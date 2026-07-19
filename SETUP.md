@@ -32,7 +32,8 @@ Copy `.env.example` and provide the values held by the HOA:
 - Zoho sources: `ZOHO_WORKDRIVE_MEDIA_FOLDER_ID`,
   `ZOHO_CALENDAR_PUBLIC_EVENTS_ID`
 - Google: `GOOGLE_PLACES_API_KEY`, `GOOGLE_MAPS_SERVER_KEY`,
-  `PUBLIC_GOOGLE_MAPS_API_KEY`, and optional `PUBLIC_GOOGLE_MAPS_MAP_ID`
+  `PUBLIC_GOOGLE_MAPS_API_KEY`, optional `PUBLIC_GOOGLE_MAPS_MAP_ID`, and
+  optional `PUBLIC_GOOGLE_SITE_VERIFICATION`
 - Site and operations: `SITE_URL`, `ADMIN_EMAIL_FROM`,
   `SCHEDULED_FN_SECRET`
 
@@ -76,6 +77,9 @@ the schema authority.
   scheduled-function secret.
 - `npm run check` reports no errors.
 - `npm run build` completes successfully.
+- `npm run seo:check` passes against the emitted static HTML.
+- With the dev server running,
+  `npm run seo:check:live -- http://127.0.0.1:4321` passes every sitemap URL.
 
 The retired WYSIWYG schema remains in Supabase only for recovery compatibility;
 there is no active editor route or API.

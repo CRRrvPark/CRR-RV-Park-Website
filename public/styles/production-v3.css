@@ -1486,6 +1486,61 @@
   backdrop-filter: blur(16px);
 }
 
+/* Search-friendly breadcrumbs */
+
+.crr-breadcrumbs {
+  position: relative;
+  z-index: 8;
+  border-top: 1px solid rgba(23, 79, 66, 0.06);
+  border-bottom: 1px solid rgba(23, 79, 66, 0.09);
+  background: rgba(244, 248, 246, 0.94);
+}
+
+.crr-breadcrumbs ol {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  color: var(--crr-muted);
+  font-size: 11px;
+  font-weight: 700;
+  list-style: none;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.crr-breadcrumbs ol::-webkit-scrollbar {
+  display: none;
+}
+
+.crr-breadcrumbs li {
+  display: flex;
+  align-items: center;
+}
+
+.crr-breadcrumbs li + li::before {
+  margin: 0 9px;
+  color: rgba(23, 79, 66, 0.36);
+  content: "/";
+}
+
+.crr-breadcrumbs a {
+  color: #2f6f60;
+  text-decoration: none;
+}
+
+.crr-breadcrumbs a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.crr-breadcrumbs [aria-current="page"] {
+  color: var(--crr-ink);
+}
+
 /* Reviews */
 
 .crr-reviews {

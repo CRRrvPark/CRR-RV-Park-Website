@@ -8,6 +8,8 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "seo:check": "node scripts/verify-seo.mjs",
+    "seo:check:live": "node scripts/verify-seo-live.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",

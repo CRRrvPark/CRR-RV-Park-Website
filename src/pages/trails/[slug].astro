@@ -8,9 +8,9 @@ import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getTrailBySlug, DIFFICULTY_LABELS, formatDistance, formatElevation, formatHazard } from '@lib/area-guide';
 
 const { slug } = Astro.params;
-if (!slug) return Astro.redirect('/trails', 302);
+if (!slug) return new Response('Not Found', { status: 404 });
 const trail = await getTrailBySlug(slug);
-if (!trail) return Astro.redirect('/trails?not-found=1', 302);
+if (!trail) return new Response('Not Found', { status: 404 });
 const pins: Pin[] = trail.trailhead_lat !== null && trail.trailhead_lng !== null
   ? [{ lat: trail.trailhead_lat, lng: trail.trailhead_lng, title: trail.name, description: trail.parking_info ?? undefined, iconEmoji: '🥾' }]
   : [];

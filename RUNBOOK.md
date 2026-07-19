@@ -98,6 +98,48 @@ auto-create new curated places merely because an API search returns them.
   relevance-order disclosure, and `no-store` response when changing this
   component.
 
+### Search visibility and technical SEO
+
+The canonical public origin is `https://crookedriverranchrv.com` (no `www`).
+The `www` host permanently redirects to it. Do not mix hosts in canonicals,
+structured data, sitemap URLs, or Search Console inspection.
+
+- `/robots.txt` points crawlers to `/sitemap.xml`.
+- `/sitemap.xml` is generated live. It includes every public static route plus
+  published site, trail, and activity detail routes from Supabase, with
+  available page images and honest `lastmod` values.
+- Every indexable page emits a unique title/description, self-referencing
+  canonical, full image/snippet preview directives, Open Graph/Twitter data,
+  WebPage JSON-LD, and visible + JSON-LD breadcrumbs.
+- The home page also emits `Campground` and `WebSite` identity data for local
+  business and site-name understanding.
+- Privacy policy, website terms, and the XML sitemap are linked from the
+  footer. Admin, API, and concept surfaces remain `noindex`.
+- `PUBLIC_GOOGLE_SITE_VERIFICATION` is optional for Search Console's HTML-tag
+  verification method. Prefer a Domain property with DNS verification when
+  account access allows it.
+- The official logo property is intentionally absent from Organization data
+  until the exact park logo artwork is available. Never substitute a hero
+  photo, generated logo, or unrelated HOA mark.
+- Do not add `AggregateRating` to the park's own LocalBusiness/Campground
+  schema. Google treats self-serving local-business review markup separately;
+  the on-page live review feed already provides the truthful guest proof.
+
+Before deployment:
+
+```bash
+npm run check
+npm run build
+npm run seo:check
+npm run seo:check:live -- http://127.0.0.1:4321
+```
+
+After deployment, run the live crawl against production, submit
+`https://crookedriverranchrv.com/sitemap.xml` in Google Search Console, and
+inspect representative home, availability, sites, trail, and privacy URLs.
+Technical completeness makes pages eligible and understandable; Google does
+not guarantee indexing or a particular position.
+
 ## Recovery
 
 ### A deploy failed

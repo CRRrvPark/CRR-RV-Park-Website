@@ -4,12 +4,8 @@ Updated 2026-07-19 PT.
 
 ## Current state
 
-The complete approved V3 production remodel is implemented on:
-
-`codex/v3-production-remodel`
-
-The branch is intentionally isolated from `main` so Netlify can provide a
-Deploy Preview before any production cutover.
+The complete approved V3 production remodel is on `main` and deployed through
+Netlify.
 
 Completed:
 
@@ -31,6 +27,10 @@ Completed:
 - Protected pre-V3 Git tag, backup branch, Supabase snapshot, local export, and
   tested dry-run restore utility.
 - Stale V4/editor documentation archived and replaced with current V5 docs.
+- Complete technical SEO layer: canonical-host alignment, generated XML/image
+  sitemap, robots discovery, favicon/manifest, crawler/social metadata,
+  Campground/WebSite/WebPage structured data, visible/structured breadcrumbs,
+  hard 404s, and repeatable static/live SEO validation.
 
 ## Verification state
 
@@ -47,15 +47,17 @@ Completed:
 - Guest testimonials now come from the live, no-store Google Places review
   endpoint with author/source attribution; the fail-soft state contains no
   quotes or rating.
+- `npm run seo:check`: passed for all prerendered public pages.
+- Live local SEO crawl: passed all 216 sitemap pages, including 144 image
+  entries, dynamic detail routes, canonical alignment, and intentional 404s.
 - Retired files remain available under `_Archive/`.
 
-## Approval path
+## Search Console follow-through
 
-1. Push the completed branch.
-2. Open a draft pull request so Netlify creates the final Deploy Preview.
-3. Review the production routes on desktop and mobile.
-4. Address findings on the branch.
-5. Merge to `main` only after Mathew approves the preview.
+1. Confirm the production deploy passes the live SEO crawl.
+2. Submit `https://crookedriverranchrv.com/sitemap.xml`.
+3. Inspect representative URLs and request recrawl after the deploy.
+4. Monitor indexing, Core Web Vitals, and structured-data reports.
 
 ## Recovery anchors
 

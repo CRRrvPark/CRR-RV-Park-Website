@@ -1,0 +1,18 @@
+{
+  "name": "Crooked River Ranch RV Park",
+  "short_name": "CRR RV Park",
+  "description": "Live RV site availability and trip planning for Crooked River Ranch RV Park in Terrebonne, Oregon.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#f4f8f6",
+  "theme_color": "#174f42",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

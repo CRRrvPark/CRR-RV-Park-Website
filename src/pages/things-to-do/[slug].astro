@@ -8,9 +8,9 @@ import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getThingBySlug, CATEGORY_LABELS } from '@lib/area-guide';
 
 const { slug } = Astro.params;
-if (!slug) return Astro.redirect('/things-to-do', 302);
+if (!slug) return new Response('Not Found', { status: 404 });
 const thing = await getThingBySlug(slug);
-if (!thing) return Astro.redirect('/things-to-do?not-found=1', 302);
+if (!thing) return new Response('Not Found', { status: 404 });
 const pins: Pin[] = thing.lat !== null && thing.lng !== null
   ? [{ lat: thing.lat, lng: thing.lng, title: thing.title, description: thing.summary ?? undefined, iconEmoji: thing.icon || '📍' }]
   : [];

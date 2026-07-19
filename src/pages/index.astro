@@ -5,49 +5,19 @@ import Base from '@layouts/Base.astro';
 import SiteSearch from '@components/site/SiteSearch.astro';
 import GuestReviews from '@components/site/GuestReviews.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import {
+  RV_PARK_SCHEMA,
+  SITE_ORIGIN,
+  WEBSITE_SCHEMA,
+} from '@lib/seo';
 
 const title = 'Campground Near Smith Rock Oregon | Crooked River Ranch RV Park';
 const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. See live availability and book direct.";
-const canonical = 'https://www.crookedriverranchrv.com/';
-const ogImage = 'https://www.crookedriverranchrv.com/images/aerial_canyon_rim.jpg';
+const canonical = `${SITE_ORIGIN}/`;
+const ogImage = `${SITE_ORIGIN}/images/aerial_canyon_rim.jpg`;
 const heroImagePreload = '/images/aerial_canyon_rim.webp';
 
-const schemas = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Campground',
-    name: 'Crooked River Ranch RV Park',
-    description: 'RV park on the canyon rim of the Crooked River Gorge in Central Oregon. Full hookups, guest-bookable pull-throughs up to 65 feet, adjacent golf course, and heated seasonal pool. 15 minutes from Smith Rock State Park. Open year-round.',
-    url: 'https://www.crookedriverranchrv.com',
-    telephone: '+1-541-923-1441',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '14875 SW Hays Lane',
-      addressLocality: 'Terrebonne',
-      addressRegion: 'OR',
-      postalCode: '97760',
-      addressCountry: 'US',
-    },
-    checkinTime: '14:00',
-    checkoutTime: '12:00',
-    amenityFeature: [
-      { '@type': 'LocationFeatureSpecification', name: 'Full Hookups', value: true },
-      { '@type': 'LocationFeatureSpecification', name: 'Pull-Through Sites', value: true },
-      { '@type': 'LocationFeatureSpecification', name: 'Heated Seasonal Pool', value: true },
-      { '@type': 'LocationFeatureSpecification', name: 'Golf Course Adjacent', value: true },
-      { '@type': 'LocationFeatureSpecification', name: 'Pet Friendly', value: true },
-      { '@type': 'LocationFeatureSpecification', name: 'Free Wi-Fi', value: true },
-    ],
-    image: 'https://www.crookedriverranchrv.com/images/aerial_canyon_rim.jpg',
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Crooked River Ranch RV Park',
-    url: 'https://www.crookedriverranchrv.com',
-    telephone: '+1-541-923-1441',
-  },
-];
+const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
 ---
 <Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
   <main id="main-content">

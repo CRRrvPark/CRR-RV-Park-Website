@@ -15,7 +15,7 @@ import react from '@astrojs/react';
 // prerender = true;` when they can. Data-backed detail routes and operational
 // surfaces remain SSR so current Supabase records appear without a rebuild.
 export default defineConfig({
-  site: 'https://www.crookedriverranchrv.com',
+  site: 'https://crookedriverranchrv.com',
   output: 'server',
   adapter: netlify(),
   integrations: [react()],

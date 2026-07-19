@@ -18,18 +18,30 @@ import ClarityScript from '@components/ClarityScript.astro';
 import ConversionTracker from '@components/ConversionTracker.astro';
 import GoogleTagManager from '@components/GoogleTagManager.astro';
 import Lightbox from '@components/Lightbox.astro';
+import SeoBreadcrumbs from '@components/SeoBreadcrumbs.astro';
+import {
+  absoluteUrl,
+  breadcrumbSchema,
+  breadcrumbsForPath,
+  canonicalUrl,
+  webPageSchema,
+  type BreadcrumbItem,
+} from '@lib/seo';
 
 export interface Props {
   title: string;
   description: string;
   canonical: string;
   ogImage?: string;
+  ogImageAlt?: string;
   heroImagePreload?: string;
   schemas?: Record<string, unknown>[];
   /** Set to true to suppress Microsoft Clarity on this page (rarely needed). */
   noAnalytics?: boolean;
   /** Set to 'noindex, nofollow' to keep this page out of search engines. */
   robots?: string;
+  /** Optional override for the automatically generated public breadcrumb. */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 const {
@@ -37,24 +49,41 @@ const {
   description,
   canonical,
   ogImage,
+  ogImageAlt,
   heroImagePreload,
   schemas = [],
   noAnalytics = false,
   robots,
+  breadcrumbs: breadcrumbOverride,
 } = Astro.props;
+
+const normalizedCanonical = canonicalUrl(canonical);
+const normalizedOgImage = ogImage ? absoluteUrl(ogImage) : undefined;
+const isIndexable = !robots?.toLowerCase().includes('noindex');
+const breadcrumbs = isIndexable
+  ? (breadcrumbOverride ?? breadcrumbsForPath(Astro.url.pathname, title))
+  : [];
+const generatedSchemas = isIndexable
+  ? [
+      webPageSchema(title, description, normalizedCanonical, normalizedOgImage),
+      breadcrumbSchema(breadcrumbs, normalizedCanonical),
+    ].filter((schema): schema is Record<string, unknown> => schema !== null)
+  : [];
+const allSchemas = [...generatedSchemas, ...schemas];
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 <head>
   <HeadMeta
     title={title}
     description={description}
-    canonical={canonical}
-    ogImage={ogImage}
+    canonical={normalizedCanonical}
+    ogImage={normalizedOgImage}
+    ogImageAlt={ogImageAlt}
     heroImagePreload={heroImagePreload}
     robots={robots}
   />
-  {schemas.length > 0 && <JsonLd schemas={schemas} />}
+  {allSchemas.length > 0 && <JsonLd schemas={allSchemas} />}
   {/* Google Tag Manager — loads as high in <head> as possible per Google's
      recommendation so early events fire with GTM already initialised.
      Gated by `noAnalytics` for parity with Clarity: admin pages pass
@@ -90,6 +119,7 @@ const {
   </script>
   <a class="v2-skip-link" href="#main-content">Skip to content</a>
   <SiteHeader />
+  <SeoBreadcrumbs items={breadcrumbs} />
   <slot />
   <SiteFooter />
   <a class="crr-mobile-book" href="/availability" aria-hidden="true" tabindex="-1">

@@ -24,3 +24,4 @@ retroactively on 2026-05-21 for actions taken earlier the same day; times approx
 | 9 | 2026-04-23 15:35 | Added   | `PORT_TO_NEW_COMPUTER.md`  | `…\RV Park Website\PORT_TO_NEW_COMPUTER.md`        | Office-machine porting playbook. |
 
 <!-- Append new entries below this line. One row per file/folder added, archived, or moved/renamed. -->
+| 10 | 2026-07-19 ~23:00 | Added (merged + pushed LIVE) | `src/pages/availability.astro`, `src/pages/api/availability.ts`, `src/components/AvailabilityMap.astro`, `Nav.astro` (+1 line) | `main` (ff from `feat/live-availability-map` `8d7bce2`) → pushed to origin → Netlify deploy | Live park-availability map backed by Rimrock's public endpoint; booking remains on the Firefly flow (FF = booking authority). Gate: the Rimrock import-engine 5-cycle idempotency soak PASSED 2026-07-19 (evidence in the Rimrock workspace, `work/evidence/soak-test-2026-07-19/`). Mathew-authorized night run. |

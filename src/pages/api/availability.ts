@@ -24,7 +24,10 @@
  * RR CONTRACT (agreed; may 404 until RR ships them)
  * -------------------------------------------------
  *   GET ${base}/api/public/map-availability?from&to&hookups&kind&rigLengthFt&slides
- *        → { sites: [{ code, available, reason }] }
+ *        → { sites: [{ code, available, reason }], lastSyncedAt? }
+ *          (lastSyncedAt = ISO timestamp of RR's last Firefly sync; OPTIONAL —
+ *           older RR deploys omit it, and this proxy passes it through only
+ *           when present so the page can show a freshness stamp.)
  *   GET ${base}/api/public/sites
  *        → [{ code, kind, configuration, hookups, max_occupancy, map_polygon, zone }]
  *   GET ${base}/api/public/map/base/blob   → the base map image bytes
@@ -166,7 +169,15 @@ export const GET: APIRoute = async ({ url }) => {
       available: Boolean(s?.available),
       reason: typeof s?.reason === 'string' ? s.reason : null,
     })).filter((s: { code: string }) => s.code.length > 0);
-    return json({ ok: true, sites: normalised });
+    // Freshness stamp: RR includes lastSyncedAt (ISO timestamp of its last
+    // Firefly sync) in newer deploys. Pass it through ONLY when present and
+    // well-formed — older RR builds omit it, and the page omits the stamp
+    // when the field is absent (defensive on both sides).
+    const lastSyncedAt =
+      typeof data?.lastSyncedAt === 'string' && !Number.isNaN(Date.parse(data.lastSyncedAt))
+        ? data.lastSyncedAt
+        : undefined;
+    return json({ ok: true, sites: normalised, ...(lastSyncedAt ? { lastSyncedAt } : {}) });
   } catch (err) {
     console.warn('[api/availability] RR map-availability fetch failed:', err);
     return json({ ok: false, reason: 'Rimrock availability service is unreachable.' });

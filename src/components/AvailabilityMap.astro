@@ -152,6 +152,11 @@ const polygons = sites.map((s) => {
     <span class="av-legend-item"><span class="av-swatch av-swatch--blocked"></span>Not bookable online</span>
   </div>
 
+  <div class="av-freshness">
+    <span class="av-freshness-stamp" id="avFreshness" role="status" aria-live="polite" hidden></span>
+    <span class="av-freshness-caveat">Bookings are confirmed through our reservation office — availability shown is a live snapshot.</span>
+  </div>
+
   <div class="av-wrap" data-natural-w={parkMap.natural_width} data-natural-h={parkMap.natural_height}>
     <img
       src={parkMap.image_url}
@@ -226,6 +231,35 @@ const polygons = sites.map((s) => {
       if (parts.length !== 3) return s;
       var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // ---- Freshness stamp --------------------------------------------------
+    // The proxy passes through Rimrock's lastSyncedAt (ISO timestamp of its
+    // last Firefly sync) when RR provides it. Older RR deploys omit the field
+    // → the stamp simply stays hidden (the caveat line always shows).
+    var freshEl = tool.querySelector('#avFreshness');
+    function relTime(isoStr) {
+      var t = Date.parse(isoStr);
+      if (isNaN(t)) return null;
+      var s = Math.max(0, Math.round((Date.now() - t) / 1000));
+      if (s < 60) return 'just now';
+      var m = Math.round(s / 60);
+      if (m < 60) return m + (m === 1 ? ' minute' : ' minutes') + ' ago';
+      var h = Math.round(m / 60);
+      if (h < 24) return h + (h === 1 ? ' hour' : ' hours') + ' ago';
+      var d = Math.round(h / 24);
+      return d + (d === 1 ? ' day' : ' days') + ' ago';
+    }
+    function setFreshness(isoStr) {
+      if (!freshEl) return;
+      var rel = isoStr ? relTime(isoStr) : null;
+      if (rel) {
+        freshEl.textContent = 'Availability updated ' + rel + '.';
+        freshEl.hidden = false;
+      } else {
+        freshEl.textContent = '';
+        freshEl.hidden = true;
+      }
     }
 
     // ---- Popover ----------------------------------------------------------
@@ -396,6 +430,7 @@ const polygons = sites.map((s) => {
         .then(function (data) {
           if (!data || !data.ok) {
             resetToUnknown();
+            setFreshness(null);
             setStatus(
               (data && data.reason ? data.reason + ' ' : '') +
               'Live availability is temporarily unavailable — please call the office at 541-923-1441 or try again shortly.',
@@ -404,6 +439,7 @@ const polygons = sites.map((s) => {
             return;
           }
           var n = paint(data.sites || []);
+          setFreshness(data.lastSyncedAt);
           var range = fmtDate(from) + ' – ' + fmtDate(to);
           if (n === 0) {
             setStatus('No sites match those dates and filters for ' + range + '. Try different dates or call 541-923-1441.', 'warn');
@@ -413,6 +449,7 @@ const polygons = sites.map((s) => {
         })
         .catch(function () {
           resetToUnknown();
+          setFreshness(null);
           setStatus('Live availability is temporarily unavailable — please call the office at 541-923-1441 or try again shortly.', 'warn');
         })
         .finally(function () {
@@ -471,6 +508,19 @@ const polygons = sites.map((s) => {
     color: var(--muted, #665040);
   }
   .av-legend-item { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+  .av-freshness {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.9rem;
+    margin: -0.35rem 0 0.85rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--muted, #665040);
+  }
+  .av-freshness-stamp { font-weight: 500; color: #2f5238; }
+  .av-freshness-stamp[hidden] { display: none; }
+  .av-freshness-caveat { font-style: italic; opacity: 0.85; }
   .av-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
   .av-swatch--avail   { background: rgba(74,124,89,0.55); border-color: var(--av-green); }
   .av-swatch--unavail { background: rgba(154,147,138,0.4); border-color: var(--av-grey); }

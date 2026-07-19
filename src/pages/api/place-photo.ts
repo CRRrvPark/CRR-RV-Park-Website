@@ -9,8 +9,7 @@
  *   - Validates `name` matches the expected Google resource pattern.
  *   - Calls Places Photo API with skipHttpRedirect=true so we get
  *     back the signed CDN photoUri, then 302-redirects to it.
- *   - Caches at the edge for 1 day (signed Google URLs are stable
- *     long enough for that; we just refresh on cache miss).
+ *   - Does not cache the Places photo resource name or redirect response.
  *
  * Why redirect rather than stream the bytes:
  *   - Cheaper: Google serves the actual image bytes from their CDN,
@@ -64,11 +63,10 @@ export const GET: APIRoute = async ({ url }) => {
     status: 302,
     headers: {
       Location: photoUri,
-      // Browser cache; revalidate against our endpoint daily so we
-      // get a fresh signed URL when the previous one expires.
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
-      // Don't let intermediate caches leak our redirect across users
-      // (the photoUri itself is signed but unique per request).
+      // Google Places photo resource names cannot be cached. Each browser
+      // request therefore resolves a current signed URL through this endpoint.
+      'Cache-Control': 'private, no-store, max-age=0',
+      Pragma: 'no-cache',
       Vary: 'Accept',
     },
   });

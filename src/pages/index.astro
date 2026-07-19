@@ -3,6 +3,7 @@ export const prerender = true;
 
 import Base from '@layouts/Base.astro';
 import SiteSearch from '@components/site/SiteSearch.astro';
+import GuestPhotos from '@components/site/GuestPhotos.astro';
 import GuestReviews from '@components/site/GuestReviews.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import {
@@ -14,8 +15,8 @@ import {
 const title = 'Campground Near Smith Rock Oregon | Crooked River Ranch RV Park';
 const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. See live availability and book direct.";
 const canonical = `${SITE_ORIGIN}/`;
-const ogImage = `${SITE_ORIGIN}/images/aerial_canyon_rim.jpg`;
-const heroImagePreload = '/images/aerial_canyon_rim.webp';
+const ogImage = `${SITE_ORIGIN}/images/hero.jpg`;
+const heroImagePreload = '/images/hero.webp';
 
 const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
 ---
@@ -33,13 +34,13 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
 
         <figure class="v2-hero-image v2-reveal">
           <picture>
-            <source media="(max-width: 720px)" srcset="/images/aerial_canyon_rim-mobile.webp" type="image/webp" />
-            <source srcset="/images/aerial_canyon_rim.webp" type="image/webp" />
-            <img src="/images/aerial_canyon_rim.jpg" alt="Crooked River Ranch RV Park beside the canyon and golf course" fetchpriority="high" />
+            <source media="(max-width: 720px)" srcset="/images/hero-mobile.webp" type="image/webp" />
+            <source srcset="/images/hero.webp" type="image/webp" />
+            <img src="/images/hero.jpg" alt="Sunrise over the Crooked River canyon near Crooked River Ranch RV Park" fetchpriority="high" />
           </picture>
           <figcaption>
-            <span>On the canyon rim</span>
-            <strong>Terrebonne, Central Oregon</strong>
+            <span>The Crooked River canyon</span>
+            <strong>Sunrise near the park</strong>
           </figcaption>
         </figure>
       </div>
@@ -70,8 +71,8 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
         </div>
         <div class="crr-photo-story" aria-label="Views around Crooked River Ranch RV Park">
           <figure class="v2-reveal">
-            <img src="/images/aerial_canyon_rim.webp" alt="RV sites beside the Crooked River canyon and golf course" loading="lazy" />
-            <figcaption>The park, golf course, and canyon</figcaption>
+            <img src="/images/northern-lights-chris-olson.jpg" alt="Northern lights glowing above juniper trees and an RV at Crooked River Ranch RV Park" loading="lazy" />
+            <figcaption>Northern lights · Chris Olson · Guest photo used with permission</figcaption>
           </figure>
           <figure class="v2-reveal">
             <img src="/images/pool_aerial.webp" alt="Aerial view of the heated seasonal pool" loading="lazy" />
@@ -107,7 +108,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
           </a>
 
           <a class="v2-stay-card v2-reveal" href="/sites#water-electric">
-            <img src="/images/gazebo_fall.webp" alt="Autumn trees near Crooked River Ranch RV Park sites" loading="lazy" />
+            <img src="/images/site-a10-setup.webp" alt="Water and electric Site A-10 with its utility pedestal, lawn, trees, and gazebo at Crooked River Ranch RV Park" loading="lazy" />
             <div>
               <span>02 · Water + electric</span>
               <h3>A simple RV setup</h3>
@@ -183,6 +184,8 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
         </div>
       </div>
     </section>
+
+    <GuestPhotos />
 
     <GuestReviews />
 

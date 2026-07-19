@@ -135,6 +135,7 @@ export const GET: APIRoute = async () => {
         };
       })
       .filter((review): review is NonNullable<typeof review> => review !== null)
+      .filter((review) => review.rating >= 4)
       .slice(0, 3);
 
     if (reviews.length === 0) return unavailable();

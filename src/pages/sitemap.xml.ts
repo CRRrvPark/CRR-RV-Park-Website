@@ -12,7 +12,7 @@ interface SitemapEntry {
 
 const STATIC_LASTMOD = '2026-07-19';
 const STATIC_ENTRIES: SitemapEntry[] = [
-  { path: '/', images: ['/images/aerial_canyon_rim.jpg', '/images/pool_aerial.jpg', '/images/firepit_evening.jpg'] },
+  { path: '/', images: ['/images/hero.jpg', '/images/northern-lights-chris-olson.jpg', '/images/site-a10-setup.webp', '/images/pool_aerial.jpg', '/images/firepit_evening.jpg'] },
   { path: '/sites', images: ['/images/aerial_aloop.jpg'] },
   { path: '/availability', images: ['/images/aerial_wide.jpg', '/images/rv_park_map.jpg'] },
   { path: '/park-map', images: ['/images/rv_park_map.jpg'] },

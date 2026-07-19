@@ -1,0 +1,168 @@
+---
+const mapsUrl = 'https://www.google.com/maps?cid=4960049674782183446';
+---
+<section class="crr-google-photos" data-google-photo-feed data-maps-url={mapsUrl}>
+  <div class="v3-orb v3-orb-one" aria-hidden="true"></div>
+  <div class="v2-shell">
+    <div class="v2-section-heading v2-reveal">
+      <div>
+        <p class="v2-eyebrow">Through a guest’s lens</p>
+        <h2>Real moments.<br />Shared from the ranch.</h2>
+      </div>
+      <div class="crr-google-photo-intro">
+        <p>A live preview of guest-contributed photographs from the park’s Google Maps listing, credited to the people who shared them.</p>
+        <a href={mapsUrl} target="_blank" rel="noopener noreferrer">See all visitor photos on <span class="crr-google-maps-label" translate="no">Google Maps</span> <span aria-hidden="true">&nearr;</span></a>
+      </div>
+    </div>
+
+    <div class="crr-google-photo-grid" data-photo-grid aria-live="polite" aria-busy="true">
+      <div class="crr-google-photo-status">
+        <span class="crr-review-loader" aria-hidden="true"></span>
+        <p>Loading current guest photos from <span class="crr-google-maps-label" translate="no">Google Maps</span>...</p>
+      </div>
+    </div>
+
+    <p class="crr-google-photo-attribution" data-photo-attribution hidden>
+      Photos supplied by <span class="crr-google-maps-label" translate="no">Google Maps</span>. Showing guest-contributed photos in Google’s current relevance response; business-uploaded photos are excluded.
+    </p>
+    <noscript>
+      <p class="crr-google-photo-noscript">
+        Live guest photos require JavaScript. <a href={mapsUrl} target="_blank" rel="noopener noreferrer">See photos on <span translate="no">Google Maps</span></a>.
+      </p>
+    </noscript>
+  </div>
+</section>
+
+<script>
+  interface GooglePhotoAuthor {
+    displayName: string;
+    profileUrl: string;
+    avatarUrl: string | null;
+  }
+
+  interface GooglePhoto {
+    imageUrl: string;
+    width: number | null;
+    height: number | null;
+    sourceUrl: string;
+    reportUrl: string | null;
+    authors: GooglePhotoAuthor[];
+  }
+
+  interface GooglePhotoResponse {
+    ok: boolean;
+    mapsUrl: string;
+    photos?: GooglePhoto[];
+  }
+
+  const externalPhotoLink = (href: string, className?: string) => {
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    if (className) link.className = className;
+    return link;
+  };
+
+  const hidePhotoFeed = (root: HTMLElement) => {
+    root.hidden = true;
+  };
+
+  const renderPhotoFeed = (root: HTMLElement, data: GooglePhotoResponse) => {
+    const grid = root.querySelector<HTMLElement>('[data-photo-grid]');
+    const attribution = root.querySelector<HTMLElement>('[data-photo-attribution]');
+    const photos = data.photos ?? [];
+    if (!grid || photos.length === 0) {
+      hidePhotoFeed(root);
+      return;
+    }
+
+    const cards = photos.map((photo, photoIndex) => {
+      const card = document.createElement('article');
+      card.className = 'crr-google-photo-card';
+
+      const imageLink = externalPhotoLink(photo.sourceUrl, 'crr-google-photo-image');
+      imageLink.setAttribute('aria-label', `View guest photo ${photoIndex + 1} on Google Maps`);
+      const image = document.createElement('img');
+      image.src = photo.imageUrl;
+      image.alt = `Guest photo of Crooked River Ranch RV Park shared on Google Maps by ${photo.authors.map((author) => author.displayName).join(' and ')}`;
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      imageLink.append(image);
+
+      const footer = document.createElement('div');
+      footer.className = 'crr-google-photo-credit';
+
+      const authorGroup = document.createElement('div');
+      authorGroup.className = 'crr-google-photo-authors';
+      photo.authors.forEach((author) => {
+        const authorLink = externalPhotoLink(author.profileUrl, 'crr-google-photo-author');
+        if (author.avatarUrl) {
+          const avatar = document.createElement('img');
+          avatar.src = author.avatarUrl;
+          avatar.alt = '';
+          avatar.loading = 'lazy';
+          avatar.referrerPolicy = 'no-referrer';
+          authorLink.append(avatar);
+        }
+        const authorName = document.createElement('span');
+        authorName.textContent = author.displayName;
+        authorLink.append(authorName);
+        authorGroup.append(authorLink);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'crr-google-photo-actions';
+      const source = externalPhotoLink(photo.sourceUrl);
+      source.textContent = 'View on Google Maps';
+      actions.append(source);
+      if (photo.reportUrl) {
+        actions.append(document.createTextNode(' · '));
+        const report = externalPhotoLink(photo.reportUrl);
+        report.textContent = 'Report';
+        actions.append(report);
+      }
+
+      footer.append(authorGroup, actions);
+      card.append(imageLink, footer);
+      return card;
+    });
+
+    grid.replaceChildren(...cards);
+    grid.removeAttribute('aria-busy');
+    grid.classList.toggle('crr-google-photo-grid-single', cards.length === 1);
+    attribution?.removeAttribute('hidden');
+  };
+
+  const loadPhotoFeed = async (root: HTMLElement) => {
+    if (root.dataset.photosLoaded === 'true') return;
+    root.dataset.photosLoaded = 'true';
+    try {
+      const response = await fetch('/api/google-photos', {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+      const data = await response.json() as GooglePhotoResponse;
+      if (!response.ok || !data.ok) {
+        hidePhotoFeed(root);
+        return;
+      }
+      renderPhotoFeed(root, data);
+    } catch {
+      hidePhotoFeed(root);
+    }
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-google-photo-feed]').forEach((root) => {
+    if (!('IntersectionObserver' in window)) {
+      void loadPhotoFeed(root);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      void loadPhotoFeed(root);
+    }, { rootMargin: '700px 0px' });
+    observer.observe(root);
+  });
+</script>

@@ -8,7 +8,7 @@
 export const SITE_ORIGIN = 'https://crookedriverranchrv.com';
 export const SITE_NAME = 'Crooked River Ranch RV Park';
 export const SITE_ALTERNATE_NAME = 'CRR RV Park';
-export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/images/aerial_canyon_rim.jpg`;
+export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/images/hero.jpg`;
 export const RV_PARK_ID = `${SITE_ORIGIN}/#rv-park`;
 export const WEBSITE_ID = `${SITE_ORIGIN}/#website`;
 export const GOOGLE_MAPS_URL = 'https://www.google.com/maps?cid=4960049674782183446';
@@ -145,9 +145,10 @@ export const RV_PARK_SCHEMA: Record<string, unknown> = {
   telephone: '+1-541-923-1441',
   email: 'rvpark@crookedriverranch.com',
   image: [
+    `${SITE_ORIGIN}/images/hero.jpg`,
+    `${SITE_ORIGIN}/images/northern-lights-chris-olson.jpg`,
     `${SITE_ORIGIN}/images/aerial_canyon_rim.jpg`,
     `${SITE_ORIGIN}/images/canyon_sunset.jpg`,
-    `${SITE_ORIGIN}/images/pool_aerial.jpg`,
   ],
   logo: {
     '@type': 'ImageObject',

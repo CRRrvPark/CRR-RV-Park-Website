@@ -55,7 +55,7 @@ function unavailable() {
 }
 
 export const GET: APIRoute = async () => {
-  const apiKey = readEnv('GOOGLE_MAPS_SERVER_KEY') || readEnv('GOOGLE_PLACES_API_KEY');
+  const apiKey = readEnv('GOOGLE_PLACES_API_KEY') || readEnv('GOOGLE_MAPS_SERVER_KEY');
   if (!apiKey) return unavailable();
 
   try {

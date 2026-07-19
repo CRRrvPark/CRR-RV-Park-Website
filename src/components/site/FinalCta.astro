@@ -1,0 +1,36 @@
+---
+export interface Props {
+  eyebrow?: string;
+  headline: string;
+  body?: string;
+  image?: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}
+
+const {
+  eyebrow = 'Ready when you are',
+  headline,
+  body,
+  image = '/images/canyon_sunset.webp',
+  primaryHref = '/availability',
+  primaryLabel = 'See open sites',
+  secondaryHref = 'tel:+15419231441',
+  secondaryLabel = 'Call 541-923-1441',
+} = Astro.props;
+---
+<section class="v2-ready crr-final-cta">
+  <img src={image} alt="" loading="lazy" />
+  <div class="v2-ready-overlay"></div>
+  <div class="v2-shell v2-ready-inner v2-reveal">
+    <p class="v2-eyebrow v2-eyebrow-light">{eyebrow}</p>
+    <h2>{headline}</h2>
+    {body && <p>{body}</p>}
+    <div class="crr-final-actions">
+      <a class="v2-button v2-button-yellow" href={primaryHref}>{primaryLabel} <span aria-hidden="true">→</span></a>
+      <a class="crr-light-link" href={secondaryHref}>{secondaryLabel} <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>

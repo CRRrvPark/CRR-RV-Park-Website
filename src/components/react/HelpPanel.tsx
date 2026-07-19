@@ -22,12 +22,12 @@ interface Props {
 
 const TASKS = [
   {
-    title: 'How do I edit the home page?',
+    title: 'How do I change the public website?',
     steps: [
-      'Go to Pages in the sidebar.',
-      'Click "Home" in the list.',
-      'Click on any section to edit it — text edits save as you type.',
-      'When you\'re done, click "Publish" (big orange button) to push to the live site.',
+      'Open the Netlify project dashboard and choose an Agent Runner.',
+      'Describe the exact copy, image, or layout change for Claude Code or Codex.',
+      'Review the files changed and the Deploy Preview.',
+      'Create and merge the GitHub pull request only after the preview is correct.',
     ],
   },
   {
@@ -47,12 +47,12 @@ const TASKS = [
     ],
   },
   {
-    title: 'I broke something. How do I undo?',
+    title: 'How do I undo a website change?',
     steps: [
-      'Every publish creates a restore point.',
-      'Go to Versions in the sidebar.',
-      'Find the version that worked, click "Restore", confirm.',
-      'The site reverts within 1–2 minutes.',
+      'Open the merged pull request or commit in GitHub.',
+      'Revert that change onto a new branch.',
+      'Review the Netlify Deploy Preview.',
+      'Merge the revert after the preview is correct. The pre-V3 tag remains available for a full rollback.',
     ],
   },
   {

@@ -1,0 +1,65 @@
+---
+export interface Props {
+  id: string;
+  heading?: string;
+  compact?: boolean;
+  basePath?: string;
+}
+
+const {
+  id,
+  heading = 'Start with your dates and rig',
+  compact = false,
+  basePath = '/design-concept-v2',
+} = Astro.props;
+---
+<form
+  id={id}
+  class:list={['v2-search', { 'v2-search-compact': compact }]}
+  action={`${basePath}/plan#live-availability`}
+  method="get"
+  data-v2-search
+  aria-label={heading}
+>
+  <div class="v2-search-intro">
+    <span>Find your fit</span>
+    <strong>{heading}</strong>
+  </div>
+  <label>
+    <span>Arrival</span>
+    <input type="date" name="from" data-v2-arrival required />
+  </label>
+  <label>
+    <span>Departure</span>
+    <input type="date" name="to" data-v2-departure required />
+  </label>
+  <label>
+    <span>Site type</span>
+    <select name="type">
+      <option value="any">Any type</option>
+      <option value="full-hookup">Full hookup</option>
+      <option value="water_electric">Water + electric</option>
+      <option value="dry">Dry camp</option>
+      <option value="tent">Tent</option>
+    </select>
+  </label>
+  <label>
+    <span>Rig length</span>
+    <span class="v2-number-field">
+      <input type="number" name="rigLengthFt" min="1" max="99" inputmode="numeric" placeholder="e.g. 32" />
+      <i>ft</i>
+    </span>
+  </label>
+  <label>
+    <span>Slides</span>
+    <select name="slides">
+      <option value="any">Any / not sure</option>
+      <option value="yes">Has slides</option>
+      <option value="no">No slides</option>
+    </select>
+  </label>
+  <button type="submit">
+    <span>See open sites</span>
+    <span aria-hidden="true">→</span>
+  </button>
+</form>

@@ -529,7 +529,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
     const loc = p.cached_data?.location;
     if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') continue;
     const placeCategory = mapPlaceCategory(p.category);
-    if (!isPinInScope(placeCategory, loc.latitude, loc.longitude, p.slug)) continue;
+    if (!isPinInScope(placeCategory, loc.latitude, loc.longitude, p.slug ?? '')) continue;
     // Synthesize a thumbnail URL from the first cached Place photo (proxy
     // hides the API key — same approach LocalPlaceCard uses).
     const photoName = p.cached_data?.photos?.[0]?.name;

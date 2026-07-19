@@ -1,0 +1,68 @@
+---
+export interface Props {
+  id: string;
+  tone?: 'light' | 'dark';
+  heading?: string;
+  actionLabel?: string;
+}
+
+const {
+  id,
+  tone = 'light',
+  heading = 'Find the right site for your stay',
+  actionLabel = 'Show available sites',
+} = Astro.props;
+---
+<form
+  id={id}
+  class={`concept-search concept-search-${tone}`}
+  action="/design-concept/plan#live-availability"
+  method="get"
+  data-concept-search
+  aria-label={heading}
+>
+  <div class="concept-search-heading">
+    <span class="concept-kicker">Plan your stay</span>
+    <strong>{heading}</strong>
+  </div>
+  <label>
+    <span>Arrival</span>
+    <input type="date" name="from" data-arrival required />
+  </label>
+  <label>
+    <span>Departure</span>
+    <input type="date" name="to" data-departure required />
+  </label>
+  <label>
+    <span>Site type</span>
+    <select name="type" aria-label="Site type">
+      <option value="any">Any type</option>
+      <option value="full-hookup">Full hookup</option>
+      <option value="water_electric">Water + electric</option>
+      <option value="dry">Dry camp</option>
+      <option value="tent">Tent</option>
+    </select>
+  </label>
+  <label>
+    <span>Rig length</span>
+    <select name="rigLengthFt" aria-label="Rig length">
+      <option value="">Any / not sure</option>
+      <option value="25">Up to 25 ft</option>
+      <option value="35">26–35 ft</option>
+      <option value="45">36–45 ft</option>
+      <option value="65">46–65 ft</option>
+    </select>
+  </label>
+  <label>
+    <span>Slides</span>
+    <select name="slides" aria-label="Slide configuration">
+      <option value="any">Any / not sure</option>
+      <option value="yes">Has slides</option>
+      <option value="no">No slides</option>
+    </select>
+  </label>
+  <button class="concept-search-submit" type="submit">
+    <span>{actionLabel}</span>
+    <span aria-hidden="true">→</span>
+  </button>
+</form>

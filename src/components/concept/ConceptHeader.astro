@@ -1,0 +1,47 @@
+---
+export interface Props {
+  activePage: 'home' | 'stay' | 'explore' | 'plan';
+}
+
+const { activePage } = Astro.props;
+
+const links = [
+  { key: 'stay', label: 'Stay', href: '/design-concept/stay' },
+  { key: 'explore', label: 'Explore', href: '/design-concept/explore' },
+  { key: 'plan', label: 'Plan your visit', href: '/design-concept/plan' },
+] as const;
+---
+<header class="concept-header" data-concept-header>
+  <a class="concept-brand" href="/design-concept/" aria-label="Crooked River Ranch RV Park concept home">
+    <span class="concept-brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="concept-brand-copy">
+      <strong>Crooked River Ranch</strong>
+      <small>RV Park · Terrebonne, Oregon</small>
+    </span>
+  </a>
+
+  <nav class="concept-nav" id="concept-navigation" aria-label="Concept navigation" data-concept-nav>
+    {links.map((link) => (
+      <a href={link.href} aria-current={activePage === link.key ? 'page' : undefined}>
+        {link.label}
+      </a>
+    ))}
+  </nav>
+
+  <div class="concept-header-actions">
+    <a class="concept-phone" href="tel:+15419231441">541-923-1441</a>
+    <a class="concept-button concept-button-small concept-button-clay" href="/design-concept/plan#live-availability">
+      Check availability <span aria-hidden="true">→</span>
+    </a>
+    <button
+      class="concept-menu-button"
+      type="button"
+      aria-expanded="false"
+      aria-controls="concept-navigation"
+      aria-label="Open navigation"
+      data-concept-menu
+    >
+      <span></span><span></span>
+    </button>
+  </div>
+</header>

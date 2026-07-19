@@ -1,68 +1,224 @@
 ---
-// Prerendered at build time for fast TTFB/FCP. Content updates trigger a
-// Netlify rebuild via /api/publish → triggerBuildHook().
 export const prerender = true;
 
 import Base from '@layouts/Base.astro';
-import PageRenderer from '@components/PageRenderer.astro';
+import SiteSearch from '@components/site/SiteSearch.astro';
+import GuestReviews from '@components/site/GuestReviews.astro';
+import FinalCta from '@components/site/FinalCta.astro';
 
-const title = "Campground Near Smith Rock Oregon | Crooked River Ranch RV Park";
-const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock. Golf course adjacent, local dining nearby, open year-round. Big rig pull-throughs up to 65 feet. Book direct.";
-const canonical = "https://www.crookedriverranchrv.com/";
-const ogImage = "https://www.crookedriverranchrv.com/images/hero.jpg";
-const heroImagePreload = "/images/hero.webp";
+const title = 'Campground Near Smith Rock Oregon | Crooked River Ranch RV Park';
+const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. See live availability and book direct.";
+const canonical = 'https://www.crookedriverranchrv.com/';
+const ogImage = 'https://www.crookedriverranchrv.com/images/aerial_canyon_rim.jpg';
+const heroImagePreload = '/images/aerial_canyon_rim.webp';
 
 const schemas = [
   {
-    "@context": "https://schema.org",
-    "@type": "Campground",
-    "name": "Crooked River Ranch RV Park",
-    "description": "113-site RV park on the canyon rim of the Crooked River Gorge in Central Oregon. Full hookups, pull-throughs to 65 feet, adjacent golf course, local dining nearby. 15 minutes from Smith Rock State Park. Open year-round.",
-    "url": "https://www.crookedriverranchrv.com",
-    "telephone": "+1-541-923-1441",
-    "address": { "@type": "PostalAddress", "streetAddress": "14875 SW Hays Lane", "addressLocality": "Terrebonne", "addressRegion": "OR", "postalCode": "97760", "addressCountry": "US" },
-    "geo": { "@type": "GeoCoordinates", "latitude": 44.3485, "longitude": -121.2055 },
-    "checkinTime": "14:00", "checkoutTime": "12:00",
-    "amenityFeature": [
-      {"@type": "LocationFeatureSpecification", "name": "Full Hookups", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Pull-Through Sites", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Swimming Pool", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Golf Course Adjacent", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Pet Friendly", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Local Dining Nearby", "value": true},
-      {"@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true}
+    '@context': 'https://schema.org',
+    '@type': 'Campground',
+    name: 'Crooked River Ranch RV Park',
+    description: 'RV park on the canyon rim of the Crooked River Gorge in Central Oregon. Full hookups, guest-bookable pull-throughs up to 65 feet, adjacent golf course, and heated seasonal pool. 15 minutes from Smith Rock State Park. Open year-round.',
+    url: 'https://www.crookedriverranchrv.com',
+    telephone: '+1-541-923-1441',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '14875 SW Hays Lane',
+      addressLocality: 'Terrebonne',
+      addressRegion: 'OR',
+      postalCode: '97760',
+      addressCountry: 'US',
+    },
+    checkinTime: '14:00',
+    checkoutTime: '12:00',
+    amenityFeature: [
+      { '@type': 'LocationFeatureSpecification', name: 'Full Hookups', value: true },
+      { '@type': 'LocationFeatureSpecification', name: 'Pull-Through Sites', value: true },
+      { '@type': 'LocationFeatureSpecification', name: 'Heated Seasonal Pool', value: true },
+      { '@type': 'LocationFeatureSpecification', name: 'Golf Course Adjacent', value: true },
+      { '@type': 'LocationFeatureSpecification', name: 'Pet Friendly', value: true },
+      { '@type': 'LocationFeatureSpecification', name: 'Free Wi-Fi', value: true },
     ],
-    "priceRange": "$36-$62/night",
-    "image": "https://www.crookedriverranchrv.com/images/hero.jpg",
-    "aggregateRating": {"@type": "AggregateRating", "ratingValue": "5.0", "reviewCount": "200", "bestRating": "5"}
+    image: 'https://www.crookedriverranchrv.com/images/aerial_canyon_rim.jpg',
   },
   {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Crooked River Ranch RV Park",
-    "url": "https://www.crookedriverranchrv.com",
-    "logo": "https://www.crookedriverranchrv.com/images/hero.jpg",
-    "telephone": "+1-541-923-1441",
-    "address": { "@type": "PostalAddress", "streetAddress": "14875 SW Hays Lane", "addressLocality": "Terrebonne", "addressRegion": "OR", "postalCode": "97760", "addressCountry": "US" },
-    "geo": { "@type": "GeoCoordinates", "latitude": 44.3485, "longitude": -121.2055 }
-  }
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Crooked River Ranch RV Park',
+    url: 'https://www.crookedriverranchrv.com',
+    telephone: '+1-541-923-1441',
+  },
 ];
 ---
 <Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
-  <PageRenderer pageSlug="index">
-    <!-- Fallback rendered only when Supabase has no sections (DB empty / unconfigured).
-         Once migrations have run + seed content is in place, this fallback never displays. -->
-    <section class="page-hero full">
-      <div class="hero-bg"><picture><source srcset="/images/hero.webp" type="image/webp"><img src="/images/hero.jpg" alt="Crooked River Ranch RV Park" width="1400" height="933" fetchpriority="high"></picture></div>
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="hero-eyebrow">Central Oregon · Open 365 Days</div>
-        <h1 class="hero-hl">Park near<br><em>the canyon.</em></h1>
-        <p class="hero-sub">Full hookup RV sites among juniper trees on the rim of the Crooked River Gorge.</p>
-        <div class="hero-ctas">
-          <a href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noopener noreferrer" class="btn-p">Reserve Your Site</a>
+  <main id="main-content">
+    <section class="v2-home-hero">
+      <div class="v3-orb v3-orb-one" aria-hidden="true"></div>
+      <div class="v3-orb v3-orb-two" aria-hidden="true"></div>
+      <div class="v2-shell v2-hero-grid">
+        <div class="v2-hero-copy v2-reveal">
+          <p class="v2-eyebrow">Crooked River canyon · Terrebonne, Oregon</p>
+          <h1>Canyon views.<br />A site that fits.<br /><mark>Central Oregon ahead.</mark></h1>
+          <p class="v2-hero-lead">Choose your dates, tell us about your rig, and see which sites are open before you reserve.</p>
+        </div>
+
+        <figure class="v2-hero-image v2-reveal">
+          <picture>
+            <source media="(max-width: 720px)" srcset="/images/aerial_canyon_rim-mobile.webp" type="image/webp" />
+            <source srcset="/images/aerial_canyon_rim.webp" type="image/webp" />
+            <img src="/images/aerial_canyon_rim.jpg" alt="Crooked River Ranch RV Park beside the canyon and golf course" fetchpriority="high" />
+          </picture>
+          <figcaption>
+            <span>On the canyon rim</span>
+            <strong>Terrebonne, Central Oregon</strong>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="v2-shell v2-home-search">
+        <SiteSearch id="home-site-search" />
+      </div>
+    </section>
+
+    <section class="crr-fact-strip" aria-label="Park highlights">
+      <div class="v2-shell crr-fact-grid">
+        <div><strong>15 minutes</strong><span>to Smith Rock</span></div>
+        <div><strong>Up to 65 ft</strong><span>guest-bookable pull-throughs</span></div>
+        <div><strong>Full hookups</strong><span>30 &amp; 50 amp options</span></div>
+        <div><strong>Pets welcome</strong><span>off-leash dog run</span></div>
+        <a href="/park-policies">Policies <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">Life at the ranch</p>
+          <h2>Park the rig.<br />Keep the day open.</h2>
+          <p>Morning can begin under the junipers, on the golf course beside the park, or at Smith Rock. Come back to the heated seasonal pool, a full-hookup site, and an evening close to the canyon.</p>
+          <p>The useful details stay close: live availability, site photos, the park map, policies, and a phone number when you want help choosing.</p>
+          <a class="v2-inline-link" href="/area-guide">See the park and area <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="crr-photo-story" aria-label="Views around Crooked River Ranch RV Park">
+          <figure class="v2-reveal">
+            <img src="/images/aerial_canyon_rim.webp" alt="RV sites beside the Crooked River canyon and golf course" loading="lazy" />
+            <figcaption>The park, golf course, and canyon</figcaption>
+          </figure>
+          <figure class="v2-reveal">
+            <img src="/images/pool_aerial.webp" alt="Aerial view of the heated seasonal pool" loading="lazy" />
+            <figcaption>Heated seasonal pool</figcaption>
+          </figure>
+          <figure class="v2-reveal">
+            <img src="/images/firepit_evening.webp" alt="A family gathered around a propane fire in the evening" loading="lazy" />
+            <figcaption>Evenings back at camp</figcaption>
+          </figure>
         </div>
       </div>
     </section>
-  </PageRenderer>
+
+    <section class="v2-section v2-stay-choice">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Choose the stay</p>
+            <h2>Start with what<br />you’re bringing.</h2>
+          </div>
+          <p>Each site type answers a different need. Compare the basics, then use live availability for the exact site.</p>
+        </div>
+
+        <div class="v2-stay-grid">
+          <a class="v2-stay-card v2-stay-card-wide v2-reveal" href="/sites#full-hookup">
+            <img src="/images/aerial_aloop.webp" alt="Aerial view of full-hookup RV sites at Crooked River Ranch" loading="lazy" />
+            <div>
+              <span>01 · Full hookup</span>
+              <h3>Water, electric &amp; sewer</h3>
+              <p>Back-in and pull-through choices, 30/50 amp service, and site-specific fit details.</p>
+              <strong>See full-hookup sites →</strong>
+            </div>
+          </a>
+
+          <a class="v2-stay-card v2-reveal" href="/sites#water-electric">
+            <img src="/images/gazebo_fall.webp" alt="Autumn trees near Crooked River Ranch RV Park sites" loading="lazy" />
+            <div>
+              <span>02 · Water + electric</span>
+              <h3>A simple RV setup</h3>
+              <p>30/50 amp service with water, plus access to the 24/7 card-reader dump station.</p>
+              <strong>See water + electric sites →</strong>
+            </div>
+          </a>
+
+          <a class="v2-stay-card v2-reveal" href="/sites#tent-dry">
+            <img src="/images/family_reunion.webp" alt="Guests gathered outside at Crooked River Ranch RV Park" loading="lazy" />
+            <div>
+              <span>03 · Tent + dry camp</span>
+              <h3>Smaller setups</h3>
+              <p>Tent sites, rooftop-tent options, and dry camp for qualifying vans and truck campers.</p>
+              <strong>See smaller-site options →</strong>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-map-story">
+      <div class="v2-shell v2-map-story-grid">
+        <div class="v2-map-panel v2-reveal">
+          <img src="/images/rv_park_map.webp" alt="Map of Crooked River Ranch RV Park sites and amenities" loading="lazy" />
+          <span class="v2-map-chip v2-map-chip-one">Heated pool</span>
+          <span class="v2-map-chip v2-map-chip-two">Dog run</span>
+          <span class="v2-map-chip v2-map-chip-three">Canyon rim</span>
+        </div>
+        <div class="v2-map-copy v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">Choose with context</p>
+          <h2>See the fit.<br />See the location.<br />Then decide.</h2>
+          <p>Search your dates to see open sites on the map. Each site carries the details needed to make a comfortable choice.</p>
+          <ul>
+            <li><span>01</span> Filter for dates, site type, length, and slides</li>
+            <li><span>02</span> Compare compatible locations</li>
+            <li><span>03</span> Complete the reservation through Firefly</li>
+          </ul>
+          <a class="v2-button v2-button-yellow" href="/availability">Try live availability <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-section v2-day-section">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">The stay around the site</p>
+            <h2>Keep the day<br />as open as you like.</h2>
+          </div>
+          <p>A heated pool, golf, spa time, the canyon, local wine, and Smith Rock can all fit into the same Central Oregon stay.</p>
+        </div>
+
+        <div class="v2-day-grid">
+          <a class="v2-day-card v2-reveal" href="/area-guide#reset-day">
+            <img src="/images/pool_aerial.webp" alt="Aerial view of the heated seasonal swimming pool" loading="lazy" />
+            <span>At the park</span>
+            <h3>Swim, unwind, slow down</h3>
+            <p>Heated seasonal pool, nearby massage and pedicure options, and wineries within about 20 minutes.</p>
+          </a>
+          <a class="v2-day-card v2-reveal" href="/golf-stays">
+            <img src="/images/golf_bridge.webp" alt="Bridge and fairway at Crooked River Ranch golf course" loading="lazy" />
+            <span>Beside the park</span>
+            <h3>Play the course</h3>
+            <p>An 18-hole golf course sits beside the RV park and canyon.</p>
+          </a>
+          <a class="v2-day-card v2-reveal" href="/trails">
+            <img src="/images/smith_rock.webp" alt="Smith Rock State Park cliffs above the Crooked River" loading="lazy" />
+            <span>15 minutes away</span>
+            <h3>Start at Smith Rock</h3>
+            <p>Choose an easy river walk or a steeper high-desert trail.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <GuestReviews />
+
+    <FinalCta
+      headline="Your dates. Your rig. Your open sites."
+      body="Search the live park map, compare the details, and reserve the site that feels right."
+    />
+  </main>
 </Base>

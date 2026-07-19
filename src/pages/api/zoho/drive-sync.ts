@@ -13,9 +13,9 @@
 import type { APIRoute } from 'astro';
 import { serverClient } from '@lib/supabase';
 import { listWorkDriveFolderFiles, downloadWorkDriveFile, isImageFile, classifyZohoError, type WorkDriveFile } from '@lib/zoho';
-import { generateVariants, variantFilenames } from '@lib/images';
+import { generateVariants } from '@lib/images';
 import { logAudit } from '@lib/audit';
-import { json, requireScheduledOrAuth, handleError } from '@lib/api';
+import { json, requireScheduledOrAuth } from '@lib/api';
 
 export const prerender = false;
 

@@ -1,0 +1,58 @@
+---
+export interface Props {
+  eyebrow: string;
+  headline: string;
+  accent?: string;
+  body: string;
+  image: string;
+  imageMobile?: string;
+  imageJpg?: string;
+  alt: string;
+  caption?: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}
+
+const {
+  eyebrow,
+  headline,
+  accent,
+  body,
+  image,
+  imageMobile,
+  imageJpg,
+  alt,
+  caption,
+  primaryHref,
+  primaryLabel,
+  secondaryHref,
+  secondaryLabel,
+} = Astro.props;
+---
+<section class="v2-inner-hero crr-page-hero">
+  <div class="v3-orb v3-orb-one" aria-hidden="true"></div>
+  <div class="v2-shell v2-inner-hero-grid">
+    <div class="v2-inner-copy v2-reveal">
+      <p class="v2-eyebrow">{eyebrow}</p>
+      <h1>{headline}{accent && <><br /><mark>{accent}</mark></>}</h1>
+      <p>{body}</p>
+      {(primaryHref || secondaryHref) && (
+        <div class="crr-hero-actions">
+          {primaryHref && primaryLabel && <a class="v2-button v2-button-blue" href={primaryHref}>{primaryLabel} <span aria-hidden="true">→</span></a>}
+          {secondaryHref && secondaryLabel && <a class="v2-inline-link" href={secondaryHref}>{secondaryLabel} <span aria-hidden="true">→</span></a>}
+        </div>
+      )}
+    </div>
+    <figure class="v2-inner-image v2-reveal">
+      <picture>
+        {imageMobile && <source media="(max-width: 720px)" srcset={imageMobile} type="image/webp" />}
+        <source srcset={image} type="image/webp" />
+        <img src={imageJpg ?? image} alt={alt} fetchpriority="high" />
+      </picture>
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  </div>
+  <slot />
+</section>

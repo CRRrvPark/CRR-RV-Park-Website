@@ -1,0 +1,58 @@
+---
+export interface Props {
+  basePath?: string;
+  conceptLabel?: string;
+}
+
+const {
+  basePath = '/design-concept-v2',
+  conceptLabel = 'V2',
+} = Astro.props;
+---
+<footer class="v2-footer">
+  <div class="v2-shell v2-footer-grid">
+    <div class="v2-footer-lead">
+      <a class="v2-brand v2-brand-footer" href={`${basePath}/`}>
+        <span class="v2-brand-symbol" aria-hidden="true">CR</span>
+        <span>
+          <strong>Crooked River Ranch</strong>
+          <small>RV Park</small>
+        </span>
+      </a>
+      <h2>Come for the canyon.<br />Arrive with a plan.</h2>
+      <a class="v2-book-button" href={`${basePath}/plan#live-availability`}>
+        Find an open site <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="v2-footer-links">
+      <div>
+        <small>Stay</small>
+        <a href={`${basePath}/sites`}>Compare site types</a>
+        <a href="/park-map">Park map</a>
+        <a href="/group-sites">Group stays</a>
+        <a href="/extended-stays">Monthly stays</a>
+      </div>
+      <div>
+        <small>Park + area</small>
+        <a href={`${basePath}/park-area`}>What’s here</a>
+        <a href="/trails">Trails</a>
+        <a href="/things-to-do">Things to do</a>
+        <a href="/events">Events</a>
+      </div>
+      <div>
+        <small>Plan</small>
+        <a href="tel:+15419231441">541-923-1441</a>
+        <a href="https://maps.google.com/?q=14875+SW+Hays+Lane+Terrebonne+OR+97760">Directions</a>
+        <a href="/park-policies">Park policies</a>
+        <a href="https://app.fireflyreservations.com/GuestPortal/Property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Manage a reservation ↗</a>
+      </div>
+    </div>
+
+    <div class="v2-footer-bottom">
+      <span>14875 SW Hays Lane · Terrebonne, OR 97760</span>
+      <span>Check-in 2:00 pm · Check-out 12:00 pm</span>
+      <span>Local {conceptLabel} redesign concept · Not published</span>
+    </div>
+  </div>
+</footer>

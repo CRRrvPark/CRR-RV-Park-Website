@@ -16,8 +16,8 @@ import { AdminProviders } from './AdminProviders';
 import { useAuth } from './AuthContext';
 import { can, type Capability } from '@lib/rbac';
 import {
-  IconDashboard, IconPages, IconMedia, IconCalendar, IconAudit,
-  IconHistory, IconUsers, IconCode, IconSettings, IconBook,
+  IconDashboard, IconMedia, IconCalendar, IconAudit,
+  IconUsers, IconSettings, IconBook,
   IconMenu, IconClose, IconSearch, IconLogout, IconHelp, IconSparkle,
   IconGlobe,
 } from './ui/Icon';
@@ -37,16 +37,12 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { slug: 'dashboard', href: '/admin', label: 'Dashboard', icon: <IconDashboard />, group: 'main', description: 'Overview, quick actions, recent activity' },
-  { slug: 'editor',    href: '/admin/editor', label: 'Pages', icon: <IconPages />, group: 'main', description: 'Edit page content & publish changes' },
-  { slug: 'builder',   href: '/admin/builder/index', label: 'Visual Editor', icon: <IconSparkle />, group: 'main', description: 'Drag-and-drop visual editor (jumps to home page)' },
   { slug: 'media',     href: '/admin/media', label: 'Media Library', icon: <IconMedia />, capability: 'view_media', group: 'main', description: 'Upload photos & manage galleries' },
   { slug: 'events',    href: '/admin/events', label: 'Events', icon: <IconCalendar />, capability: 'view_events', group: 'main', description: 'Schedule events visible on the site' },
   { slug: 'area-guide', href: '/admin/area-guide', label: 'Area Guide', icon: <IconGlobe />, capability: 'view_area_guide', group: 'main', description: 'Trails, things to do, local places, and the park site map' },
 
   { slug: 'audit',     href: '/admin/audit',    label: 'Change Log', icon: <IconAudit />, capability: 'view_audit_log', group: 'advanced', description: 'Who changed what, and when' },
-  { slug: 'versions',  href: '/admin/versions', label: 'Versions',   icon: <IconHistory />, capability: 'view_snapshots', group: 'advanced', description: 'Restore the site from a prior snapshot' },
   { slug: 'users',     href: '/admin/users',    label: 'Users',      icon: <IconUsers />, capability: 'view_users', group: 'advanced', description: 'Invite teammates & assign roles' },
-  { slug: 'code',      href: '/admin/code',     label: 'Code Editor', icon: <IconCode />, capability: 'view_code', group: 'advanced', description: 'Edit layouts & templates (owner only)' },
   { slug: 'settings',  href: '/admin/settings', label: 'Settings',   icon: <IconSettings />, group: 'advanced', description: 'Integrations, publishing, email' },
   { slug: 'runbook',   href: '/admin/runbook',  label: 'Runbook',    icon: <IconBook />, capability: 'view_runbook', group: 'advanced', description: 'Operations manual for successors' },
 ];

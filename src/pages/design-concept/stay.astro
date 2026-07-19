@@ -1,0 +1,178 @@
+---
+import ConceptLayout from '@layouts/ConceptLayout.astro';
+import AvailabilityBar from '@components/concept/AvailabilityBar.astro';
+---
+<ConceptLayout
+  page="stay"
+  title="Sites & Amenities — Crooked River Ranch RV Park Concept"
+  description="Explore RV site types, park amenities, and site-fit details in the Crooked River Ranch RV Park redesign concept."
+>
+  <main id="main-content">
+    <section class="concept-inner-hero concept-inner-hero-stay">
+      <picture class="concept-hero-media">
+        <source media="(max-width: 720px)" srcset="/images/aerial_aloop-mobile.webp" type="image/webp" />
+        <source srcset="/images/aerial_aloop.webp" type="image/webp" />
+        <img src="/images/aerial_aloop.jpg" alt="Aerial view of RV sites among juniper trees beside the golf course" fetchpriority="high" />
+      </picture>
+      <div class="concept-hero-shade"></div>
+      <div class="concept-shell concept-inner-hero-copy">
+        <p class="concept-eyebrow concept-eyebrow-light">Sites &amp; amenities</p>
+        <h1>Bring your rig.<br /><em>We’ll help with the fit.</em></h1>
+        <p>See hookup type, length, slide clearance, photos, and location before you reserve.</p>
+      </div>
+    </section>
+
+    <section class="concept-search-stage">
+      <div class="concept-shell">
+        <AvailabilityBar id="stay-site-search" tone="light" heading="Check sites for your dates" />
+      </div>
+    </section>
+
+    <section class="concept-section concept-matcher-section">
+      <div class="concept-shell">
+        <div class="concept-section-heading concept-reveal">
+          <div>
+            <p class="concept-eyebrow">Site match</p>
+            <h2>Start with what<br /><em>you’re bringing.</em></h2>
+          </div>
+          <p>Choose your setup and we’ll point you toward the stay type that fits the basics.</p>
+        </div>
+
+        <form class="concept-matcher" data-site-matcher>
+          <label>
+            <span>My setup</span>
+            <select name="setup">
+              <option value="rv">Motorhome, trailer, or fifth wheel</option>
+              <option value="van">Van or truck camper</option>
+              <option value="tent">Tent or rooftop tent</option>
+            </select>
+          </label>
+          <label>
+            <span>Hookups I want</span>
+            <select name="hookups">
+              <option value="full">Water, electric &amp; sewer</option>
+              <option value="partial">Water &amp; electric</option>
+              <option value="none">No hookups needed</option>
+            </select>
+          </label>
+          <button class="concept-button concept-button-pine" type="submit">
+            Match my stay <span aria-hidden="true">→</span>
+          </button>
+          <p class="concept-match-status" aria-live="polite" data-match-status>All four stay types are shown below.</p>
+        </form>
+
+        <div class="concept-site-grid">
+          <article class="concept-site-card concept-reveal" data-site-card="full">
+            <div class="concept-site-card-top">
+              <span>Full hookup</span>
+              <i aria-hidden="true">01</i>
+            </div>
+            <h3>Full Hookup RV Site</h3>
+            <p>Water, 30/50 amp electric, and sewer, with back-in and pull-through options.</p>
+            <ul>
+              <li>Pull-throughs up to 65 feet</li>
+              <li>Back-in options available</li>
+              <li>Site details include slide clearance</li>
+            </ul>
+            <a href="/design-concept/plan?type=full-hookup#live-availability">Check full-hookup sites →</a>
+          </article>
+          <article class="concept-site-card concept-reveal" data-site-card="partial">
+            <div class="concept-site-card-top">
+              <span>Water + electric</span>
+              <i aria-hidden="true">02</i>
+            </div>
+            <h3>Water &amp; Electric Site</h3>
+            <p>Water and 30/50 amp electric service without a sewer connection.</p>
+            <ul>
+              <li>Back-in and pull-through options</li>
+              <li>Sites up to 50 feet</li>
+              <li>Dump station available</li>
+            </ul>
+            <a href="/design-concept/plan?type=water_electric#live-availability">Check W&amp;E sites →</a>
+          </article>
+          <article class="concept-site-card concept-reveal" data-site-card="tent">
+            <div class="concept-site-card-top">
+              <span>Tent stay</span>
+              <i aria-hidden="true">03</i>
+            </div>
+            <h3>Tent Site</h3>
+            <p>Standard tent sites plus MAGIC, a tent site tucked beneath the trees.</p>
+            <ul>
+              <li>Traditional tents</li>
+              <li>Rooftop-tent sites available</li>
+              <li>No hookups</li>
+            </ul>
+            <a href="/design-concept/plan?type=tent#live-availability">Check tent sites →</a>
+          </article>
+          <article class="concept-site-card concept-reveal" data-site-card="dry">
+            <div class="concept-site-card-top">
+              <span>Small rig</span>
+              <i aria-hidden="true">04</i>
+            </div>
+            <h3>Dry Camp</h3>
+            <p>No-hookup sites for vans, truck campers, and qualifying small rigs.</p>
+            <ul>
+              <li>Single vehicles up to 25 feet</li>
+              <li>Vans and truck campers</li>
+              <li>Dump station available</li>
+            </ul>
+            <a href="/design-concept/plan?type=dry#live-availability">Check dry-camp sites →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-map-section">
+      <div class="concept-shell concept-map-grid">
+        <div class="concept-map-copy concept-reveal">
+          <p class="concept-eyebrow concept-eyebrow-light">Choose visually</p>
+          <h2>See where the<br /><em>site sits.</em></h2>
+          <p>See the RV loops, tent sites, dry camp, and shared spaces together. Use the date search to light up open sites on the map.</p>
+          <div class="concept-map-legend">
+            <span><i class="concept-dot concept-dot-open"></i> Available</span>
+            <span><i class="concept-dot concept-dot-selected"></i> Selected</span>
+            <span><i class="concept-dot concept-dot-unavailable"></i> Unavailable</span>
+          </div>
+          <a class="concept-button concept-button-light" href="/park-map">Open the current interactive map <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="concept-map-frame concept-reveal">
+          <img src="/images/rv_park_map.webp" alt="Map of Crooked River Ranch RV Park loops and sites" loading="lazy" />
+          <span class="concept-map-badge">Park map preview</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section" id="amenities">
+      <div class="concept-shell">
+        <div class="concept-section-heading concept-reveal">
+          <div>
+            <p class="concept-eyebrow">Around the park</p>
+            <h2>Useful when you need it.<br /><em>Fun when you don’t.</em></h2>
+          </div>
+          <p>Pool, courts, dog run, bathhouse, Wi-Fi, golf, playground, and practical details gathered for easy trip planning.</p>
+        </div>
+        <div class="concept-amenity-grid">
+          <div><span>Swim</span><strong>Seasonal saltwater pool</strong><p>A place to cool down after the trail or golf course.</p></div>
+          <div><span>Play</span><strong>Golf, tennis &amp; pickleball</strong><p>The golf course is adjacent; courts are available on property.</p></div>
+          <div><span>Bring them</span><strong>Pet-friendly stays</strong><p>An on-site dog run and a two-pet maximum per site.</p></div>
+          <div><span>Refresh</span><strong>Bathhouse &amp; free showers</strong><p>Coded entry for registered guests.</p></div>
+          <div><span>Connect</span><strong>Guest Wi-Fi</strong><p>Complimentary connection for email and everyday browsing.</p></div>
+          <div><span>Settle in</span><strong>Playground &amp; shared lawn</strong><p>Room for kids, gatherings, and unhurried afternoons.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-trip-band">
+      <img src="/images/family_reunion.webp" alt="A group gathering in the park's shared lawn and gazebo area" loading="lazy" />
+      <div class="concept-trip-card concept-reveal">
+        <p class="concept-eyebrow">Staying differently?</p>
+        <h2>Bring the group.<br /><em>Stay a while.</em></h2>
+        <div class="concept-trip-links">
+          <a href="/group-sites"><span>Group stays</span><small>Sites for reunions and gatherings</small><i>→</i></a>
+          <a href="/extended-stays"><span>Monthly stays</span><small>Ask about extended availability</small><i>→</i></a>
+          <a href="/golf-stays"><span>Golf stays</span><small>Pair your site with time on the course</small><i>→</i></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ConceptLayout>

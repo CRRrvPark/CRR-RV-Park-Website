@@ -1,0 +1,98 @@
+---
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+const isCurrent = (href: string) => {
+  if (href === '/') return path === '/';
+  return path === href || path.startsWith(`${href}/`);
+};
+
+const groups = [
+  {
+    label: 'Stay',
+    key: 'stay',
+    links: [
+      { href: '/sites', label: 'Sites & site types', detail: 'Compare hookups, fit, and setup' },
+      { href: '/availability', label: 'Live availability', detail: 'See open sites on the park map' },
+      { href: '/park-map', label: 'Interactive park map', detail: 'Browse every site and location' },
+      { href: '/group-sites', label: 'Group stays', detail: 'Keep the crew close together' },
+      { href: '/extended-stays', label: 'Extended stays', detail: 'October–April monthly options' },
+      { href: '/golf-stays', label: 'Golf stays', detail: 'RV site beside an 18-hole course' },
+    ],
+  },
+  {
+    label: 'Park + area',
+    key: 'explore',
+    links: [
+      { href: '/amenities', label: 'At the park', detail: 'Pool, bathhouse, recreation, and more' },
+      { href: '/area-guide', label: 'Area guide + map', detail: 'Build a day around how you want it to feel' },
+      { href: '/trails', label: 'Trails', detail: 'Distances, difficulty, and useful cautions' },
+      { href: '/things-to-do', label: 'Things to do', detail: 'Central Oregon ideas for every pace' },
+      { href: '/dining', label: 'Dining & local', detail: 'Current hours, ratings, and directions' },
+      { href: '/events', label: 'Events', detail: 'What is happening during your stay' },
+    ],
+  },
+] as const;
+---
+<div class="crr-utility">
+  <div class="v2-shell">
+    <span>Open year-round · Terrebonne, Oregon</span>
+    <div>
+      <a href="/park-policies">Park policies</a>
+      <a href="tel:+15419231441">541-923-1441</a>
+    </div>
+  </div>
+</div>
+
+<header class="crr-header" data-site-header>
+  <div class="v2-shell crr-header-inner">
+    <a class="crr-brand" href="/" aria-label="Crooked River Ranch RV Park home">
+      <span class="crr-brand-mark" aria-hidden="true">CR</span>
+      <span>
+        <strong>Crooked River Ranch</strong>
+        <small>RV Park</small>
+      </span>
+    </a>
+
+    <nav class="crr-nav" id="site-navigation" aria-label="Primary navigation" data-site-navigation>
+      <a class="crr-nav-home" href="/" aria-current={isCurrent('/') ? 'page' : undefined}>Home</a>
+      {groups.map((group) => (
+        <div class="crr-nav-group" data-nav-group>
+          <button type="button" aria-expanded="false" data-nav-trigger>
+            {group.label}<span aria-hidden="true">⌄</span>
+          </button>
+          <div class="crr-mega" data-nav-panel>
+            <div class="crr-mega-heading">
+              <small>{group.label}</small>
+              <strong>{group.key === 'stay' ? 'Choose the stay with the useful details in view.' : 'Plan the park time and the day beyond it.'}</strong>
+            </div>
+            <div class="crr-mega-links">
+              {group.links.map((link) => (
+                <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
+                  <span>{link.label}</span>
+                  <small>{link.detail}</small>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+      <a href="/book-now" aria-current={isCurrent('/book-now') ? 'page' : undefined}>Plan your visit</a>
+    </nav>
+
+    <div class="crr-header-actions">
+      <a class="v2-book-button" href="/availability">
+        See open sites <span aria-hidden="true">→</span>
+      </a>
+      <button
+        class="crr-menu-button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-navigation"
+        aria-label="Open navigation"
+        data-site-menu
+      >
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>

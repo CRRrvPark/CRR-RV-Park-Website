@@ -63,6 +63,10 @@ const apiKey =
   import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
   (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
   '';
+const googleMapId =
+  import.meta.env.PUBLIC_GOOGLE_MAPS_MAP_ID ??
+  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_MAP_ID : '') ??
+  '';
 
 const hasKey = Boolean(apiKey);
 // JSON-stringify pins for the inline script; server-sanitized against
@@ -109,7 +113,7 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
 )}
 
 {hasKey && (
-  <script is:inline define:vars={{ apiKey }}>
+  <script is:inline define:vars={{ apiKey, googleMapId }}>
     // Load the Google Maps JS SDK once per page, lazily when any map enters
     // the viewport. Subsequent maps on the same page reuse the same script.
     (function () {
@@ -156,15 +160,16 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
           try { pins = JSON.parse(pinsEl.textContent || '[]'); } catch (e) {}
           var loading = wrap.querySelector('.crr-map-loading');
           if (loading) loading.remove();
-          var map = new google.maps.Map(el, {
+          var mapOptions = {
             center: { lat: parseFloat(wrap.dataset.mapCenterLat), lng: parseFloat(wrap.dataset.mapCenterLng) },
             zoom: parseInt(wrap.dataset.mapZoom || '10', 10),
             mapTypeId: wrap.dataset.mapType || 'terrain',
-            mapId: 'CRR_AREA_GUIDE',
             gestureHandling: 'cooperative',
             fullscreenControl: true,
             streetViewControl: false,
-          });
+          };
+          if (googleMapId) mapOptions.mapId = googleMapId;
+          var map = new google.maps.Map(el, mapOptions);
 
           var info = new google.maps.InfoWindow();
           var bounds = new google.maps.LatLngBounds();
@@ -173,7 +178,7 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
             if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
             var position = { lat: p.lat, lng: p.lng };
             var marker;
-            if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+            if (googleMapId && google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
               var label = document.createElement('div');
               label.style.cssText = 'background:#C4622D;color:#fff;border:2px solid #fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;';
               label.textContent = p.iconEmoji || '📍';

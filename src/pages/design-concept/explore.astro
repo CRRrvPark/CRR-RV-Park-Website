@@ -1,0 +1,134 @@
+---
+import ConceptLayout from '@layouts/ConceptLayout.astro';
+---
+<ConceptLayout
+  page="explore"
+  title="Explore Central Oregon — Crooked River Ranch RV Park Concept"
+  description="A map-led, guest-centered area guide in the Crooked River Ranch RV Park redesign concept."
+>
+  <main id="main-content">
+    <section class="concept-inner-hero concept-inner-hero-explore">
+      <picture class="concept-hero-media">
+        <source media="(max-width: 720px)" srcset="/images/smith_rock-mobile.webp" type="image/webp" />
+        <source srcset="/images/smith_rock.webp" type="image/webp" />
+        <img src="/images/smith_rock.jpg" alt="Smith Rock State Park in Central Oregon" fetchpriority="high" />
+      </picture>
+      <div class="concept-hero-shade"></div>
+      <div class="concept-shell concept-inner-hero-copy">
+        <p class="concept-eyebrow concept-eyebrow-light">Explore Central Oregon</p>
+        <h1>Start your Central<br /><em>Oregon days here.</em></h1>
+        <p>Smith Rock is 15 minutes away. Trails, river days, golf, local food, and high-desert towns fill in the rest of the map.</p>
+        <a class="concept-button concept-button-clay" href="#explore-grid">Browse nearby ideas <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>
+
+    <section class="concept-section concept-explore-intro">
+      <div class="concept-shell concept-explore-intro-grid">
+        <div class="concept-reveal">
+          <p class="concept-eyebrow">Choose by the day</p>
+          <h2>Pick a direction,<br /><em>not an itinerary.</em></h2>
+        </div>
+        <div class="concept-reveal">
+          <p class="concept-lead">Browse by travel time or by the kind of day you want. Save the details for after something sounds right.</p>
+          <div class="concept-filter-row" role="group" aria-label="Filter nearby ideas" data-explore-filters>
+            <button type="button" data-filter="all" aria-pressed="true">All ideas</button>
+            <button type="button" data-filter="close" aria-pressed="false">Close by</button>
+            <button type="button" data-filter="hike" aria-pressed="false">Hiking</button>
+            <button type="button" data-filter="relax" aria-pressed="false">Easygoing</button>
+            <button type="button" data-filter="family" aria-pressed="false">With kids</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-explore-grid-section" id="explore-grid">
+      <div class="concept-shell">
+        <p class="concept-filter-status" aria-live="polite" data-filter-status>Showing all featured ideas.</p>
+        <div class="concept-experience-grid" data-experience-grid>
+          <article class="concept-experience-card concept-experience-card-wide concept-reveal" data-categories="close,hike">
+            <img src="/images/canyon_day.webp" alt="Crooked River canyon in daylight" loading="lazy" />
+            <div>
+              <span>At the park</span>
+              <h3>Walk the canyon rim</h3>
+              <p>Step out for a short high-desert walk and a closer view of the Crooked River Gorge. Keep children and pets close near the steep rim.</p>
+              <a href="/trails">See nearby trails →</a>
+            </div>
+          </article>
+          <article class="concept-experience-card concept-reveal" data-categories="close,relax">
+            <img src="/images/golf_bridge.webp" alt="Bridge and fairway at Crooked River Ranch golf course" loading="lazy" />
+            <div>
+              <span>Next door</span>
+              <h3>Play the golf course</h3>
+              <p>An 18-hole course sits beside the park, with canyon scenery throughout the round.</p>
+              <a href="/golf-course">See golf details →</a>
+            </div>
+          </article>
+          <article class="concept-experience-card concept-reveal" data-categories="close,relax,family">
+            <img src="/images/pool.webp" alt="Guests enjoying the seasonal swimming pool" loading="lazy" />
+            <div>
+              <span>At the park</span>
+              <h3>Take the afternoon slowly</h3>
+              <p>Spend the warmer part of the day at the seasonal pool, then head back to your site.</p>
+              <a href="/design-concept/stay#amenities">See park amenities →</a>
+            </div>
+          </article>
+          <article class="concept-experience-card concept-reveal" data-categories="close,relax,family">
+            <img src="/images/dog_welcome.webp" alt="A friendly dog at the Crooked River Ranch RV Park office" loading="lazy" />
+            <div>
+              <span>Pet-friendly</span>
+              <h3>Bring the dog along</h3>
+              <p>Use the on-site dog run and browse nearby walks where leashed dogs are welcome.</p>
+              <a href="/things-to-do?filter=dogs">Find dog-friendly ideas →</a>
+            </div>
+          </article>
+          <article class="concept-experience-card concept-reveal" data-categories="relax,family">
+            <img src="/images/central_oregon.webp" alt="Coffee shops and brick storefronts in Central Oregon" loading="lazy" />
+            <div>
+              <span>A short drive</span>
+              <h3>Head into town</h3>
+              <p>Build an easy afternoon around coffee, local food, shops, and a walk through town.</p>
+              <a href="/dining">Browse dining &amp; local places →</a>
+            </div>
+          </article>
+          <article class="concept-experience-card concept-experience-card-wide concept-reveal" data-categories="close,relax,family">
+            <img src="/images/stars.webp" alt="Guest photograph of a star-filled night sky at the park" loading="lazy" />
+            <div>
+              <span>After dark</span>
+              <h3>Leave room for the sky</h3>
+              <p>Come back to the park, step outside, and let the high-desert evening be the last plan of the day.</p>
+              <a href="/design-concept/plan#live-availability">Find a site for your stay →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-day-section">
+      <div class="concept-shell concept-day-grid">
+        <div class="concept-day-copy concept-reveal">
+          <p class="concept-eyebrow concept-eyebrow-light">One possible day</p>
+          <h2>No rush between<br /><em>one good thing and the next.</em></h2>
+          <p>Build an easy rhythm around the trail, a swim or round of golf, and sunset back at the canyon.</p>
+        </div>
+        <ol class="concept-day-timeline">
+          <li class="concept-reveal"><span>Morning</span><strong>Drive 15 minutes to Smith Rock.</strong><p>Choose an easy river walk or a steeper trail, with difficulty and hazards shown before you go.</p></li>
+          <li class="concept-reveal"><span>Afternoon</span><strong>Return for the pool or the course.</strong><p>Stay on property, keep the car parked, and decide how active the rest of the day should be.</p></li>
+          <li class="concept-reveal"><span>Evening</span><strong>Eat nearby, then watch the light change.</strong><p>Check current hours and directions, come back to the park, and finish the day at the rim.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="concept-section concept-final-cta">
+      <div class="concept-shell concept-final-grid">
+        <div>
+          <p class="concept-eyebrow">Base camp, found</p>
+          <h2>Give the trip<br /><em>a place to begin.</em></h2>
+        </div>
+        <div>
+          <p>Choose your dates and see the RV sites that fit your setup.</p>
+          <a class="concept-button concept-button-clay" href="/design-concept/plan#live-availability">Check availability <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ConceptLayout>

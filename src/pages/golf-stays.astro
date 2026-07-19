@@ -1,0 +1,74 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+
+const title = 'Golf RV Stays in Central Oregon | Crooked River Ranch';
+const description = 'Build an RV golf stay at Crooked River Ranch with full-hookup sites beside an independently managed 18-hole course and the Crooked River canyon.';
+const canonical = 'https://www.crookedriverranchrv.com/golf-stays';
+---
+<Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/golf_aerial_canyon.jpg" heroImagePreload="/images/golf_aerial_canyon.webp">
+  <main id="main-content">
+    <PageHero
+      eyebrow="Golf stays"
+      headline="Camp close."
+      accent="Play the canyon."
+      body="Settle into an RV site beside the course, arrange the tee time with the pro shop, and leave room in the day for the heated pool, local food, or the canyon at dusk."
+      image="/images/golf_aerial_canyon.webp"
+      imageMobile="/images/golf_aerial_canyon-mobile.webp"
+      imageJpg="/images/golf_aerial_canyon.jpg"
+      alt="Crooked River Ranch golf course beside the RV park and canyon"
+      caption="Golf course beside the RV park"
+      primaryHref="/availability"
+      primaryLabel="See open RV sites"
+      secondaryHref="/golf-course"
+      secondaryLabel="Understand the course"
+    />
+
+    <section class="crr-section-soft">
+      <div class="v2-shell">
+        <div class="crr-management-note v2-reveal">
+          <div><strong>Reserve the site here. Reserve golf with the course.</strong><p>The RV park and golf course are managed separately, so rates, tee times, and current course details come directly from the pro shop.</p></div>
+          <div class="crr-management-actions"><a href="https://www.crookedriverranchgc.com" target="_blank" rel="noreferrer">Golf course website ↗</a><a href="tel:+15419236343">541-923-6343</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">A simple rhythm</p>
+          <h2>Golf can be the plan without taking over the trip.</h2>
+          <p>Choose a full-hookup site, walk over for the round, and return to a camp that is already set. The rest of the day can stay open.</p>
+          <ol class="crr-steps">
+            <li><div><strong>Check the RV park</strong><p>Find open sites for the exact rig length and slide configuration.</p></div></li>
+            <li><div><strong>Call the pro shop</strong><p>Confirm the tee time, rate, rental needs, and current course conditions.</p></div></li>
+            <li><div><strong>Fill in the day</strong><p>Heated pool, local dining, Smith Rock, and canyon light are all easy additions.</p></div></li>
+          </ol>
+        </div>
+        <figure class="crr-media v2-reveal">
+          <img src="/images/golf_bridge.webp" alt="Bridge and fairway at Crooked River Ranch Golf Course" loading="lazy" />
+          <figcaption>A round within walking distance of camp</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-dark">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div><p class="v2-eyebrow">Home base details</p><h2>Everything needed<br />between rounds.</h2></div>
+          <p>The park handles the stay. The pro shop handles the golf. The separation makes both parts easier to plan.</p>
+        </div>
+        <div class="crr-glass-grid">
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">↯</span><h3>Full-hookup choices</h3><p>Water, 30/50 amp electric, and sewer with back-in and pull-through options.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">≈</span><h3>Heated seasonal pool</h3><p>Return from the course and let the afternoon slow down at the park.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⌁</span><h3>Course beside camp</h3><p>Keep the RV parked while golf stays close to your home base.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <FinalCta headline="Choose the RV site. Then choose the tee time." body="Use the live park map for the stay and the golf course website for current tee-time details." image="/images/golf_course.webp" primaryHref="/availability" primaryLabel="Check RV availability" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Visit the golf course" />
+  </main>
+</Base>

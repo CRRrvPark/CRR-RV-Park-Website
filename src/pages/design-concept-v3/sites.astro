@@ -1,0 +1,211 @@
+---
+import ConceptV3Layout from '@layouts/ConceptV3Layout.astro';
+import V2Search from '@components/concept-v2/V2Search.astro';
+---
+<ConceptV3Layout
+  page="sites"
+  title="Sites — Crooked River Ranch RV Park V3 Concept"
+  description="Compare site types, rig fit, hookups, and park locations in the Crooked River Ranch RV Park V3 concept."
+>
+  <main id="main-content">
+    <section class="v2-inner-hero">
+      <div class="v3-orb v3-orb-one" aria-hidden="true"></div>
+      <div class="v2-shell v2-inner-hero-grid">
+        <div class="v2-inner-copy v2-reveal">
+          <p class="v2-eyebrow">Sites</p>
+          <h1>Find your fit<br />before you pull in.</h1>
+          <p>Start with your rig, length, slides, and hookups. We’ll point you toward the site types worth checking.</p>
+          <a class="v2-inline-link" href="#site-match">Match my setup <span aria-hidden="true">↓</span></a>
+        </div>
+        <figure class="v2-inner-image v2-reveal">
+          <picture>
+            <source media="(max-width: 720px)" srcset="/images/aerial_wide-mobile.webp" type="image/webp" />
+            <source srcset="/images/aerial_wide.webp" type="image/webp" />
+            <img src="/images/aerial_wide.jpg" alt="Wide aerial view of Crooked River Ranch RV Park, canyon, golf course, and Cascade Mountains" fetchpriority="high" />
+          </picture>
+          <figcaption>RV sites beside the canyon and golf course</figcaption>
+        </figure>
+      </div>
+      <div class="v2-shell v2-inner-search">
+        <V2Search id="v3-sites-search" compact={true} heading="Check your dates now" basePath="/design-concept-v3" />
+      </div>
+    </section>
+
+    <section class="v2-section v2-matcher-section" id="site-match">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Choose with confidence</p>
+            <h2>The questions after<br />“is it available?”</h2>
+          </div>
+          <p>A date search is only the start. Use photos, useful specifications, the park map, and guest reviews to choose a stay that feels right.</p>
+        </div>
+
+        <div class="v2-site-product-grid">
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>01</span><small>See the place</small></div>
+            <h3>Photos and location together.</h3>
+            <p>See the park loops, nearby amenities, and actual site photos where available.</p>
+            <a href="/park-map">Explore the interactive park map →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>02</span><small>Compare the fit</small></div>
+            <h3>Useful details in one place.</h3>
+            <p>Hookups, listed length, setup type, bathhouse access, and dump-station details stay easy to compare.</p>
+            <a href="#site-types">Compare the four site types →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>03</span><small>Hear from guests</small></div>
+            <h3>Read the texture behind the specs.</h3>
+            <p>Reviews add what a dimensions table cannot: quiet, space, ease, and the feeling of the park.</p>
+            <a href="/sites#guest-reviews">Read verified guest reviews →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>04</span><small>Need a second opinion?</small></div>
+            <h3>Call with the exact setup.</h3>
+            <p>The office can help with rig length, slide placement, hookups, and anything unusual about the stay.</p>
+            <a href="tel:+15419231441">Call (541) 923-1441 →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-section v2-matcher-section" id="site-types">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Four ways to stay</p>
+            <h2>Start with the<br />site type.</h2>
+          </div>
+          <p>The live map makes the final decision. These four categories make the first comparison quick.</p>
+        </div>
+        <div class="v2-site-product-grid">
+          <article class="v2-site-product v2-reveal" id="full-hookup" data-v2-site-card="full">
+            <div class="v2-site-product-top">
+              <span>01</span>
+              <small>Full hookup</small>
+            </div>
+            <h3>Full Hookup RV Site</h3>
+            <p>Water, 30/50 amp electric, and sewer with back-in and pull-through choices.</p>
+            <dl>
+              <div><dt>Length</dt><dd>Pull-throughs up to 65 ft</dd></div>
+              <div><dt>Setup</dt><dd>Back-in + pull-through</dd></div>
+              <div><dt>Slides</dt><dd>Site-specific guidance</dd></div>
+            </dl>
+            <a href="/design-concept-v3/plan?type=full-hookup#live-availability">Check full-hookup availability →</a>
+          </article>
+
+          <article class="v2-site-product v2-reveal" id="water-electric" data-v2-site-card="partial">
+            <div class="v2-site-product-top">
+              <span>02</span>
+              <small>Water + electric</small>
+            </div>
+            <h3>Water &amp; Electric Site</h3>
+            <p>Water and 30/50 amp electric without a sewer connection.</p>
+            <dl>
+              <div><dt>Length</dt><dd>Sites up to 50 ft</dd></div>
+              <div><dt>Setup</dt><dd>Back-in + pull-through</dd></div>
+              <div><dt>Park service</dt><dd>$15 dump station, card reader, 24/7</dd></div>
+            </dl>
+            <a href="/design-concept-v3/plan?type=water_electric#live-availability">Check W&amp;E availability →</a>
+          </article>
+
+          <article class="v2-site-product v2-reveal" id="tent-dry" data-v2-site-card="tent">
+            <div class="v2-site-product-top">
+              <span>03</span>
+              <small>Tent stay</small>
+            </div>
+            <h3>Tent Site</h3>
+            <p>Traditional tent sites, designated rooftop-tent options, and MAGIC beneath the trees.</p>
+            <dl>
+              <div><dt>Hookups</dt><dd>None</dd></div>
+              <div><dt>Setup</dt><dd>Ground + select rooftop tents</dd></div>
+              <div><dt>Park service</dt><dd>Free showers + coin-op laundry</dd></div>
+            </dl>
+            <a href="/design-concept-v3/plan?type=tent#live-availability">Check tent availability →</a>
+          </article>
+
+          <article class="v2-site-product v2-reveal" data-v2-site-card="dry">
+            <div class="v2-site-product-top">
+              <span>04</span>
+              <small>Dry camp</small>
+            </div>
+            <h3>Small-Rig Dry Camp</h3>
+            <p>No-hookup sites for qualifying camper vans and truck campers.</p>
+            <dl>
+              <div><dt>Length</dt><dd>Single vehicles up to 25 ft</dd></div>
+              <div><dt>Setup</dt><dd>Van + truck camper</dd></div>
+              <div><dt>Park service</dt><dd>$15 dump station, card reader, 24/7</dd></div>
+            </dl>
+            <a href="/design-concept-v3/plan?type=dry#live-availability">Check dry-camp availability →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-compare-section">
+      <div class="v2-shell">
+        <div class="v2-compare-heading v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">At a glance</p>
+          <h2>Four stay types.<br />The useful differences.</h2>
+        </div>
+        <div class="v2-compare-table-wrap v2-reveal">
+          <table class="v2-compare-table">
+            <thead>
+              <tr>
+                <th scope="col">Stay type</th>
+                <th scope="col">Water</th>
+                <th scope="col">Electric</th>
+                <th scope="col">Sewer</th>
+                <th scope="col">Largest listed fit</th>
+                <th scope="col">Next step</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Full hookup</th><td>Yes</td><td>30/50 amp</td><td>Yes</td><td>65 ft pull-through</td><td><a href="/design-concept-v3/plan?type=full-hookup#live-availability">Check dates →</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Water + electric</th><td>Yes</td><td>30/50 amp</td><td>Dump station</td><td>50 ft</td><td><a href="/design-concept-v3/plan?type=water_electric#live-availability">Check dates →</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Tent</th><td>No</td><td>No</td><td>No</td><td>Ground + select rooftop</td><td><a href="/design-concept-v3/plan?type=tent#live-availability">Check dates →</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Dry camp</th><td>No</td><td>No</td><td>No</td><td>25 ft single vehicle</td><td><a href="/design-concept-v3/plan?type=dry#live-availability">Check dates →</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-section v2-site-map-section">
+      <div class="v2-shell v2-site-map-grid">
+        <div class="v2-site-map-copy v2-reveal">
+          <p class="v2-eyebrow">Location matters too</p>
+          <h2>Choose with the whole park in view.</h2>
+          <p>Compare the site’s position with the heated pool, bathhouse, dog run, playground, golf course, and canyon rim.</p>
+          <a class="v2-button v2-button-blue" href="/park-map">Open the interactive park map <span aria-hidden="true">→</span></a>
+        </div>
+        <figure class="v2-site-map-image v2-reveal">
+          <img src="/images/rv_park_map.webp" alt="Crooked River Ranch RV Park site map" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
+    <section class="v2-alt-stays">
+      <img src="/images/firepit_evening.webp" alt="Guests gathered outdoors around a fire in the evening" loading="lazy" />
+      <div class="v2-alt-overlay"></div>
+      <div class="v2-shell v2-alt-inner v2-reveal">
+        <p class="v2-eyebrow v2-eyebrow-light">Planning something specific?</p>
+        <h2>Group, monthly,<br />and golf stays.</h2>
+        <div>
+          <a href="/group-sites">Group stays <span>→</span></a>
+          <a href="/extended-stays">Monthly stays <span>→</span></a>
+          <a href="/golf-stays">Golf stays <span>→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ConceptV3Layout>

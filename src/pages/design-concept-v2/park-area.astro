@@ -1,0 +1,171 @@
+---
+import ConceptV2Layout from '@layouts/ConceptV2Layout.astro';
+---
+<ConceptV2Layout
+  page="park"
+  title="Park + Area — Crooked River Ranch RV Park V2 Concept"
+  description="See park amenities, nearby experiences, and practical trip ideas in the Crooked River Ranch RV Park V2 concept."
+>
+  <main id="main-content">
+    <section class="v2-park-hero">
+      <picture>
+        <source media="(max-width: 720px)" srcset="/images/hero-mobile.webp" type="image/webp" />
+        <source srcset="/images/hero.webp" type="image/webp" />
+        <img src="/images/hero.jpg" alt="Crooked River canyon landscape near the RV park" fetchpriority="high" />
+      </picture>
+      <div class="v2-park-hero-overlay"></div>
+      <div class="v2-shell v2-park-hero-inner v2-reveal">
+        <p class="v2-eyebrow v2-eyebrow-light">Park + area</p>
+        <h1>Settle in here.<br />Set out from here.</h1>
+        <p>Swim, golf, walk the canyon, or start the day at Smith Rock. The site stays ready for your return.</p>
+        <a class="v2-button v2-button-yellow" href="#browse-the-day">Browse the day <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="v2-park-hero-index">
+        <span>01 · At the park</span>
+        <span>02 · Around the ranch</span>
+        <span>03 · Central Oregon</span>
+      </div>
+    </section>
+
+    <section class="v2-section v2-browse-section" id="browse-the-day">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Build the day</p>
+            <h2>Start with how<br />you want it to feel.</h2>
+          </div>
+          <p>Filter the highlights by travel time or pace. The details are waiting after something catches your attention.</p>
+        </div>
+
+        <div class="v2-filter-bar" role="group" aria-label="Filter park and area ideas" data-v2-filters>
+          <button type="button" data-v2-filter="all" aria-pressed="true">All ideas</button>
+          <button type="button" data-v2-filter="park" aria-pressed="false">At the park</button>
+          <button type="button" data-v2-filter="close" aria-pressed="false">Within 15 min</button>
+          <button type="button" data-v2-filter="active" aria-pressed="false">Get moving</button>
+          <button type="button" data-v2-filter="easy" aria-pressed="false">Take it easy</button>
+        </div>
+        <p class="v2-filter-status" aria-live="polite" data-v2-filter-status>Showing all featured ideas.</p>
+
+        <div class="v2-experience-grid" data-v2-experience-grid>
+          <article class="v2-experience v2-experience-wide v2-reveal" data-v2-categories="park,easy">
+            <img src="/images/pool.webp" alt="Guests enjoying the seasonal pool at Crooked River Ranch" loading="lazy" />
+            <div>
+              <span>At the park · Seasonal</span>
+              <h3>Make the afternoon a pool day.</h3>
+              <p>Keep the car parked and spend the warmer hours at the seasonal saltwater pool.</p>
+              <a href="#amenities">See park amenities →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-v2-categories="park,close,active">
+            <img src="/images/golf_course.webp" alt="Crooked River Ranch golf course beside the canyon" loading="lazy" />
+            <div>
+              <span>Next door</span>
+              <h3>Play the course.</h3>
+              <p>An 18-hole course and practice area sit beside the RV park.</p>
+              <a href="/golf-course">Golf details →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-v2-categories="park,active">
+            <img src="/images/canyon_day.webp" alt="Crooked River Gorge in daylight" loading="lazy" />
+            <div>
+              <span>At the ranch</span>
+              <h3>Walk toward the rim.</h3>
+              <p>Take in a closer view of the gorge. Keep children and pets close near steep edges.</p>
+              <a href="/trails">Trail details →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-experience-wide v2-reveal" data-v2-categories="close,active">
+            <img src="/images/smith_rock.webp" alt="Smith Rock State Park cliffs and river" loading="lazy" />
+            <div>
+              <span>15 minutes away</span>
+              <h3>Begin at Smith Rock.</h3>
+              <p>Choose a river walk, a viewpoint, or a steeper trail with the difficulty and hazards visible before you go.</p>
+              <a href="/trails">Choose a trail →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-v2-categories="close,easy">
+            <img src="/images/central_oregon.webp" alt="Coffee shops and brick storefronts in Central Oregon" loading="lazy" />
+            <div>
+              <span>A short drive</span>
+              <h3>Find coffee and dinner.</h3>
+              <p>Browse nearby food, shops, and towns with current hours and directions.</p>
+              <a href="/dining">Local places →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-v2-categories="park,easy">
+            <img src="/images/stars.webp" alt="Guest photograph of a star-filled night sky at the RV park" loading="lazy" />
+            <div>
+              <span>After dark</span>
+              <h3>Step outside for the sky.</h3>
+              <p>Return to your site and leave the last part of the day open.</p>
+              <a href="/design-concept-v2/plan#live-availability">Find a site →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-itinerary">
+      <div class="v2-shell v2-itinerary-grid">
+        <div class="v2-itinerary-copy v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">One easy rhythm</p>
+          <h2>Trail early.<br />Pool or golf later.<br />Canyon light at dusk.</h2>
+          <p>Use the outline, change the outline, or skip it entirely. The distances stay simple.</p>
+        </div>
+        <ol class="v2-itinerary-list">
+          <li class="v2-reveal">
+            <span>7:30</span>
+            <div><strong>Drive to Smith Rock</strong><p>Pack water, check trail conditions, and choose the route that fits the group.</p></div>
+          </li>
+          <li class="v2-reveal">
+            <span>12:30</span>
+            <div><strong>Return to the ranch</strong><p>Make lunch at the site, swim, or head next door for a round of golf.</p></div>
+          </li>
+          <li class="v2-reveal">
+            <span>18:30</span>
+            <div><strong>Finish close to home</strong><p>Pick up dinner nearby and come back for the changing light over the canyon.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="v2-section v2-amenities" id="amenities">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">At the park</p>
+            <h2>The practical things<br />are part of the stay.</h2>
+          </div>
+          <p>See what is on site before you pack, arrive, or promise the kids a swim.</p>
+        </div>
+        <div class="v2-amenity-grid">
+          <div><span>01</span><strong>Seasonal saltwater pool</strong><small>Warm-weather amenity</small></div>
+          <div><span>02</span><strong>Bathhouse</strong><small>For registered guests</small></div>
+          <div><span>03</span><strong>Wi-Fi</strong><small>Light browsing and email</small></div>
+          <div><span>04</span><strong>Dog run</strong><small>Pets welcome, maximum two</small></div>
+          <div><span>05</span><strong>Courts + playground</strong><small>Room to move</small></div>
+          <div><span>06</span><strong>Dump station</strong><small>Available in the park</small></div>
+          <div><span>07</span><strong>Golf next door</strong><small>18-hole course</small></div>
+          <div><span>08</span><strong>Year-round operation</strong><small>Seasonal amenities vary</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-park-cta">
+      <div class="v2-shell v2-park-cta-grid">
+        <div class="v2-reveal">
+          <p class="v2-eyebrow">Bring everyone who belongs</p>
+          <h2>Pets are part<br />of the plan.</h2>
+          <p>Up to two pets per site, an on-site dog run, and nearby leashed walks.</p>
+          <a class="v2-button v2-button-blue" href="/park-policies">Read pet and park policies <span aria-hidden="true">→</span></a>
+        </div>
+        <img src="/images/dog_welcome.webp" alt="A friendly dog at the Crooked River Ranch RV Park office" loading="lazy" />
+      </div>
+    </section>
+  </main>
+</ConceptV2Layout>

@@ -23,7 +23,6 @@ import { Button } from './ui/Button';
 import { EmptyState } from './ui/EmptyState';
 import {
   IconCalendar, IconCheck, IconAlert, IconDownload, IconSpinner,
-  IconExternal,
 } from './ui/Icon';
 
 interface Event {

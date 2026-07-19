@@ -1,0 +1,316 @@
+---
+export const prerender = true;
+import Base from '@layouts/Base.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
+import rrulePkg from 'rrule';
+const { RRule, rrulestr } = rrulePkg as any;
+type RRuleType = InstanceType<typeof RRule>;
+
+const title = 'Upcoming Events | Crooked River Ranch RV Park';
+const description = 'Upcoming events at Crooked River Ranch RV Park — gatherings, group bookings, holidays, and seasonal happenings. Filter by date range.';
+const canonical = 'https://www.crookedriverranchrv.com/events';
+
+type EventRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  starts_at: string;
+  ends_at: string;
+  is_all_day: boolean;
+  recurrence_rule: string | null;
+};
+
+type Instance = {
+  key: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  starts_at: string;
+  ends_at: string;
+  is_all_day: boolean;
+  is_recurring: boolean;
+};
+
+const now = new Date();
+const windowEnd = new Date(now);
+windowEnd.setFullYear(windowEnd.getFullYear() + 1);
+
+let instances: Instance[] = [];
+let fetchError: string | null = null;
+
+try {
+  if (import.meta.env.PUBLIC_SUPABASE_URL) {
+    const { serverClient } = await import('../lib/supabase');
+    const sb = serverClient();
+
+    // Pull anything not-yet-ended OR anything with a recurrence rule (whose
+    // anchor row may be in the past but whose instances run into the future).
+    const { data, error } = await sb
+      .from('events')
+      .select('id,title,description,location,starts_at,ends_at,is_all_day,recurrence_rule')
+      .eq('is_published', true)
+      .or(`ends_at.gte.${now.toISOString()},recurrence_rule.not.is.null`);
+
+    if (error) throw error;
+
+    const rows: EventRow[] = data ?? [];
+
+    for (const row of rows) {
+      const startAnchor = new Date(row.starts_at);
+      const endAnchor = new Date(row.ends_at);
+      const durationMs = Math.max(0, endAnchor.getTime() - startAnchor.getTime());
+      const rule = (row.recurrence_rule ?? '').trim().replace(/^RRULE:/i, '');
+
+      if (rule) {
+        try {
+          const rrule: RRuleType = rrulestr(rule, { dtstart: startAnchor });
+          // between(after, before, inc) — inclusive of endpoints
+          const starts = rrule.between(now, windowEnd, true);
+          for (const s of starts) {
+            const e = new Date(s.getTime() + durationMs);
+            instances.push({
+              key: `${row.id}#${s.toISOString()}`,
+              title: row.title,
+              description: row.description,
+              location: row.location,
+              starts_at: s.toISOString(),
+              ends_at: e.toISOString(),
+              is_all_day: row.is_all_day,
+              is_recurring: true,
+            });
+          }
+        } catch (e) {
+          // Fall back to single instance if the rule is malformed.
+          if (endAnchor >= now) {
+            instances.push({
+              key: row.id,
+              title: row.title,
+              description: row.description,
+              location: row.location,
+              starts_at: row.starts_at,
+              ends_at: row.ends_at,
+              is_all_day: row.is_all_day,
+              is_recurring: false,
+            });
+          }
+        }
+      } else if (endAnchor >= now) {
+        instances.push({
+          key: row.id,
+          title: row.title,
+          description: row.description,
+          location: row.location,
+          starts_at: row.starts_at,
+          ends_at: row.ends_at,
+          is_all_day: row.is_all_day,
+          is_recurring: false,
+        });
+      }
+    }
+
+    instances.sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  }
+} catch (err: any) {
+  fetchError = err?.message ?? String(err);
+  console.warn('[events.astro] Could not fetch events:', fetchError);
+}
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.crookedriverranchrv.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Events', item: 'https://www.crookedriverranchrv.com/events' },
+    ],
+  },
+];
+
+function fmtDate(iso: string, allDay: boolean): string {
+  const d = new Date(iso);
+  if (allDay) {
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function fmtEndTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+---
+<Base title={title} description={description} canonical={canonical} schemas={schemas}>
+  <Breadcrumbs pageName="Events" />
+
+  <section style="padding:3rem 0;">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">What's Happening</span>
+        <h1 class="st" style="margin-top:.4rem;">Upcoming<br><em>events.</em></h1>
+        <p class="section-body">
+          Group gatherings, holiday weekends, and seasonal happenings at the park.
+          Looking to host an event? <a href="/group-sites.html" style="color:var(--rust);">Group Sites →</a>
+        </p>
+      </div>
+
+      {instances.length > 0 && (
+        <div class="events-filter reveal" style="margin-top:2rem;display:flex;flex-direction:column;gap:.9rem;padding:1.1rem 1.2rem;border:1px solid #eadfce;background:#fbf7ef;border-radius:6px;">
+          <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+            <button type="button" class="events-chip" data-range="week" aria-pressed="false">This week</button>
+            <button type="button" class="events-chip" data-range="month" aria-pressed="false">This month</button>
+            <button type="button" class="events-chip" data-range="quarter" aria-pressed="false">Next 3 months</button>
+            <button type="button" class="events-chip" data-range="all" aria-pressed="true">All upcoming</button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;">
+            <label style="display:flex;flex-direction:column;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">
+              From
+              <input type="date" id="events-from" style="margin-top:.3rem;padding:.45rem .6rem;border:1px solid #d8ccb7;border-radius:4px;font-size:.95rem;" />
+            </label>
+            <label style="display:flex;flex-direction:column;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">
+              To
+              <input type="date" id="events-to" style="margin-top:.3rem;padding:.45rem .6rem;border:1px solid #d8ccb7;border-radius:4px;font-size:.95rem;" />
+            </label>
+            <button type="button" id="events-clear" style="padding:.45rem .9rem;background:transparent;border:1px solid #d8ccb7;border-radius:4px;font-size:.85rem;color:var(--muted);cursor:pointer;">Clear</button>
+          </div>
+        </div>
+      )}
+
+      {instances.length === 0 && (
+        <div class="reveal" style="padding:2rem 0;color:var(--muted);font-style:italic;">
+          No upcoming events scheduled. Check back soon, or call <a href="tel:5419231441" style="color:var(--rust);">541-923-1441</a> to ask about group bookings.
+        </div>
+      )}
+
+      {instances.length > 0 && (
+        <>
+          <div id="events-list" style="display:grid;gap:1.5rem;margin-top:1.5rem;">
+            {instances.map((event) => (
+              <article
+                class="reveal events-card"
+                data-event-start={event.starts_at}
+                style="border-left:3px solid var(--rust);padding:1.2rem 1.5rem;background:#fff;"
+              >
+                <h2 style="font-family:var(--serif);font-weight:300;margin:0 0 .4rem;font-size:1.6rem;">{event.title}</h2>
+                <div style="font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);font-weight:500;margin-bottom:.6rem;">
+                  {fmtDate(event.starts_at, event.is_all_day)}
+                  {!event.is_all_day && <span> – {fmtEndTime(event.ends_at)}</span>}
+                  {event.is_recurring && <span style="margin-left:.6rem;color:var(--muted);font-weight:400;">· recurring</span>}
+                </div>
+                {event.location && <p style="font-size:.9rem;color:var(--muted);margin:.3rem 0;">📍 {event.location}</p>}
+                {event.description && <p style="margin-top:.6rem;line-height:1.7;color:var(--text);">{event.description}</p>}
+              </article>
+            ))}
+          </div>
+          <div id="events-empty-filtered" class="reveal" style="display:none;padding:2rem 0;color:var(--muted);font-style:italic;text-align:center;">
+            No events in the selected date range. Try widening it or clearing the filter.
+          </div>
+        </>
+      )}
+
+      <div style="margin-top:3rem;text-align:center;" class="reveal">
+        <p style="font-size:.85rem;color:var(--muted);">
+          Calendar synced from Zoho Calendar. Updates within 1 hour of changes.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .events-chip {
+      padding: .45rem .9rem;
+      background: #fff;
+      border: 1px solid #d8ccb7;
+      border-radius: 999px;
+      font-size: .85rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .events-chip:hover { border-color: var(--rust); color: var(--rust); }
+    .events-chip[aria-pressed="true"] {
+      background: var(--rust);
+      border-color: var(--rust);
+      color: #fff;
+    }
+    #events-clear:hover { border-color: var(--rust); color: var(--rust); }
+  </style>
+
+  <script is:inline>
+    (function () {
+      const cards = document.querySelectorAll('.events-card');
+      const fromInput = document.getElementById('events-from');
+      const toInput = document.getElementById('events-to');
+      const chips = document.querySelectorAll('.events-chip');
+      const clearBtn = document.getElementById('events-clear');
+      const emptyMsg = document.getElementById('events-empty-filtered');
+      if (!cards.length || !fromInput || !toInput) return;
+
+      function toYMD(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
+      }
+
+      function apply() {
+        const f = fromInput.value ? new Date(fromInput.value + 'T00:00:00').getTime() : -Infinity;
+        const t = toInput.value ? new Date(toInput.value + 'T23:59:59.999').getTime() : Infinity;
+        let shown = 0;
+        cards.forEach(function (card) {
+          const ts = new Date(card.getAttribute('data-event-start')).getTime();
+          const ok = ts >= f && ts <= t;
+          card.style.display = ok ? '' : 'none';
+          if (ok) shown++;
+        });
+        if (emptyMsg) emptyMsg.style.display = shown === 0 ? '' : 'none';
+      }
+
+      function setChip(which) {
+        chips.forEach(function (c) {
+          c.setAttribute('aria-pressed', c === which ? 'true' : 'false');
+        });
+      }
+
+      function applyChip(chip) {
+        const today = new Date();
+        let from = new Date(today);
+        let to = null;
+        switch (chip.getAttribute('data-range')) {
+          case 'week':
+            to = new Date(today); to.setDate(to.getDate() + 7); break;
+          case 'month':
+            to = new Date(today); to.setMonth(to.getMonth() + 1); break;
+          case 'quarter':
+            to = new Date(today); to.setMonth(to.getMonth() + 3); break;
+          case 'all':
+          default:
+            from = null; to = null; break;
+        }
+        fromInput.value = from ? toYMD(from) : '';
+        toInput.value = to ? toYMD(to) : '';
+        setChip(chip);
+        apply();
+      }
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () { applyChip(chip); });
+      });
+
+      function onManualChange() {
+        // Manual edits clear the chip highlight so users don't get a stale
+        // "This week" indicator while typing a custom range.
+        setChip(null);
+        apply();
+      }
+      fromInput.addEventListener('change', onManualChange);
+      toInput.addEventListener('change', onManualChange);
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+          const all = document.querySelector('.events-chip[data-range="all"]');
+          if (all) applyChip(all);
+        });
+      }
+    })();
+  </script>
+</Base>

@@ -1,6 +1,6 @@
 /**
  * GET /api/sync/status — surfaces the most recent run of every scheduled
- * sync service (Zoho Drive, Zoho Calendar, Snapshots prune). Used by the
+ * sync service (Zoho Drive and Zoho Calendar). Used by the
  * Dashboard to light up the "System Health" card.
  *
  * Combines with /api/zoho/status (which returns OAuth/token state) for a
@@ -20,9 +20,9 @@ export const GET: APIRoute = async ({ request }) => {
     const sb = serverClient();
 
     // Pull the latest run per service. We could do this in one SQL query
-    // with window functions, but three small queries stay readable and
+    // with window functions, but two small queries stay readable and
     // none of these tables are large.
-    const services = ['zoho_drive', 'zoho_calendar', 'snapshots_prune'] as const;
+    const services = ['zoho_drive', 'zoho_calendar'] as const;
     const runs = await Promise.all(
       services.map(async (svc) => {
         const { data } = await sb
@@ -38,19 +38,8 @@ export const GET: APIRoute = async ({ request }) => {
 
     const byService = Object.fromEntries(runs);
 
-    // Also include a rollup count of pending items for the dashboard badge.
-    const [{ count: pendingDrafts }, { count: unpublishedChanges }] = await Promise.all([
-      sb.from('pages').select('*', { count: 'exact', head: true }).eq('is_draft', true),
-      sb
-        .from('sections')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_hidden', false),
-    ]);
-
     return json({
       services: byService,
-      pendingDrafts: pendingDrafts ?? 0,
-      unpublishedChanges: unpublishedChanges ?? 0,
       checkedAt: new Date().toISOString(),
     });
   } catch (err) {

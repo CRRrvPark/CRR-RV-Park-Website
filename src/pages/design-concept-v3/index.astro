@@ -1,0 +1,158 @@
+---
+import ConceptV3Layout from '@layouts/ConceptV3Layout.astro';
+import V2Search from '@components/concept-v2/V2Search.astro';
+---
+<ConceptV3Layout
+  page="home"
+  title="Crooked River Ranch RV Park — V3 Redesign Concept"
+  description="A glass-gradient V3 redesign concept for Crooked River Ranch RV Park."
+>
+  <main id="main-content">
+    <section class="v2-home-hero">
+      <div class="v3-orb v3-orb-one" aria-hidden="true"></div>
+      <div class="v3-orb v3-orb-two" aria-hidden="true"></div>
+      <div class="v2-shell v2-hero-grid">
+        <div class="v2-hero-copy v2-reveal">
+          <p class="v2-eyebrow">Crooked River canyon · Terrebonne, Oregon</p>
+          <h1>Canyon views.<br />A site that fits.<br /><mark>Central Oregon ahead.</mark></h1>
+          <p class="v2-hero-lead">Choose your dates, tell us about your rig, and see exactly which sites are open before you reserve.</p>
+        </div>
+
+        <figure class="v2-hero-image v2-reveal">
+          <picture>
+            <source media="(max-width: 720px)" srcset="/images/aerial_canyon_rim-mobile.webp" type="image/webp" />
+            <source srcset="/images/aerial_canyon_rim.webp" type="image/webp" />
+            <img src="/images/aerial_canyon_rim.jpg" alt="Crooked River Ranch RV Park beside the canyon and golf course" fetchpriority="high" />
+          </picture>
+          <figcaption>
+            <span>On the canyon rim</span>
+            <strong>44.4327° N · 121.2340° W</strong>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="v2-shell v2-home-search">
+        <V2Search id="v3-home-search" basePath="/design-concept-v3" />
+      </div>
+    </section>
+
+    <section class="v2-proof-band" aria-label="Park highlights">
+      <div class="v2-shell">
+        <div><strong>15 minutes</strong><span>to Smith Rock</span></div>
+        <div><strong>Up to 65 ft</strong><span>guest-bookable pull-throughs</span></div>
+        <div><strong>Full hookups</strong><span>30 &amp; 50 amp options</span></div>
+        <div><strong>Pet-friendly</strong><span>off-leash dog run</span></div>
+        <a href="/park-policies">Policies <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+    <section class="v2-section v2-stay-choice">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Choose the stay</p>
+            <h2>Start with what<br />you’re bringing.</h2>
+          </div>
+          <p>Every site type answers a different need. The details below lead into exact availability and the park map.</p>
+        </div>
+
+        <div class="v2-stay-grid">
+          <a class="v2-stay-card v2-stay-card-wide v2-reveal" href="/design-concept-v3/sites#full-hookup">
+            <img src="/images/aerial_aloop.webp" alt="Aerial view of full-hookup RV sites at Crooked River Ranch" loading="lazy" />
+            <div>
+              <span>01 · Full hookup</span>
+              <h3>Water, electric &amp; sewer</h3>
+              <p>Back-in and pull-through choices, 30/50 amp service, and site-specific slide guidance.</p>
+              <strong>See full-hookup sites →</strong>
+            </div>
+          </a>
+
+          <a class="v2-stay-card v2-reveal" href="/design-concept-v3/sites#water-electric">
+            <img src="/images/gazebo_fall.webp" alt="Autumn trees near Crooked River Ranch RV Park sites" loading="lazy" />
+            <div>
+              <span>02 · Water + electric</span>
+              <h3>Simple RV setup</h3>
+              <p>30/50 amp service with water, plus access to the 24/7 card-reader dump station.</p>
+              <strong>See W&amp;E sites →</strong>
+            </div>
+          </a>
+
+          <a class="v2-stay-card v2-reveal" href="/design-concept-v3/sites#tent-dry">
+            <img src="/images/family_reunion.webp" alt="Guests gathered outside at Crooked River Ranch RV Park" loading="lazy" />
+            <div>
+              <span>03 · Tent + dry camp</span>
+              <h3>Smaller setups</h3>
+              <p>Tent sites, rooftop-tent options, and dry camp for qualifying vans and truck campers.</p>
+              <strong>See smaller-site options →</strong>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-map-story">
+      <div class="v2-shell v2-map-story-grid">
+        <div class="v2-map-panel v2-reveal">
+          <img src="/images/rv_park_map.webp" alt="Map of Crooked River Ranch RV Park sites and amenities" loading="lazy" />
+          <span class="v2-map-chip v2-map-chip-one">Heated pool</span>
+          <span class="v2-map-chip v2-map-chip-two">Dog run</span>
+          <span class="v2-map-chip v2-map-chip-three">Canyon rim</span>
+        </div>
+        <div class="v2-map-copy v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">Know your site</p>
+          <h2>See the fit.<br />See the location.<br />Then decide.</h2>
+          <p>Open sites appear on the park map after a date search. Each site can carry its own length, hookup, slide, photo, and location details.</p>
+          <ul>
+            <li><span>01</span> Filter for your dates and rig</li>
+            <li><span>02</span> Compare compatible sites</li>
+            <li><span>03</span> Reserve through Firefly</li>
+          </ul>
+          <a class="v2-button v2-button-yellow" href="/design-concept-v3/plan#live-availability">Try live availability <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-section v2-day-section">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">The stay around the site</p>
+            <h2>Keep the day<br />as open as you like.</h2>
+          </div>
+          <p>A heated pool, golf, spa time, the canyon, wineries, and Smith Rock can all fit into the same Central Oregon stay.</p>
+        </div>
+
+        <div class="v2-day-grid">
+          <a class="v2-day-card v2-reveal" href="/design-concept-v3/park-area#unwind">
+            <img src="/images/pool_aerial.webp" alt="Aerial view of the heated seasonal swimming pool" loading="lazy" />
+            <span>At the park</span>
+            <h3>Swim, unwind, slow down</h3>
+            <p>Heated seasonal pool, nearby massage and pedicure options, and wineries within about 20 minutes.</p>
+          </a>
+          <a class="v2-day-card v2-reveal" href="/design-concept-v3/park-area#nearby">
+            <img src="/images/golf_bridge.webp" alt="Bridge and fairway at Crooked River Ranch golf course" loading="lazy" />
+            <span>Next door</span>
+            <h3>Play the course</h3>
+            <p>An 18-hole golf course sits beside the RV park and canyon.</p>
+          </a>
+          <a class="v2-day-card v2-reveal" href="/design-concept-v3/park-area#nearby">
+            <img src="/images/smith_rock.webp" alt="Smith Rock State Park cliffs above the Crooked River" loading="lazy" />
+            <span>15 minutes away</span>
+            <h3>Start at Smith Rock</h3>
+            <p>Choose an easy river walk or a steeper high-desert trail.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-ready">
+      <img src="/images/canyon_sunset.webp" alt="Sunset light over the Crooked River canyon" loading="lazy" />
+      <div class="v2-ready-overlay"></div>
+      <div class="v2-shell v2-ready-inner v2-reveal">
+        <p class="v2-eyebrow v2-eyebrow-light">Ready when you are</p>
+        <h2>Your dates.<br />Your rig.<br />Your open sites.</h2>
+        <a class="v2-button v2-button-yellow" href="/design-concept-v3/plan#live-availability">Start the search <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+  </main>
+</ConceptV3Layout>

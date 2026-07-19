@@ -1,0 +1,118 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+
+const title = 'RV Park Amenities | Pool, Golf, Recreation & Services | CRR';
+const description = 'Heated seasonal pool, free showers, coin-op laundry, Wi-Fi, dog run, recreation, EV-friendly sites, 24/7 dump station, and golf beside Crooked River Ranch RV Park.';
+const canonical = 'https://www.crookedriverranchrv.com/amenities';
+---
+<Base
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage="https://www.crookedriverranchrv.com/images/pool_aerial.jpg"
+  heroImagePreload="/images/pool_aerial.webp"
+>
+  <main id="main-content">
+    <PageHero
+      eyebrow="At the park"
+      headline="Useful when you need it."
+      accent="Enjoyable when you don’t."
+      body="The heated pool, free showers, laundry, Wi-Fi, dog run, recreation, and practical services are gathered here with the details needed to plan."
+      image="/images/pool_aerial.webp"
+      imageMobile="/images/pool_aerial-mobile.webp"
+      imageJpg="/images/pool_aerial.jpg"
+      alt="Aerial view of the heated seasonal pool at Crooked River Ranch"
+      caption="Heated seasonal pool · At the park"
+      primaryHref="#amenity-guide"
+      primaryLabel="See the amenity guide"
+      secondaryHref="/park-map"
+      secondaryLabel="Find them on the map"
+    />
+
+    <section class="crr-section crr-section-soft" id="amenity-guide">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">The practical details</p>
+            <h2>Know what is here<br />before you pack.</h2>
+          </div>
+          <p>Season, cost, access, and the small details belong with each amenity—not hidden in a separate FAQ.</p>
+        </div>
+        <div class="crr-glass-grid">
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">≈</span><h3>Heated seasonal pool</h3><p>Heated water, loungers, and an easy afternoon at the park. The pool is seasonal.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">✦</span><h3>Bathhouse + laundry</h3><p>Free showers and coin-operated laundry for registered guests.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⌁</span><h3>Guest Wi-Fi</h3><p>Complimentary connection throughout the park for email and everyday browsing.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">●</span><h3>Pets welcome</h3><p>Use the dedicated off-leash dog run; leashes apply elsewhere in the park.</p><a href="/park-policies#pets">Read the pet policy →</a></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⚡</span><h3>EV-friendly stays</h3><p>$15 per night or per charge using the appropriate site pedestal. Bring your adapter and tell the office when booking.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">◇</span><h3>Room to play</h3><p>Tennis, pickleball, basketball, volleyball, disc golf, playground, and shared outdoor space.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">↥</span><h3>24/7 dump station</h3><p>$15 per use with an on-site card reader. Available around the clock.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⛳</span><h3>Golf beside the park</h3><p>An independently managed 18-hole course, practice area, and pro shop sit beside the RV park.</p><a href="/golf-course">See golf details →</a></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">○</span><h3>Open year-round</h3><p>The RV park is open in every season. The pool and select recreation amenities are seasonal.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <figure class="crr-media v2-reveal">
+          <img src="/images/pool.webp" alt="Guests enjoying the heated swimming pool" loading="lazy" />
+          <figcaption>Heated seasonal pool</figcaption>
+        </figure>
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">Pool + easy afternoons</p>
+          <h2>Give the warmest hours somewhere to go.</h2>
+          <p>Come back from a trail, a round of golf, or a morning around Central Oregon and let the afternoon slow down beside the heated pool.</p>
+          <p>For a full reset day, pair the pool with nearby massage or pedicure options and a winery stop on the way back to camp.</p>
+          <a class="v2-inline-link" href="/area-guide#reset-day">Build the reset day <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-dark">
+      <div class="v2-shell crr-two-column is-reversed">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">Golf + recreation</p>
+          <h2>Play as much—or as little—as you want.</h2>
+          <p>The 18-hole golf course is managed separately from the RV park. Tee times, green fees, course conditions, lessons, and rentals go through the pro shop.</p>
+          <ul>
+            <li>Golf course and practice area beside the park</li>
+            <li>Tennis and pickleball courts</li>
+            <li>Basketball, volleyball, and disc golf</li>
+            <li>Playground and shared outdoor space</li>
+          </ul>
+          <a class="v2-button v2-button-yellow" href="/golf-course">See the golf course <span aria-hidden="true">→</span></a>
+        </div>
+        <figure class="crr-media v2-reveal">
+          <img src="/images/golf_aerial_canyon.webp" alt="Crooked River Ranch golf course beside the canyon" loading="lazy" />
+          <figcaption>18-hole course · Independently managed</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <figure class="crr-media v2-reveal">
+          <img src="/images/dog_welcome.webp" alt="A friendly dog at Crooked River Ranch RV Park" loading="lazy" />
+          <figcaption>Pets welcome · Off-leash dog run</figcaption>
+        </figure>
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">Bring everyone who belongs</p>
+          <h2>Pets are part of the plan.</h2>
+          <p>Pets are welcome at Crooked River Ranch RV Park. The dog run is the designated off-leash space; elsewhere, keep pets under physical control and follow the posted leash policy.</p>
+          <p>Clean up promptly, prevent disruptive barking, and keep animals from harassing people, wildlife, or other pets.</p>
+          <a class="v2-inline-link" href="/park-policies#pets">Read the full pet policy <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <FinalCta
+      headline="The site is only the beginning of the stay."
+      body="See the park layout, check your dates, and choose the location that puts the right amenities close."
+      image="/images/canyon_day.webp"
+    />
+  </main>
+</Base>

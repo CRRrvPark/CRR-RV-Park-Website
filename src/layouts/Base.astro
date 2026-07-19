@@ -11,8 +11,8 @@
  */
 
 import HeadMeta from '@components/HeadMeta.astro';
-import Nav from '@components/Nav.astro';
-import Footer from '@components/Footer.astro';
+import SiteHeader from '@components/site/SiteHeader.astro';
+import SiteFooter from '@components/site/SiteFooter.astro';
 import JsonLd from '@components/JsonLd.astro';
 import ClarityScript from '@components/ClarityScript.astro';
 import ConversionTracker from '@components/ConversionTracker.astro';
@@ -62,7 +62,7 @@ const {
   {!noAnalytics && <GoogleTagManager enabled={true} slot="script" />}
   {!noAnalytics && <ClarityScript />}
 </head>
-<body>
+<body class="v2-page v3-page crr-site">
   {/* Google Tag Manager noscript fallback — must be the first element
      inside <body> per Google's install docs. */}
   {!noAnalytics && <GoogleTagManager enabled={true} slot="noscript" />}
@@ -88,10 +88,16 @@ const {
       } catch (e) { /* no-op */ }
     })();
   </script>
-  <Nav />
+  <a class="v2-skip-link" href="#main-content">Skip to content</a>
+  <SiteHeader />
   <slot />
-  <Footer />
+  <SiteFooter />
+  <a class="crr-mobile-book" href="/availability" aria-hidden="true" tabindex="-1">
+    <span>See open sites</span>
+    <span aria-hidden="true">→</span>
+  </a>
   <Lightbox />
   {!noAnalytics && <ConversionTracker />}
+  <script src="/scripts/production-v3.js?v=20260719a" is:inline defer></script>
 </body>
 </html>

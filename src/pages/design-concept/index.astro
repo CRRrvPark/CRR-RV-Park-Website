@@ -1,0 +1,137 @@
+---
+import ConceptLayout from '@layouts/ConceptLayout.astro';
+import AvailabilityBar from '@components/concept/AvailabilityBar.astro';
+---
+<ConceptLayout
+  page="home"
+  title="Crooked River Ranch RV Park — Redesign Concept"
+  description="A local-only redesign concept for Crooked River Ranch RV Park."
+>
+  <main id="main-content">
+    <section class="concept-home-hero">
+      <picture class="concept-hero-media">
+        <source media="(max-width: 720px)" srcset="/images/hero-mobile.webp" type="image/webp" />
+        <source srcset="/images/hero.webp" type="image/webp" />
+        <img src="/images/hero.jpg" alt="The Crooked River Gorge at sunrise" fetchpriority="high" />
+      </picture>
+      <div class="concept-hero-shade"></div>
+      <div class="concept-shell concept-home-hero-copy">
+        <p class="concept-eyebrow concept-eyebrow-light">Terrebonne, Oregon · Open year-round</p>
+        <h1>Wake up on the <em>canyon rim.</em></h1>
+        <p class="concept-hero-lead">
+          Full-hookup RV stays among junipers, 15 minutes from Smith Rock and beside an 18-hole golf course.
+        </p>
+        <div class="concept-actions">
+          <a class="concept-button concept-button-clay" href="/design-concept/plan#live-availability">
+            Find a site for your dates <span aria-hidden="true">→</span>
+          </a>
+          <a class="concept-text-link concept-text-link-light" href="#see-the-park">
+            See the park <span aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </div>
+      <div class="concept-shell concept-home-search">
+        <AvailabilityBar id="home-site-search" tone="light" heading="Start with your dates" />
+      </div>
+    </section>
+
+    <section class="concept-fact-band" aria-label="Park highlights">
+      <div class="concept-shell concept-fact-grid">
+        <div><strong>15 min</strong><span>to Smith Rock</span></div>
+        <div><strong>Up to 65 ft</strong><span>guest-bookable pull-throughs</span></div>
+        <div><strong>Full hookups</strong><span>30 &amp; 50 amp options</span></div>
+        <div><strong>Seasonal pool</strong><span>for warm afternoons</span></div>
+        <div><strong>Pet-friendly</strong><span>with an on-site dog run</span></div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-intro-section" id="see-the-park">
+      <div class="concept-shell concept-intro-grid">
+        <div class="concept-intro-copy concept-reveal">
+          <p class="concept-eyebrow">Life at the ranch</p>
+          <h2>Park the rig.<br /><em>Keep the day open.</em></h2>
+          <p class="concept-lead">
+            Morning can begin under the junipers, on the golf course next door, or at Smith Rock. Come back to full hookups, a swim in the seasonal pool, and an evening at the canyon rim.
+          </p>
+          <a class="concept-text-link" href="/design-concept/stay">
+            See sites and amenities <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div class="concept-photo-story" aria-label="Views around Crooked River Ranch RV Park">
+          <figure class="concept-photo-large concept-reveal">
+            <img src="/images/aerial_canyon_rim.webp" alt="RV sites beside the Crooked River canyon and golf course" loading="lazy" />
+            <figcaption>The park, the golf course, and the canyon</figcaption>
+          </figure>
+          <figure class="concept-photo-small concept-photo-small-top concept-reveal">
+            <img src="/images/pool_aerial.webp" alt="Aerial view of the seasonal pool" loading="lazy" />
+            <figcaption>Seasonal pool</figcaption>
+          </figure>
+          <figure class="concept-photo-small concept-photo-small-bottom concept-reveal">
+            <img src="/images/firepit_evening.webp" alt="Guests gathered outdoors in the evening" loading="lazy" />
+            <figcaption>Evenings together</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-section-sage">
+      <div class="concept-shell">
+        <div class="concept-section-heading concept-reveal">
+          <div>
+            <p class="concept-eyebrow">Your stay, at a glance</p>
+            <h2>Everything needed to<br /><em>choose with confidence.</em></h2>
+          </div>
+          <p>See site details, the park map, and nearby trip ideas in one clear path.</p>
+        </div>
+        <div class="concept-decision-grid">
+          <a class="concept-decision-card concept-decision-card-feature concept-reveal" href="/design-concept/stay">
+            <span class="concept-card-number">01 · THE SITE</span>
+            <h3>Find the fit before you arrive.</h3>
+            <p>Compare hookup type, rig length, slide clearance, back-in or pull-through, and the site’s place on the park map.</p>
+            <span class="concept-card-link">Compare site types →</span>
+          </a>
+          <a class="concept-decision-card concept-reveal" href="/design-concept/stay#amenities">
+            <span class="concept-card-number">02 · THE PARK</span>
+            <h3>Know what’s here.</h3>
+            <p>Pool, courts, dog run, bathhouse, Wi-Fi, golf, playground, and the practical details that make a stay easy.</p>
+            <span class="concept-card-link">See park amenities →</span>
+          </a>
+          <a class="concept-decision-card concept-decision-card-dark concept-reveal" href="/design-concept/explore">
+            <span class="concept-card-number">03 · THE AREA</span>
+            <h3>Pick the kind of day you want.</h3>
+            <p>Hikes, river days, golf, food, and high-desert towns—sorted by time and travel distance.</p>
+            <span class="concept-card-link">Explore Central Oregon →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-scenic-band">
+      <img src="/images/golf_aerial_canyon.webp" alt="Crooked River Ranch golf course beside the canyon" loading="lazy" />
+      <div class="concept-scenic-shade"></div>
+      <div class="concept-scenic-card concept-reveal">
+        <p class="concept-eyebrow">A day from your site</p>
+        <h2>Trail in the morning.<br /><em>Pool or golf after.</em></h2>
+        <p>Smith Rock is 15 minutes away. The golf course is next door. The canyon is still here when the sun starts to drop.</p>
+        <a class="concept-button concept-button-light" href="/design-concept/explore">
+          Plan a day out <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="concept-section concept-final-cta">
+      <div class="concept-shell concept-final-grid">
+        <div>
+          <p class="concept-eyebrow">Your Central Oregon stay</p>
+          <h2>Ready to find<br /><em>your site?</em></h2>
+        </div>
+        <div>
+          <p>Choose your dates, tell us about your rig, and see the sites that fit.</p>
+          <a class="concept-button concept-button-clay" href="/design-concept/plan#live-availability">
+            Check your dates <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ConceptLayout>

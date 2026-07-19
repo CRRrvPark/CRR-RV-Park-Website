@@ -1,0 +1,41 @@
+---
+import ConceptHeader from '@components/concept/ConceptHeader.astro';
+import ConceptFooter from '@components/concept/ConceptFooter.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  page: 'home' | 'stay' | 'explore' | 'plan';
+}
+
+const { title, description, page } = Astro.props;
+---
+<!doctype html>
+<html lang="en" data-concept>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#173a32" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles/design-concept.css?v=20260719c" />
+  </head>
+  <body class={`concept-page concept-page-${page}`}>
+    <a class="concept-skip-link" href="#main-content">Skip to content</a>
+    <ConceptHeader activePage={page} />
+    <slot />
+    <ConceptFooter />
+    <a class="concept-mobile-cta" href="/design-concept/plan#live-availability" aria-hidden="true" tabindex="-1">
+      <span>Check availability</span>
+      <span aria-hidden="true">→</span>
+    </a>
+    <script src="/scripts/design-concept.js?v=20260719c" is:inline defer></script>
+  </body>
+</html>

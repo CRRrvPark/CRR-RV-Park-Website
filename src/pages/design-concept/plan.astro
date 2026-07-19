@@ -1,0 +1,160 @@
+---
+import ConceptLayout from '@layouts/ConceptLayout.astro';
+import AvailabilityMap from '@components/AvailabilityMap.astro';
+import { getParkSites } from '@lib/area-guide';
+import { serverClient } from '@lib/supabase';
+
+export const prerender = false;
+
+const sites = await getParkSites();
+let activeParkMap:
+  | { image_url: string; title: string; natural_width: number; natural_height: number }
+  | null = null;
+
+try {
+  const sb = serverClient();
+  const { data } = await sb
+    .from('park_maps')
+    .select('image_url, title, natural_width, natural_height')
+    .eq('is_active', true)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (data) activeParkMap = data as unknown as typeof activeParkMap;
+} catch {
+  // The concept still offers direct booking and phone help if map data is unavailable.
+}
+
+const polygonSites = sites.filter(
+  (site) => Array.isArray(site.map_polygon) && (site.map_polygon as unknown[]).length > 0 && site.is_published !== false,
+);
+const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
+---
+<ConceptLayout
+  page="plan"
+  title="Plan Your Visit — Crooked River Ranch RV Park Concept"
+  description="A clear booking and arrival flow in the Crooked River Ranch RV Park redesign concept."
+>
+  <main id="main-content">
+    <section class="concept-inner-hero concept-inner-hero-plan">
+      <picture class="concept-hero-media">
+        <source media="(max-width: 720px)" srcset="/images/winter_sunset-mobile.webp" type="image/webp" />
+        <source srcset="/images/winter_sunset.webp" type="image/webp" />
+        <img src="/images/winter_sunset.jpg" alt="Winter sunset over the Crooked River canyon" fetchpriority="high" />
+      </picture>
+      <div class="concept-hero-shade"></div>
+      <div class="concept-shell concept-inner-hero-copy">
+        <p class="concept-eyebrow concept-eyebrow-light">Plan your stay</p>
+        <h1>Choose your dates.<br /><em>We’ll show you the sites.</em></h1>
+        <p>Tell us when you’re coming and what you’re bringing. Select an open site, then complete the reservation with Firefly.</p>
+      </div>
+    </section>
+
+    <section class="concept-plan-search-stage" id="live-availability">
+      <div class="concept-shell">
+        <div class="concept-live-heading">
+          <p class="concept-eyebrow">Live availability</p>
+          <h2>Find the site that<br /><em>fits your stay.</em></h2>
+          <p>Choose your dates and rig details. Open sites light up on the park map, ready for a closer look and the Firefly reservation handoff.</p>
+        </div>
+        <div class="concept-live-map">
+          {canRenderMap && activeParkMap ? (
+            <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
+          ) : (
+            <div class="concept-live-fallback">
+              <h3>We’ll help you find an open site.</h3>
+              <p>Call the office for current availability, or continue directly to Firefly to search your dates.</p>
+              <div class="concept-actions">
+                <a class="concept-button concept-button-pine" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
+                <a class="concept-text-link" href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Search on Firefly <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-booking-flow">
+      <div class="concept-shell">
+        <div class="concept-section-heading concept-reveal">
+          <div>
+            <p class="concept-eyebrow">Three clear steps</p>
+            <h2>From dates to a<br /><em>confirmed site.</em></h2>
+          </div>
+          <p>Start with your dates and rig, choose an open site on the map, then complete the reservation through Firefly.</p>
+        </div>
+        <ol class="concept-step-grid">
+          <li class="concept-reveal">
+            <span>01</span>
+            <h3>Enter dates and rig details.</h3>
+            <p>Arrival, departure, site type, rig length, and slides narrow the site list.</p>
+          </li>
+          <li class="concept-reveal">
+            <span>02</span>
+            <h3>Choose an open site.</h3>
+            <p>Compare the list and map, open the site details, then select the site that fits.</p>
+          </li>
+          <li class="concept-reveal">
+            <span>03</span>
+            <h3>Complete the reservation.</h3>
+            <p>Continue to Firefly after you’ve found the site that fits your stay.</p>
+          </li>
+        </ol>
+        <div class="concept-flow-action">
+          <a class="concept-button concept-button-clay" href="#live-availability">Check live availability <span aria-hidden="true">↑</span></a>
+          <a class="concept-text-link" href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Go directly to Firefly <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-arrival-section">
+      <div class="concept-shell concept-arrival-grid">
+        <div class="concept-arrival-image concept-reveal">
+          <img src="/images/gazebo_fall.webp" alt="Autumn trees and gazebo at Crooked River Ranch RV Park" loading="lazy" />
+          <span>14875 SW Hays Lane · Terrebonne, Oregon</span>
+        </div>
+        <div class="concept-arrival-copy concept-reveal">
+          <p class="concept-eyebrow">Good to know</p>
+          <h2>Arrive with the<br /><em>details handled.</em></h2>
+          <div class="concept-arrival-facts">
+            <div><small>Check-in</small><strong>2:00 pm</strong></div>
+            <div><small>Check-out</small><strong>12:00 pm</strong></div>
+            <div><small>Pets</small><strong>Two per site</strong></div>
+            <div><small>Open</small><strong>Year-round</strong></div>
+          </div>
+          <p>Find current cancellation terms and complete park rules on the official policy page.</p>
+          <a class="concept-text-link" href="/park-policies">Read current park policies <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-section concept-help-section">
+      <div class="concept-shell concept-help-grid">
+        <div class="concept-help-copy concept-reveal">
+          <p class="concept-eyebrow concept-eyebrow-light">Want help choosing?</p>
+          <h2>Call with your rig<br /><em>and preferred dates.</em></h2>
+          <p>The office can help with site fit, slide configuration, group stays, and extended-stay questions.</p>
+          <a class="concept-button concept-button-light" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="concept-help-map concept-reveal">
+          <img src="/images/aerial_wide.webp" alt="Wide aerial view of the RV park, golf course, canyon, and Cascade mountains" loading="lazy" />
+          <div>
+            <strong>Getting here</strong>
+            <span>14875 SW Hays Lane<br />Terrebonne, OR 97760</span>
+            <a href="https://maps.google.com/?q=14875+SW+Hays+Lane+Terrebonne+OR+97760" target="_blank" rel="noreferrer">Open directions ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept-utility-band">
+      <div class="concept-shell">
+        <a href="https://app.fireflyreservations.com/GuestPortal/Property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer"><span>Manage a reservation</span><i>↗</i></a>
+        <a href="/park-policies"><span>Read park policies</span><i>→</i></a>
+        <a href="/design-concept/stay"><span>Compare site types</span><i>→</i></a>
+        <a href="/design-concept/explore"><span>Explore the area</span><i>→</i></a>
+      </div>
+    </section>
+  </main>
+</ConceptLayout>

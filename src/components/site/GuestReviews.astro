@@ -1,0 +1,48 @@
+---
+export interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const reviewsUrl = 'https://www.google.com/search?q=crooked+river+ranch+rv+park&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOaxz-Wa7jb_95ElogqVVpkGrvX3PFXXWIYQiDFelErQ9QQDbJjqpe8ig1hJV3mU4HLSnBpn_GB838KNAuGcAbLVBdoYGwl03XMluXbveXREDWKzs6g%3D%3D';
+const reviews = [
+  {
+    quote: 'The campground is so pretty and peaceful. The sites are spacious and set among lovely juniper trees.',
+    author: 'Karen McCarthy',
+    meta: 'Google review · family stay',
+  },
+  {
+    quote: 'Great place, great amenities, highly recommend!',
+    author: 'Matt Bashaw',
+    meta: 'Google review · friends trip',
+  },
+  {
+    quote: 'Love the ease of being able to book online now—we were able to drive in, pick our spot, and then book the one we wanted.',
+    author: 'Janell Wittrig',
+    meta: 'Google review · family stay',
+  },
+];
+---
+<section class:list={['crr-reviews', { 'crr-reviews-compact': compact }]}>
+  <div class="v2-shell">
+    <div class="v2-section-heading v2-reveal">
+      <div>
+        <p class="v2-eyebrow">Guest perspective</p>
+        <h2>What stays with<br />people after the trip.</h2>
+      </div>
+      <div class="crr-review-intro">
+        <p>Real guest comments help answer the questions photos cannot: how the park feels, how the sites fit, and whether the stay was easy.</p>
+        <a class="v2-inline-link" href={reviewsUrl} target="_blank" rel="noreferrer">Read reviews on Google <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+    <div class="crr-review-grid">
+      {reviews.map((review) => (
+        <article class="crr-review-card v2-reveal">
+          <div class="crr-review-stars" aria-label="Five out of five stars">★★★★★</div>
+          <blockquote>“{review.quote}”</blockquote>
+          <strong>{review.author}</strong>
+          <small>{review.meta}</small>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

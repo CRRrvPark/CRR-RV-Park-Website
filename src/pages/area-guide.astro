@@ -1,0 +1,225 @@
+---
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import RegionMap from '@components/RegionMap.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+import { getRegionMapPins, REGION_PIN_CATEGORIES } from '@lib/area-guide';
+
+const pins = await getRegionMapPins(20260719);
+const title = 'Central Oregon Area Guide | Crooked River Ranch RV Park';
+const description = 'Build a Central Oregon day from Crooked River Ranch RV Park. Explore the live regional map, Smith Rock, trails, golf, dining, wineries, spa time, and park amenities.';
+const canonical = 'https://www.crookedriverranchrv.com/area-guide';
+---
+<Base
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage="https://www.crookedriverranchrv.com/images/hero.jpg"
+  heroImagePreload="/images/hero.webp"
+>
+  <main id="main-content">
+    <section class="v2-park-hero">
+      <picture>
+        <source media="(max-width: 720px)" srcset="/images/hero-mobile.webp" type="image/webp" />
+        <source srcset="/images/hero.webp" type="image/webp" />
+        <img src="/images/hero.jpg" alt="Crooked River canyon landscape near the RV park" fetchpriority="high" />
+      </picture>
+      <div class="v2-park-hero-overlay"></div>
+      <div class="v2-shell v2-park-hero-inner v2-reveal">
+        <p class="v2-eyebrow v2-eyebrow-light">Park + area</p>
+        <h1>Settle in here.<br />Set out from here.</h1>
+        <p>Swim, golf, book a little restoration, walk the canyon, or start the day at Smith Rock. The site stays ready for your return.</p>
+        <a class="v2-button v2-button-yellow" href="#build-the-day">Build the day <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="v2-park-hero-index">
+        <span>01 · At the park</span>
+        <span>02 · Around the ranch</span>
+        <span>03 · Central Oregon</span>
+      </div>
+    </section>
+
+    <section class="v2-section v2-browse-section" id="build-the-day">
+      <div class="v3-orb v3-orb-three" aria-hidden="true"></div>
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Build the day</p>
+            <h2>Start with how<br />you want it to feel.</h2>
+          </div>
+          <div class="v3-heading-side">
+            <p>Filter the highlights by travel time or pace. The live area map keeps current places, directions, and trip ideas together.</p>
+            <a class="v3-area-map-link" href="#area-map">
+              <span class="v3-map-pulse" aria-hidden="true"></span>
+              Open the Google-powered area map
+              <i aria-hidden="true">↓</i>
+            </a>
+          </div>
+        </div>
+
+        <div class="v2-filter-bar" role="group" aria-label="Filter park and area ideas" data-experience-filters>
+          <button type="button" data-experience-filter="all" aria-pressed="true">All ideas</button>
+          <button type="button" data-experience-filter="park" aria-pressed="false">At the park</button>
+          <button type="button" data-experience-filter="close" aria-pressed="false">Within 15 min</button>
+          <button type="button" data-experience-filter="active" aria-pressed="false">Get moving</button>
+          <button type="button" data-experience-filter="easy" aria-pressed="false">Take it easy</button>
+          <button type="button" data-experience-filter="unwind" aria-pressed="false">Unwind</button>
+        </div>
+        <p class="v2-filter-status" aria-live="polite" data-filter-status>Showing all featured ideas.</p>
+
+        <div class="v2-experience-grid" data-experience-grid>
+          <article class="v2-experience v2-experience-wide v2-reveal" data-categories="park,easy,unwind">
+            <img src="/images/pool.webp" alt="Guests enjoying the heated seasonal pool at Crooked River Ranch" loading="lazy" />
+            <div>
+              <span>At the park · Seasonal</span>
+              <h3>Make the afternoon a pool day.</h3>
+              <p>Keep the car parked and spend the warmest hours beside the heated seasonal pool.</p>
+              <a href="/amenities">See park amenities →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-categories="park,close,active">
+            <img src="/images/golf_course.webp" alt="Crooked River Ranch golf course beside the canyon" loading="lazy" />
+            <div>
+              <span>Beside the park</span>
+              <h3>Play the course.</h3>
+              <p>An 18-hole course and practice area sit beside the RV park.</p>
+              <a href="/golf-course">Golf details →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-categories="park,active">
+            <img src="/images/canyon_day.webp" alt="Crooked River Gorge in daylight" loading="lazy" />
+            <div>
+              <span>At the ranch</span>
+              <h3>Walk toward the rim.</h3>
+              <p>Take in a closer view of the gorge. Keep children and pets close near steep edges.</p>
+              <a href="/trails">Trail details →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-experience-wide v2-reveal" data-categories="close,active">
+            <img src="/images/smith_rock.webp" alt="Smith Rock State Park cliffs and river" loading="lazy" />
+            <div>
+              <span>15 minutes away</span>
+              <h3>Begin at Smith Rock.</h3>
+              <p>Choose a river walk, a viewpoint, or a steeper trail with difficulty and cautions visible before you go.</p>
+              <a href="/trails">Choose a trail →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-categories="close,easy,unwind">
+            <img src="/images/central_oregon.webp" alt="Coffee shops and local storefronts in Central Oregon" loading="lazy" />
+            <div>
+              <span>A short drive</span>
+              <h3>Choose coffee, dinner, or a little care.</h3>
+              <p>Use the area map to find current details for food, massage, salon, and local services.</p>
+              <a href="#area-map">Open the area map →</a>
+            </div>
+          </article>
+
+          <article class="v2-experience v2-reveal" data-categories="park,easy,unwind">
+            <img src="/images/stars.webp" alt="Guest photograph of a star-filled night sky at the RV park" loading="lazy" />
+            <div>
+              <span>After dark</span>
+              <h3>Step outside for the sky.</h3>
+              <p>Return to your site and leave the last part of the day open.</p>
+              <a href="/availability">Find a site →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-soft" id="area-map">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Live regional map</p>
+            <h2>See what is<br />actually nearby.</h2>
+          </div>
+          <p>Trails, dining, attractions, local services, and trip ideas share one map. Filter the pins, open a place, and carry the directions into your day.</p>
+        </div>
+        <div class="crr-region-map-shell v2-reveal">
+          <RegionMap
+            id="area-guide-map"
+            pins={pins}
+            categories={REGION_PIN_CATEGORIES}
+            centerLat={44.4462}
+            centerLng={-121.2978}
+            zoom={10}
+            height="620px"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="v3-unwind-section" id="reset-day">
+      <div class="v2-shell v3-unwind-grid">
+        <figure class="v3-unwind-image v2-reveal">
+          <img src="/images/pool_aerial.webp" alt="Aerial view of the heated seasonal pool at Crooked River Ranch" loading="lazy" />
+          <figcaption>The heated pool · At the park</figcaption>
+        </figure>
+        <div class="v3-unwind-copy v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">The reset day</p>
+          <h2>Care.<br />Heated pool.<br />Local wine.<br />Home to camp.</h2>
+          <p>Book a little care close to the ranch, spend the warmest part of the day poolside, then bring the evening back to the people you came with.</p>
+          <ol class="v3-unwind-steps">
+            <li><span>01</span><div><strong>Book the quiet hour</strong><p>Find massage and pedicure options near the ranch using the live area map.</p></div></li>
+            <li><span>02</span><div><strong>Keep the afternoon open</strong><p>Come back for the heated pool, a book, and nowhere else to be.</p></div></li>
+            <li><span>03</span><div><strong>Bring home the bottle</strong><p>Local wineries and tasting rooms are within roughly 20 minutes of the park.</p></div></li>
+            <li><span>04</span><div><strong>Finish around the propane fire</strong><p>Settle back at camp with the family. Propane fire pits are welcome when flames stay within the posted policy; wood and charcoal fires are not allowed.</p></div></li>
+          </ol>
+          <div class="v3-unwind-actions">
+            <a class="v2-button v2-button-yellow" href="#area-map">Plan it on the area map <span aria-hidden="true">↑</span></a>
+            <a class="v2-inline-link" href="/dining">Browse local food + wine <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-itinerary">
+      <div class="v2-shell v2-itinerary-grid">
+        <div class="v2-itinerary-copy v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">One active rhythm</p>
+          <h2>Trail early.<br />Pool or golf later.<br />Canyon light at dusk.</h2>
+          <p>Use the outline, change it, or skip it entirely. The distances stay simple.</p>
+        </div>
+        <ol class="v2-itinerary-list">
+          <li class="v2-reveal"><span>7:30</span><div><strong>Drive to Smith Rock</strong><p>Pack water, check conditions, and choose the route that fits the group.</p></div></li>
+          <li class="v2-reveal"><span>12:30</span><div><strong>Return to the ranch</strong><p>Make lunch at the site, swim, or head beside the park for a round of golf.</p></div></li>
+          <li class="v2-reveal"><span>18:30</span><div><strong>Finish close to home</strong><p>Pick up dinner nearby and come back for the changing light over the canyon.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="crr-section" id="park-amenities">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">At the park</p>
+            <h2>The practical things<br />are part of the stay.</h2>
+          </div>
+          <p>Useful details belong beside the amenity name, before guests pack or make plans.</p>
+        </div>
+        <div class="crr-glass-grid">
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">≈</span><h3>Heated seasonal pool</h3><p>Warm water, loungers, and an easy afternoon at the park.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">✦</span><h3>Bathhouse + laundry</h3><p>Free showers and coin-operated laundry for registered guests.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⌁</span><h3>Guest Wi-Fi</h3><p>Complimentary connection for email and everyday browsing.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">●</span><h3>Pets welcome</h3><p>Dedicated off-leash dog run; leashes apply elsewhere.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">⚡</span><h3>EV-friendly stays</h3><p>$15 per night or charge. Bring the appropriate adapter.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">◇</span><h3>Room to play</h3><p>Tennis, pickleball, golf, disc golf, playground, and more.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">↥</span><h3>24/7 dump station</h3><p>$15 per use with an on-site card reader.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">○</span><h3>Open year-round</h3><p>Stay in every season; the pool and select amenities are seasonal.</p></article>
+          <article class="crr-glass-card v2-reveal"><span aria-hidden="true">→</span><h3>All park details</h3><p>See the amenity guide, photos, current seasonal notes, and practical information.</p><a href="/amenities">Open the park guide →</a></article>
+        </div>
+      </div>
+    </section>
+
+    <FinalCta
+      headline="Build the day. Keep the site ready for your return."
+      body="Find an open site, then let Central Oregon fill in as much—or as little—of the trip as you want."
+      image="/images/canyon_sunset.webp"
+    />
+  </main>
+</Base>

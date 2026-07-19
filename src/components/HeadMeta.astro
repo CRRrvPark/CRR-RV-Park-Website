@@ -7,7 +7,7 @@
  *   - SEO meta tags
  *   - OpenGraph + Twitter cards
  *   - Canonical URL
- *   - Font preload (Cormorant Garamond + DM Sans)
+ *   - Font preload (Manrope + Inter)
  *   - Hero image preload (per-page)
  *   - Microsoft Clarity analytics (deferred)
  *
@@ -32,7 +32,7 @@ const {
   robots = 'index, follow',
 } = Astro.props;
 
-const fontHref = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap';
+const fontHref = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap';
 
 // Cache-bust query for /styles/global.css. The stylesheet is served by
 // Netlify with a 7-day immutable-style cache (see netlify.toml), which is
@@ -42,7 +42,7 @@ const fontHref = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:it
 // bug fixes, new section styles). Hashed bundle filenames would be a
 // cleaner solution but global.css lives in `public/` where Vite doesn't
 // hash it — moving it to `src/styles/` + import is a future tidy-up.
-const CSS_VERSION = 4;
+const CSS_VERSION = 5;
 
 // Derive the Supabase hostname for DNS/preconnect hints. We do this at
 // build time so it's always correct per environment (dev / staging / prod).
@@ -118,3 +118,6 @@ try { if (supabaseUrl) supabaseOrigin = new URL(supabaseUrl).origin; } catch {}
 <noscript><link rel="stylesheet" href={fontHref}></noscript>
 
 <link rel="stylesheet" href={`/styles/global.css?v=${CSS_VERSION}`}>
+<link rel="stylesheet" href="/styles/design-concept-v2.css?v=20260719b">
+<link rel="stylesheet" href="/styles/design-concept-v3.css?v=20260719a">
+<link rel="stylesheet" href="/styles/production-v3.css?v=20260719a">

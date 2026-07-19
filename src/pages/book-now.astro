@@ -1,0 +1,179 @@
+---
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import AvailabilityMap from '@components/AvailabilityMap.astro';
+import PageHero from '@components/site/PageHero.astro';
+import { getParkSites } from '@lib/area-guide';
+import { serverClient } from '@lib/supabase';
+
+const sites = await getParkSites();
+let activeParkMap:
+  | { image_url: string; title: string; natural_width: number; natural_height: number }
+  | null = null;
+
+try {
+  const sb = serverClient();
+  const { data } = await sb
+    .from('park_maps')
+    .select('image_url, title, natural_width, natural_height')
+    .eq('is_active', true)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (data) activeParkMap = data as unknown as typeof activeParkMap;
+} catch {
+  // The Firefly and phone paths below remain available when the map cannot load.
+}
+
+const polygonSites = sites.filter(
+  (site) => Array.isArray(site.map_polygon) && (site.map_polygon as unknown[]).length > 0 && site.is_published !== false,
+);
+const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
+
+const title = 'Plan Your Visit & Reserve | Crooked River Ranch RV Park';
+const description = 'Check live RV site availability, compare the park map, review rates and arrival details, and reserve through Firefly at Crooked River Ranch RV Park.';
+const canonical = 'https://www.crookedriverranchrv.com/book-now';
+---
+<Base
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage="https://www.crookedriverranchrv.com/images/winter_sunset.jpg"
+  heroImagePreload="/images/winter_sunset.webp"
+>
+  <main id="main-content">
+    <PageHero
+      eyebrow="Plan your visit"
+      headline="Choose dates. See open sites."
+      accent="Reserve your fit."
+      body="Availability stays on this page while you compare the park map. Firefly handles payment and confirmation after you choose."
+      image="/images/winter_sunset.webp"
+      imageMobile="/images/winter_sunset-mobile.webp"
+      imageJpg="/images/winter_sunset.jpg"
+      alt="Winter sunset over the Crooked River canyon"
+      caption="Open year-round · Seasonal amenities vary"
+      primaryHref="#live-availability"
+      primaryLabel="Check my dates"
+      secondaryHref="/sites"
+      secondaryLabel="Compare site types"
+    />
+
+    <section class="v2-live-section" id="live-availability">
+      <div class="v2-shell">
+        <div class="v2-live-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Live availability</p>
+            <h2>Find the sites<br />that work for you.</h2>
+          </div>
+          <p>Enter dates and rig details. Compatible open sites appear on the map with a Firefly reservation handoff.</p>
+        </div>
+        <div class="v2-live-map v2-reveal">
+          {canRenderMap && activeParkMap ? (
+            <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
+          ) : (
+            <div class="v2-live-fallback">
+              <p class="v2-eyebrow">We can still help</p>
+              <h3>Call for current availability.</h3>
+              <p>Have your dates, rig type, exact length, and slide configuration ready.</p>
+              <div>
+                <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
+                <a class="v2-inline-link" href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Search Firefly directly <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-booking-sequence">
+      <div class="v2-shell">
+        <div class="v2-sequence-heading v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">The booking path</p>
+          <h2>One decision<br />at a time.</h2>
+        </div>
+        <ol class="v2-sequence-grid">
+          <li class="v2-reveal"><span>01</span><h3>Search the dates.</h3><p>Add site type, exact length, and slides to narrow the map.</p></li>
+          <li class="v2-reveal"><span>02</span><h3>Choose an open site.</h3><p>Use its location and site details to confirm the fit.</p></li>
+          <li class="v2-reveal"><span>03</span><h3>Reserve through Firefly.</h3><p>Complete payment and receive the booking confirmation.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-dark" id="rates">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Rates at a glance</p>
+            <h2>Current starting<br />site rates.</h2>
+          </div>
+          <p>Taxes and the reservation fee are added in Firefly. Review the final total and cancellation terms before confirming.</p>
+        </div>
+        <div class="crr-table-wrap v2-reveal">
+          <table class="crr-table">
+            <thead><tr><th>Site type</th><th>Nightly</th><th>Weekly</th><th>Monthly</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><th>Full hookup</th><td>$62</td><td>$372</td><td>$850</td><td>Monthly October–April</td></tr>
+              <tr><th>Water + electric</th><td>$57</td><td>$342</td><td>—</td><td>30/50 amp options</td></tr>
+              <tr><th>Tent / dry camp</th><td>$36</td><td>—</td><td>—</td><td>No hookups</td></tr>
+              <tr><th>EV charging</th><td>+$15</td><td>+$15/night</td><td>Call</td><td>Bring the appropriate adapter</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="crr-rate-note v2-reveal">Monthly rates are available October 1–April 30. Rates exclude tax. A $6 reservation fee applies per booking. Good Sam, military/first responder, and Harvest Hosts members receive 10% off eligible nightly rates; verify the discount with the office.</p>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Before the drive</p>
+            <h2>The details worth<br />knowing now.</h2>
+          </div>
+          <p>Arrival basics, current policies, and a phone number stay close to the reservation path.</p>
+        </div>
+        <div class="v2-arrival-grid">
+          <article class="v2-arrival-primary v2-reveal">
+            <span>Arrival</span>
+            <h3>14875 SW Hays Lane<br />Terrebonne, OR 97760</h3>
+            <a href="https://maps.google.com/?q=14875+SW+Hays+Lane+Terrebonne+OR+97760">Open directions ↗</a>
+          </article>
+          <article class="v2-arrival-card v2-reveal"><span>Check-in</span><strong>2:00 pm</strong><p>Call ahead to ask about early arrival.</p></article>
+          <article class="v2-arrival-card v2-reveal"><span>Check-out</span><strong>12:00 pm</strong><p>Plan departure around the noon checkout.</p></article>
+          <article class="v2-arrival-card v2-reveal"><span>Pets</span><strong>Welcome</strong><p>Off-leash dog run; leashes apply elsewhere.</p></article>
+          <article class="v2-arrival-card v2-reveal"><span>Season</span><strong>Open year-round</strong><p>The heated pool and select amenities are seasonal.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-policy-band">
+      <div class="v2-shell v2-policy-grid">
+        <div class="v2-reveal">
+          <p class="v2-eyebrow">Current terms</p>
+          <h2>Policies belong<br />before the reservation.</h2>
+          <p>Review cancellation terms, pet rules, quiet hours, fire safety, and park expectations from one maintained source.</p>
+        </div>
+        <div class="v2-policy-actions v2-reveal">
+          <a class="v2-policy-link" href="/park-policies"><span>Read park policies</span><i>→</i></a>
+          <a class="v2-policy-link" href="https://app.fireflyreservations.com/GuestPortal/Property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer"><span>Manage a reservation</span><i>↗</i></a>
+          <a class="v2-policy-link" href="tel:+15419231441"><span>Call 541-923-1441</span><i>→</i></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="v2-help-strip">
+      <div class="v2-shell v2-help-strip-grid">
+        <div class="v2-reveal">
+          <p class="v2-eyebrow v2-eyebrow-light">Want a second opinion?</p>
+          <h2>Tell us the rig.<br />We’ll help with the fit.</h2>
+        </div>
+        <div class="v2-help-actions v2-reveal">
+          <p>The office can help with slide configuration, group stays, extended stays, and site location.</p>
+          <a class="v2-button v2-button-yellow" href="tel:+15419231441">Call the park <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>

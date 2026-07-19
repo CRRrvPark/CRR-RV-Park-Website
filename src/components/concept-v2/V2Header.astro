@@ -1,0 +1,64 @@
+---
+export interface Props {
+  activePage: 'home' | 'sites' | 'park' | 'plan';
+  basePath?: string;
+  conceptLabel?: string;
+}
+
+const {
+  activePage,
+  basePath = '/design-concept-v2',
+  conceptLabel = 'V2',
+} = Astro.props;
+
+const links = [
+  { key: 'sites', label: 'Sites', href: `${basePath}/sites` },
+  { key: 'park', label: 'Park + area', href: `${basePath}/park-area` },
+  { key: 'plan', label: 'Plan your visit', href: `${basePath}/plan` },
+] as const;
+---
+<div class="v2-utility">
+  <div class="v2-shell">
+    <span>Open year-round · Terrebonne, Oregon</span>
+    <div>
+      <a href="/park-policies">Park policies</a>
+      <a href="tel:+15419231441">541-923-1441</a>
+    </div>
+  </div>
+</div>
+
+<header class="v2-header" data-v2-header>
+  <div class="v2-shell v2-header-inner">
+    <a class="v2-brand" href={`${basePath}/`} aria-label={`Crooked River Ranch RV Park ${conceptLabel} concept home`}>
+      <span class="v2-brand-symbol" aria-hidden="true">CR</span>
+      <span>
+        <strong>Crooked River Ranch</strong>
+        <small>RV Park</small>
+      </span>
+    </a>
+
+    <nav class="v2-nav" id="v2-navigation" aria-label="V2 concept navigation" data-v2-nav>
+      {links.map((link) => (
+        <a href={link.href} aria-current={activePage === link.key ? 'page' : undefined}>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="v2-header-actions">
+      <a class="v2-book-button" href={`${basePath}/plan#live-availability`}>
+        See open sites <span aria-hidden="true">→</span>
+      </a>
+      <button
+        class="v2-menu-button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="v2-navigation"
+        aria-label="Open navigation"
+        data-v2-menu
+      >
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>

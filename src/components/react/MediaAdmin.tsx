@@ -8,7 +8,7 @@
  * Clicking a tile opens a detail drawer with edit + delete + variant URLs.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminProviders } from './AdminProviders';
 import { AuthGuard } from './AuthGuard';
 import { useToast } from './Toast';

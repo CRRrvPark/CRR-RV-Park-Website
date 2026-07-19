@@ -17,7 +17,7 @@
  * dropped so partially-populated data tables don't crash the widget.
  *
  * This component fetches nothing — it takes already-merged pins from the
- * Astro frontmatter (see PuckRenderer.astro's RegionMapSection branch).
+ * Astro frontmatter (used by the production Park + Area route).
  * Keeping it data-agnostic means the same widget can later power other
  * pages (trails+local_places mashup, events map, etc.) without a rewrite.
  *
@@ -67,6 +67,10 @@ const {
 const apiKey =
   import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ??
   (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_API_KEY : '') ??
+  '';
+const googleMapId =
+  import.meta.env.PUBLIC_GOOGLE_MAPS_MAP_ID ??
+  (typeof process !== 'undefined' ? process.env.PUBLIC_GOOGLE_MAPS_MAP_ID : '') ??
   '';
 const hasKey = Boolean(apiKey);
 
@@ -148,7 +152,7 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
 )}
 
 {hasKey && (
-  <script is:inline define:vars={{ apiKey, id }}>
+  <script is:inline define:vars={{ apiKey, googleMapId, id }}>
     (function () {
       // Shared loader contract — coexist with GoogleMap.astro on the same page
       // without double-injecting the SDK.
@@ -201,15 +205,16 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
         if (map) return;
         var loading = mapWrap.querySelector('.crr-map-loading');
         if (loading) loading.remove();
-        map = new google.maps.Map(mapEl, {
+        var mapOptions = {
           center: { lat: parseFloat(mapWrap.dataset.mapCenterLat), lng: parseFloat(mapWrap.dataset.mapCenterLng) },
           zoom: parseInt(mapWrap.dataset.mapZoom || '10', 10),
           mapTypeId: 'terrain',
-          mapId: 'CRR_AREA_GUIDE',
           gestureHandling: 'cooperative',
           fullscreenControl: true,
           streetViewControl: false,
-        });
+        };
+        if (googleMapId) mapOptions.mapId = googleMapId;
+        map = new google.maps.Map(mapEl, mapOptions);
         info = new google.maps.InfoWindow();
         applyFilter(currentFilter);
 
@@ -250,7 +255,7 @@ const safePins = JSON.stringify(pins).replace(/</g, '\\u003c');
           if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
           var position = { lat: p.lat, lng: p.lng };
           var marker;
-          if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+          if (googleMapId && google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
             var label = document.createElement('div');
             label.style.cssText = 'background:#C4622D;color:#fff;border:2px solid #fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;';
             label.textContent = p.iconEmoji || '📍';

@@ -1,0 +1,347 @@
+---
+/**
+ * /sites/[code] — per-site detail page.
+ *
+ * Linked from the polygon map popover ("Site info →") and from polygon
+ * click-through on desktop. Shows full specs, photo gallery (when admin
+ * has uploaded any) or a "Coming soon" placeholder, admin-edited
+ * description + features, and a status-aware CTA (Book / Call / info-only).
+ *
+ * Server-rendered (not prerendered) so the moment the admin saves a
+ * hero or gallery image on the site row, the next visitor sees the
+ * real photos instead of the placeholder — no rebuild needed. Was
+ * previously prerendered at build time, but that meant admin uploads
+ * stayed invisible until the next deploy.
+ */
+
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import { getParkSiteByCode, type ParkSiteStatus } from '@lib/area-guide';
+
+const code = Astro.params.code as string | undefined;
+if (!code) {
+  return new Response('Not Found', { status: 404 });
+}
+const site = await getParkSiteByCode(code);
+if (!site) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const statusLabels: Record<ParkSiteStatus, string> = {
+  available: 'Available for booking',
+  camp_host: 'Camp Host — permanent site',
+  staff_only: 'Staff booking only',
+  maintenance: 'Under maintenance',
+  reserved: 'Reserved',
+  seasonal_closed: 'Closed for the season',
+};
+
+const isBookable = site.status === 'available';
+const bookUrl = site.firefly_deep_link
+  || 'https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK';
+
+// Meta
+const title = `Site ${site.site_number} — Loop ${site.loop} | Crooked River Ranch RV Park`;
+const description = site.description
+  ? site.description.slice(0, 155)
+  : `Site ${site.site_number} in Loop ${site.loop} at Crooked River Ranch RV Park. ${site.amp_service ? site.amp_service + '-amp, ' : ''}${site.pull_through ? 'pull-through' : 'back-in'}${site.length_feet ? `, up to ${site.length_feet} ft` : ''}.`;
+const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponent(site.site_number)}`;
+const ogImage = site.hero_image_url || 'https://www.crookedriverranchrv.com/images/hero.jpg';
+
+// Photo list = hero first + gallery (dedupe just in case the hero is also
+// in the gallery array).
+const photos: string[] = [];
+if (site.hero_image_url) photos.push(site.hero_image_url);
+for (const u of site.gallery_image_urls || []) {
+  if (u && !photos.includes(u)) photos.push(u);
+}
+const hasPhotos = photos.length > 0;
+---
+<Base title={title} description={description} canonical={canonical} ogImage={ogImage}>
+  <section style="padding:3rem 3rem 1rem;">
+    <div class="container" style="max-width:920px;">
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem;">
+        <a href="/park-map" style="color:var(--muted);text-decoration:none;">← Park map</a>
+      </div>
+      <div class="hero-eyebrow" style="color:var(--rust);">Loop {site.loop}</div>
+      <h1 class="st" style="font-size:clamp(2.2rem,4vw,3.2rem);margin-top:.3rem;">
+        Site <em>{site.site_number}</em>
+      </h1>
+
+      {site.status !== 'available' && (
+        <div class={`site-status-banner site-status-banner--${site.status}`} style="margin-top:1rem;">
+          <strong>{statusLabels[site.status]}</strong>
+          {site.status_note && <div class="site-status-note">{site.status_note}</div>}
+        </div>
+      )}
+    </div>
+  </section>
+
+  {hasPhotos ? (
+    <section style="padding:1rem 3rem 2rem;">
+      <div class="container" style="max-width:920px;">
+        <div class="site-gallery">
+          {photos.map((src, i) => (
+            <a href={src} class="site-gallery-item" data-lightbox="true">
+              <img
+                src={src}
+                alt={`Site ${site.site_number} photo ${i + 1}`}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  ) : (
+    <section style="padding:1rem 3rem 2rem;">
+      <div class="container" style="max-width:920px;">
+        <div class="site-photo-placeholder" role="img" aria-label="Site photo coming soon">
+          <div class="site-photo-placeholder__inner">
+            <div class="site-photo-placeholder__marquee">Now Showing · Site {site.site_number}</div>
+            <div class="site-photo-placeholder__title">Stay tuned!</div>
+            <div class="site-photo-placeholder__sub">Coming soon</div>
+            <div class="site-photo-placeholder__tail">…to a theater near you <span aria-hidden="true">😉</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section style="padding:2rem 3rem 1rem;">
+    <div class="container" style="max-width:920px;display:grid;grid-template-columns:2fr 1fr;gap:3rem;">
+      <div>
+        <h2 class="st" style="font-size:1.6rem;margin-bottom:1rem;">About this site</h2>
+        {site.description ? (
+          <div class="section-body" set:html={site.description} />
+        ) : (
+          <p class="section-body">
+            {site.pull_through ? 'Pull-through' : 'Back-in'} site in Loop {site.loop}.
+            {site.length_feet && ` Fits rigs up to ${site.length_feet} feet.`}
+            {site.amp_service && ` ${site.amp_service}-amp electric service.`}
+          </p>
+        )}
+
+        {site.features && site.features.length > 0 && (
+          <div style="margin-top:1.5rem;">
+            <h3 style="font-family:var(--serif);font-size:1.1rem;font-weight:500;margin-bottom:.5rem;">Features</h3>
+            <div class="site-features">
+              {site.features.map((f) => <span class="site-feature-chip">{f}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <aside class="site-specs">
+        <h3 style="font-family:var(--sans);font-size:.72rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin-bottom:.75rem;">Specs</h3>
+        <dl class="site-spec-list">
+          <div><dt>Loop</dt><dd>{site.loop}</dd></div>
+          {site.site_type && <div><dt>Type</dt><dd>{site.site_type}</dd></div>}
+          {site.length_feet && <div><dt>Length</dt><dd>{site.length_feet} ft</dd></div>}
+          {site.width_feet && <div><dt>Width</dt><dd>{site.width_feet} ft</dd></div>}
+          <div><dt>Layout</dt><dd>{site.pull_through ? 'Pull-through' : 'Back-in'}</dd></div>
+          {site.amp_service && <div><dt>Electric</dt><dd>{site.amp_service} amp</dd></div>}
+          {site.nightly_rate && <div><dt>Nightly</dt><dd>${site.nightly_rate}</dd></div>}
+          {site.weekly_rate && <div><dt>Weekly</dt><dd>${site.weekly_rate}</dd></div>}
+          {site.monthly_rate && <div><dt>Monthly</dt><dd>${site.monthly_rate}</dd></div>}
+        </dl>
+
+        <div style="margin-top:1.5rem;">
+          {isBookable ? (
+            <a
+              class="btn-p"
+              href={bookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style="display:block;text-align:center;"
+            >Book this site →</a>
+          ) : site.status === 'staff_only' ? (
+            <div>
+              <a class="btn-p" href="tel:5419231441" style="display:block;text-align:center;">
+                Call 541-923-1441
+              </a>
+              <p style="font-size:.78rem;color:var(--muted);margin-top:.6rem;text-align:center;">
+                This site is blocked from online self-booking. Please call the park office.
+              </p>
+            </div>
+          ) : (
+            <div style="padding:.9rem 1rem;background:var(--sand);border:1px solid rgba(0,0,0,.08);border-radius:3px;font-size:.85rem;color:var(--muted);text-align:center;">
+              Not currently available for booking.
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section style="padding:2rem 3rem 4rem;">
+    <div class="container" style="max-width:920px;">
+      <div style="padding-top:1.5rem;border-top:1px solid rgba(0,0,0,.08);font-size:.9rem;color:var(--muted);">
+        Not the right site? <a href="/park-map" style="color:var(--rust);">Back to the park map</a>
+        &middot; <a href="tel:5419231441" style="color:var(--rust);">Call the office</a>.
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .site-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: .75rem;
+  }
+  .site-gallery-item {
+    display: block;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--sand);
+    transition: transform .2s;
+  }
+  .site-gallery-item:hover { transform: translateY(-2px); }
+  .site-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* "Coming soon" placeholder when a site doesn't have any photos
+     uploaded yet. Styled like a vintage cinema marquee — sets the
+     tone that real photos are on their way without leaving a blank. */
+  .site-photo-placeholder {
+    aspect-ratio: 16 / 9;
+    background:
+      radial-gradient(ellipse at 30% 30%, rgba(212,168,83,.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 70%, rgba(196,98,45,.20) 0%, transparent 55%),
+      linear-gradient(135deg, #1f1712 0%, #2c1810 100%);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    text-align: center;
+    padding: 2rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .site-photo-placeholder::before,
+  .site-photo-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 4px, transparent 4px 22px);
+    background-size: 22px 14px;
+    pointer-events: none;
+    opacity: .35;
+  }
+  .site-photo-placeholder::before { top: 8px; bottom: auto; height: 14px; }
+  .site-photo-placeholder::after  { top: auto; bottom: 8px; height: 14px; }
+  .site-photo-placeholder__inner {
+    position: relative;
+    z-index: 1;
+    max-width: 460px;
+  }
+  .site-photo-placeholder__marquee {
+    display: inline-block;
+    font-size: .68rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold, #D4A853);
+    border: 1px solid rgba(212,168,83,.55);
+    padding: .25rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .site-photo-placeholder__title {
+    font-family: var(--serif, Georgia, serif);
+    font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: .35rem;
+  }
+  .site-photo-placeholder__sub {
+    font-family: var(--serif, Georgia, serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: rgba(255,255,255,.78);
+    margin-bottom: 1.4rem;
+  }
+  .site-photo-placeholder__tail {
+    font-size: .92rem;
+    color: rgba(255,255,255,.62);
+    letter-spacing: .01em;
+  }
+
+  .site-specs {
+    padding: 1.25rem 1.4rem;
+    background: var(--sand, #EDE5D8);
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,.06);
+    align-self: start;
+  }
+  .site-spec-list {
+    margin: 0;
+    font-size: .88rem;
+  }
+  .site-spec-list > div {
+    display: flex;
+    justify-content: space-between;
+    padding: .35rem 0;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+  }
+  .site-spec-list > div:last-child { border-bottom: none; }
+  .site-spec-list dt {
+    color: var(--muted, #665040);
+    font-weight: 400;
+  }
+  .site-spec-list dd {
+    margin: 0;
+    color: var(--dark, #1E1008);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .site-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .site-feature-chip {
+    padding: .25rem .7rem;
+    background: var(--cream);
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 999px;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  .site-status-banner {
+    padding: .85rem 1.1rem;
+    border-radius: 4px;
+    font-size: .92rem;
+    background: rgba(196, 98, 45, 0.08);
+    border-left: 3px solid var(--rust);
+    color: var(--text);
+  }
+  .site-status-banner strong { display: block; margin-bottom: .2rem; }
+  .site-status-note {
+    font-size: .85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .site-status-banner--camp_host       { background: rgba(212, 168, 83, 0.12); border-left-color: var(--gold); }
+  .site-status-banner--staff_only      { background: rgba(100, 100, 100, 0.08); border-left-color: #555; }
+  .site-status-banner--maintenance     { background: rgba(180, 60, 60, 0.1);   border-left-color: #b43c3c; }
+  .site-status-banner--reserved        { background: rgba(80, 100, 160, 0.1);  border-left-color: #5064a0; }
+  .site-status-banner--seasonal_closed { background: rgba(140, 140, 140, 0.1); border-left-color: #888; }
+
+  @media (max-width: 720px) {
+    .container[style*="grid-template-columns: 2fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

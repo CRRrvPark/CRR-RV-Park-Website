@@ -17,17 +17,19 @@
   #   - PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY: Vite bakes these into
   #     the browser bundle — that's by design. Supabase's anon key is safe to
   #     publish; access is governed by Row-Level Security, not by secrecy.
-  #   - NETLIFY_SITE_ID: an identifier that shows up in URLs and logs already.
+  #   - PUBLIC_GOOGLE_MAPS_API_KEY / PUBLIC_GOOGLE_MAPS_MAP_ID: browser
+  #     identifiers baked into map pages; the key is protected by HTTP
+  #     referrer and API restrictions in Google Cloud.
   #   - SITE_URL / ADMIN_EMAIL_FROM: public contact info.
   #   - ZOHO_REDIRECT_URI / ZOHO_ACCOUNT_DOMAIN: fixed public URIs.
   #   - ZOHO_WORKDRIVE_MEDIA_FOLDER_ID / ZOHO_CALENDAR_PUBLIC_EVENTS_ID:
   #     resource IDs — not secrets, but the scanner flags them because they
   #     look like opaque tokens.
   #
-  # The SECRET values (service role key, NETLIFY_AUTH_TOKEN, Zoho client
-  # secret + refresh token, SCHEDULED_FN_SECRET) stay under scanner
+  # The SECRET values (service role key, build-hook URL, Zoho client secret +
+  # refresh token, Google server keys, SCHEDULED_FN_SECRET) stay under scanner
   # protection.
-  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY,NETLIFY_SITE_ID,SITE_URL,ADMIN_EMAIL_FROM,ZOHO_REDIRECT_URI,ZOHO_ACCOUNT_DOMAIN,ZOHO_WORKDRIVE_MEDIA_FOLDER_ID,ZOHO_CALENDAR_PUBLIC_EVENTS_ID,ZOHO_CLIENT_ID"
+  SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY,SITE_URL,ADMIN_EMAIL_FROM,ZOHO_REDIRECT_URI,ZOHO_ACCOUNT_DOMAIN,ZOHO_WORKDRIVE_MEDIA_FOLDER_ID,ZOHO_CALENDAR_PUBLIC_EVENTS_ID,ZOHO_CLIENT_ID,PUBLIC_GOOGLE_MAPS_API_KEY,PUBLIC_GOOGLE_MAPS_MAP_ID"
 
   # Skip scanning our own documentation — they mention env-var NAMES and
   # shaped placeholders but not real values. NOTE: `.env.example` is
@@ -55,7 +57,7 @@
     # googletagmanager.com (script + iframe). Google Ads conversion
     # pixels fire to googleadservices.com + doubleclick.net + google.com.
     # GA4 (if added inside GTM later) loads from google-analytics.com.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.clarity.ms https://c.bing.com https://*.supabase.co https://*.zoho.com https://*.zohousercontent.com https://*.google-analytics.com https://www.googletagmanager.com https://*.doubleclick.net https://www.google.com https://*.google.com https://*.googleadservices.com; frame-src https://www.google.com https://www.googletagmanager.com https://*.doubleclick.net https://*.googleadservices.com; connect-src 'self' https://*.clarity.ms https://c.bing.com https://*.supabase.co wss://*.supabase.co https://accounts.zoho.com https://workdrive.zoho.com https://calendar.zoho.com https://mail.zoho.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.doubleclick.net https://*.googleadservices.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com https://maps.googleapis.com https://maps.gstatic.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.clarity.ms https://c.bing.com https://*.supabase.co https://*.zoho.com https://*.zohousercontent.com https://maps.googleapis.com https://maps.gstatic.com https://*.googleusercontent.com https://*.google-analytics.com https://www.googletagmanager.com https://*.doubleclick.net https://www.google.com https://*.google.com https://*.googleadservices.com; frame-src https://www.google.com https://www.googletagmanager.com https://*.doubleclick.net https://*.googleadservices.com; connect-src 'self' https://*.clarity.ms https://c.bing.com https://*.supabase.co wss://*.supabase.co https://accounts.zoho.com https://workdrive.zoho.com https://calendar.zoho.com https://mail.zoho.com https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.doubleclick.net https://*.googleadservices.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
@@ -110,9 +112,6 @@
 
 [functions."zoho-calendar-sync"]
   schedule = "17 * * * *"
-
-[functions."snapshots-prune"]
-  schedule = "23 3 * * *"
 
 # ---------- Pretty URLs (extensionless) ----------
 # With output:'server', Astro emits pages at their slug (no .html suffix)

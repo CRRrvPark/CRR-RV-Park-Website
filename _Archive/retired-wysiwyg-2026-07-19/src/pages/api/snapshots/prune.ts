@@ -71,4 +71,3 @@ async function runPrune(): Promise<Response> {
     protected: keepIds.size,
   });
 }
-

@@ -18,7 +18,7 @@ export const prerender = false;
 import { listCalendarEvents, classifyZohoError } from '@lib/zoho';
 import { logAudit } from '@lib/audit';
 import { triggerBuildHook } from '@lib/netlify';
-import { requireScheduledOrAuth, handleError } from '@lib/api';
+import { requireScheduledOrAuth } from '@lib/api';
 
 const MONTHS_AHEAD = 6;
 

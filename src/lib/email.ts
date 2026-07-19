@@ -75,16 +75,6 @@ async function ownerEmails(): Promise<string[]> {
   return (data ?? []).map(r => r.email);
 }
 
-async function editorAndOwnerEmails(): Promise<string[]> {
-  const sb = serverClient();
-  const { data } = await sb
-    .from('app_users')
-    .select('email')
-    .in('role', ['owner', 'editor'])
-    .eq('is_active', true);
-  return (data ?? []).map(r => r.email);
-}
-
 export async function notifyBuildFailed(publishId: string, errorMessage: string): Promise<void> {
   const to = await ownerEmails();
   if (to.length === 0) return;
@@ -124,24 +114,6 @@ export async function notifyZohoSyncFailed(service: string, errorMessage: string
           <li>Zoho API rate limit</li>
         </ul>
         <p><a href="https://www.crookedriverranchrv.com/admin/settings">Open Settings →</a></p>
-      </div>
-    `,
-  });
-}
-
-export async function notifyDraftPending(draftId: string, authorEmail: string, pageLabel: string): Promise<void> {
-  const to = await editorAndOwnerEmails();
-  if (to.length === 0) return;
-
-  await sendRaw({
-    to,
-    subject: `Draft awaiting approval: ${pageLabel}`,
-    body: `
-      <div style="font-family:system-ui;max-width:600px;">
-        <h2>Draft awaiting approval</h2>
-        <p><strong>${escapeHtml(authorEmail)}</strong> submitted a draft edit to the <strong>${escapeHtml(pageLabel)}</strong> page.</p>
-        <p>As an editor or owner, you can review and approve (or reject) it.</p>
-        <p><a href="https://www.crookedriverranchrv.com/admin/editor">Open admin editor →</a></p>
       </div>
     `,
   });

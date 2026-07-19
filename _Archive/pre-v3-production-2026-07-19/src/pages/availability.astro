@@ -1,0 +1,97 @@
+---
+/**
+ * /availability — guest-facing "Check Availability" map.
+ *
+ * A search form (dates + rig length + slides + site type) over a polygon
+ * map that paints each site available / unavailable for the chosen dates.
+ * Clicking an available site deep-links to Firefly to reserve. NO pricing.
+ *
+ * Data model (reuses /park-map's approach exactly):
+ *   • base image + polygons come from Supabase (park_maps active row +
+ *     park_sites.map_polygon) — so the page ALWAYS renders, even when the
+ *     Rimrock availability API is down.
+ *   • availability is layered on client-side via /api/availability (a
+ *     same-origin proxy to Rimrock) — see AvailabilityMap.astro.
+ *
+ * SSR (prerender=false) so newly-published sites / a swapped base map show
+ * up without a rebuild, matching /park-map and /sites/[code].
+ */
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import { getParkSites } from '@lib/area-guide';
+import AvailabilityMap from '@components/AvailabilityMap.astro';
+import { serverClient } from '@lib/supabase';
+import { isRouteHidden } from '@lib/site-visibility';
+
+if (await isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
+
+const sites = await getParkSites();
+
+// Active base map (same query /park-map uses). Fail-soft to null.
+let activeParkMap:
+  | { image_url: string; title: string; natural_width: number; natural_height: number }
+  | null = null;
+try {
+  const sb = serverClient();
+  const { data } = await sb
+    .from('park_maps')
+    .select('image_url, title, natural_width, natural_height')
+    .eq('is_active', true)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (data) activeParkMap = data as unknown as typeof activeParkMap;
+} catch { /* fall through to the no-map notice */ }
+
+const polygonSites = sites.filter(
+  (s) => Array.isArray(s.map_polygon) && (s.map_polygon as unknown[]).length > 0 && s.is_published !== false,
+);
+const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
+
+const title = 'Check Availability | Crooked River Ranch RV Park';
+const description = 'See which RV sites are open for your dates at Crooked River Ranch RV Park. Filter by rig length, slides, and hookups, then reserve your site instantly.';
+const canonical = 'https://www.crookedriverranchrv.com/availability';
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:36vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow" style="justify-content:center;">Live availability</div>
+      <h1 class="hero-hl">What's <em>open</em> for your dates.</h1>
+      <p class="hero-sub" style="margin-left:auto;margin-right:auto;">
+        Pick your dates and rig, and we'll light up every site that's free. Tap a green site to reserve it.
+      </p>
+    </div>
+  </section>
+
+  <section style="padding:3rem 3rem 4rem;">
+    <div class="container">
+      {canRenderMap && activeParkMap ? (
+        <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
+      ) : (
+        <div style="padding:3rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
+          The availability map isn't set up yet. Please
+          <a href="/book-now.html" style="color:var(--rust);"> start a reservation</a>
+          or call us at <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+          and we'll check availability for you.
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section style="padding:3rem;background:var(--sand);text-align:center;">
+    <div class="container" style="max-width:720px;">
+      <h2 class="st">Prefer to browse first?</h2>
+      <p class="section-body" style="margin:1rem auto 2rem;">
+        See every site's specs on the <a href="/park-map" style="color:var(--rust);">full park map</a>,
+        or call <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+        and we'll help you pick the right one.
+      </p>
+    </div>
+  </section>
+</Base>

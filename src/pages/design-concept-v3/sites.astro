@@ -35,52 +35,50 @@ import V2Search from '@components/concept-v2/V2Search.astro';
       <div class="v2-shell">
         <div class="v2-section-heading v2-reveal">
           <div>
-            <p class="v2-eyebrow">Rig-fit guide</p>
-            <h2>Tell us what<br />is coming with you.</h2>
+            <p class="v2-eyebrow">Choose with confidence</p>
+            <h2>The questions after<br />“is it available?”</h2>
           </div>
-          <p>This quick match narrows the starting point. Live availability makes the final site decision.</p>
+          <p>A date search is only the start. Use photos, useful specifications, the park map, and guest reviews to choose a stay that feels right.</p>
         </div>
 
-        <form class="v2-matcher" data-v2-matcher>
-          <label>
-            <span>Rig type</span>
-            <select name="rigType">
-              <option value="motorhome">Motorhome</option>
-              <option value="trailer">Travel trailer</option>
-              <option value="fifth-wheel">Fifth wheel</option>
-              <option value="van">Camper van</option>
-              <option value="truck">Truck camper</option>
-              <option value="tent">Tent / rooftop tent</option>
-            </select>
-          </label>
-          <label>
-            <span>Exact length</span>
-            <span class="v2-number-field">
-              <input type="number" name="rigLength" min="1" max="99" inputmode="numeric" placeholder="32" />
-              <i>ft</i>
-            </span>
-          </label>
-          <label>
-            <span>Hookups</span>
-            <select name="hookups">
-              <option value="full">Water, electric &amp; sewer</option>
-              <option value="partial">Water &amp; electric</option>
-              <option value="none">No hookups needed</option>
-              <option value="any">Any / not sure</option>
-            </select>
-          </label>
-          <label>
-            <span>Slides</span>
-            <select name="matcherSlides">
-              <option value="any">Any / not sure</option>
-              <option value="yes">Has slides</option>
-              <option value="no">No slides</option>
-            </select>
-          </label>
-          <button type="submit">Show my starting point <span aria-hidden="true">→</span></button>
-          <p class="v2-match-status" aria-live="polite" data-v2-match-status>All four stay types are ready to compare.</p>
-        </form>
+        <div class="v2-site-product-grid">
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>01</span><small>See the place</small></div>
+            <h3>Photos and location together.</h3>
+            <p>See the park loops, nearby amenities, and actual site photos where available.</p>
+            <a href="/park-map">Explore the interactive park map →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>02</span><small>Compare the fit</small></div>
+            <h3>Useful details in one place.</h3>
+            <p>Hookups, listed length, setup type, bathhouse access, and dump-station details stay easy to compare.</p>
+            <a href="#site-types">Compare the four site types →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>03</span><small>Hear from guests</small></div>
+            <h3>Read the texture behind the specs.</h3>
+            <p>Reviews add what a dimensions table cannot: quiet, space, ease, and the feeling of the park.</p>
+            <a href="/sites#guest-reviews">Read verified guest reviews →</a>
+          </article>
+          <article class="v2-site-product v2-reveal">
+            <div class="v2-site-product-top"><span>04</span><small>Need a second opinion?</small></div>
+            <h3>Call with the exact setup.</h3>
+            <p>The office can help with rig length, slide placement, hookups, and anything unusual about the stay.</p>
+            <a href="tel:+15419231441">Call (541) 923-1441 →</a>
+          </article>
+        </div>
+      </div>
+    </section>
 
+    <section class="v2-section v2-matcher-section" id="site-types">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Four ways to stay</p>
+            <h2>Start with the<br />site type.</h2>
+          </div>
+          <p>The live map makes the final decision. These four categories make the first comparison quick.</p>
+        </div>
         <div class="v2-site-product-grid">
           <article class="v2-site-product v2-reveal" id="full-hookup" data-v2-site-card="full">
             <div class="v2-site-product-top">

@@ -1,0 +1,186 @@
+---
+export const prerender = true;
+import Base from '@layouts/Base.astro';
+
+const title = "Park Rules & Policies | Crooked River Ranch RV Park";
+const description = "Rules and regulations for Crooked River Ranch RV Park. Check-in/out times, fire policy, quiet hours, pet rules, cancellation policy, and dump station info.";
+const canonical = "https://www.crookedriverranchrv.com/park-policies";
+const ogImage = "https://www.crookedriverranchrv.com/images/canyon_day.jpg";
+const heroImagePreload = "/images/canyon_day.webp";
+
+const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What are the check-in and check-out times?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Check-in is at 2:00 PM. Check-out is at 12:00 PM (noon)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the quiet hours?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Quiet hours are from 10:00 PM to 7:00 AM."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are pets allowed at Crooked River Ranch RV Park?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, pets are welcome. Maximum 2 pets per site. All pets must be on a leash no longer than 6 feet when outside the RV. Pet owners must clean up after their pets immediately."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the cancellation policy?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cancellations made 7 or more days before arrival receive a full refund minus the $6 reservation fee. Cancellations within 7 days of arrival forfeit the first night's stay."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the maximum RV length?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pull-through sites accommodate rigs up to 65 feet."
+          }
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.crookedriverranchrv.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Park Policies",
+          "item": "https://www.crookedriverranchrv.com/park-policies"
+        }
+      ]
+    }
+  ];
+---
+<Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
+<section class="page-hero">
+  <div class="hero-bg"><picture><source srcset="/images/canyon_day.webp" type="image/webp"><img src="/images/canyon_day.jpg" alt="Crooked River Ranch RV Park" width="1400" height="933" fetchpriority="high"></picture></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Park Policies</div>
+    <h1 class="hero-hl">Rules &amp; <em>regulations.</em></h1>
+    <p class="hero-sub">Everything you need to know for a safe, respectful stay on the canyon rim.</p>
+  </div>
+</section>
+
+<div class="breadcrumbs"><a href="/index.html">Home</a><span>›</span> Park Policies</div>
+
+<section>
+  <div class="container">
+    <span class="section-label">Check-In &amp; Check-Out</span>
+    <h2 class="st">Arrival and departure <em>times.</em></h2>
+    <p class="section-body"><strong>Check-in: 2:00 PM. Check-out: 12:00 Noon.</strong></p>
+    <p class="section-body">Property owners in good standing may use the RV Park at property owner rates. All persons must comply with seasons, overnight length-of-stay limits, and check-in/check-out times. All persons shall observe posted signs, posted notices, and instructions from park employees. The registered guest is financially responsible for all individuals and pets at their site and for any damage caused to the park.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Safety &amp; Liability</span>
+    <h2 class="st">Use at your own <em>risk.</em></h2>
+    <p class="section-body">All persons using the facilities do so at their own risk. The RV Park is not responsible for accidents due to wind, fire, theft, natural disasters, or personal negligence. The park is located adjacent to a golf course, and guests acknowledge the risk of golf balls entering the RV park with the potential of causing bodily injury or property damage. Guests assume such risks and agree to hold Crooked River Ranch C&amp;MA harmless.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Fire Safety</span>
+    <h2 class="st">No wood or charcoal <em>fires.</em></h2>
+    <p class="section-body">Due to extreme fire danger, <strong>no wood or charcoal fires are allowed</strong> at any time. All BBQs must be propane or electric. Propane fire pits are permitted, but flames cannot exceed 4 inches. This rule is enforced year-round.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Dump Station</span>
+    <h2 class="st">Waste disposal <em>rules.</em></h2>
+    <p class="section-body">The dump station is available for a fee. Recreational vehicle sewage and gray water holding tank contents must be disposed of at the designated dump station only. No dumping household garbage — violators will be prosecuted. No washing RVs in the park.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Reservations</span>
+    <h2 class="st">Deposits and <em>cancellations.</em></h2>
+    <p class="section-body"><strong>Deposits are required for all reservations and are non-refundable.</strong></p>
+    <p class="section-body">If you cannot make a scheduled reservation, we will make every effort to reschedule within the calendar year. Requests to cancel with over 72 hours' notice will only lose the deposit. Canceling without 72 hours' notice requires full payment of the existing reservation.</p>
+    <p class="section-body">Requests to cancel reservations for a holiday weekend require 10 days' notice. Shortening days of a reservation can be made with 10 days' advance notice from the start of the reservation. <strong>No refunds for early departures for any reason.</strong></p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Quiet Hours</span>
+    <h2 class="st">10 PM to <em>7 AM.</em></h2>
+    <p class="section-body">No loud noises or music during quiet hours. <strong>Generators are not allowed</strong> at any time. Please be respectful of your neighbors.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Parking &amp; Vehicles</span>
+    <h2 class="st">Registered guests <em>only.</em></h2>
+    <p class="section-body">Parking in the RV Park is for registered guests only. Abandoning a vehicle or leaving one unattended for 72 hours or more without permission from the park manager is prohibited. Vehicles abandoned for 72 hours or more, or vehicles owned by a person who has been excluded from park property or who is in violation of criminal trespass, may be towed at the owner's expense.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Pet Policy</span>
+    <h2 class="st">Pets are welcome with <em>conditions.</em></h2>
+    <p class="section-body">A handler is responsible for the behavior of their domestic animal and must keep it under physical control at all times — either confined or on a leash no longer than six feet. Animals may not be left outside the RV unattended.</p>
+    <p class="section-body">Handlers must prevent barking, harassing, injuring, or intimidating people, wildlife, and other animals. Aggressive animals are not allowed. You must clean up after your pet immediately. Maximum two pets per site.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Rented RVs</span>
+    <h2 class="st">Rental units require <em>notice.</em></h2>
+    <p class="section-body">Rented RVs require notice to the RV Park Office. Renters are subject to an additional night charge if the RV is not removed by the noon checkout time.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <span class="section-label">Management Rights</span>
+    <h2 class="st">Park management <em>authority.</em></h2>
+    <p class="section-body">Management has sole discretion for enforcing and interpreting all RV park rules. RV Park management reserves the right to eject anyone in violation of these rules and regulations, or if their behavior disrupts other guests or appears threatening to guests or staff.</p>
+    <p class="section-body">There are no refunds for voluntary departure, ejection, or acts of nature. Management reserves the right to amend, revise, or add to these rules at any time. A park manager or designated employee may take any action necessary to protect the safety or health of the public or to protect park resources.</p>
+  </div>
+</section>
+
+<section class="sec-dark">
+  <div class="container">
+    <span class="section-label">Questions?</span>
+    <h2 class="st">Call the office for <em>clarification.</em></h2>
+    <p class="section-body">If you have questions about any park policy, call us at <a href="tel:5419231441">541-923-1441</a> (Monday–Friday, 9 AM – 3 PM) or stop by the office.</p>
+    <div class="section-cta-center">
+      <a href="/book-now.html" class="btn-p">Book Your Stay →</a>
+    </div>
+  </div>
+</section>
+</Base>

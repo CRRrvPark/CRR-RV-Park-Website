@@ -3,9 +3,8 @@
  *
  * Read this with the role table from RUNBOOK.md (Section: User Roles).
  *
- * Patterns:
- *   if (!can(user, 'publish_content')) return forbidden();
- *   if (!isRoleAtLeast(user.role, 'editor')) return forbidden();
+ * Public-page code changes flow through Netlify Agent Runners, Deploy
+ * Previews, and GitHub review. This matrix covers the operational admin only.
  */
 
 export type UserRole = 'owner' | 'editor' | 'contributor' | 'viewer';
@@ -27,14 +26,6 @@ export function isRoleAtLeast(actual: UserRole | null | undefined, required: Use
  * To change permissions, change here — every gate in the app uses this.
  */
 export const CAPABILITY: Record<string, UserRole> = {
-  // Content
-  view_content: 'viewer',
-  edit_content_draft: 'contributor',
-  edit_content_direct: 'editor',
-  approve_content_draft: 'editor',
-  publish_content: 'editor',
-  delete_page: 'owner',
-
   // Media
   view_media: 'viewer',
   upload_media: 'contributor',
@@ -49,11 +40,6 @@ export const CAPABILITY: Record<string, UserRole> = {
   view_area_guide: 'viewer',
   manage_area_guide: 'editor',
 
-  // Code editor (DANGEROUS — owner only)
-  view_code: 'owner',
-  edit_code: 'owner',
-  publish_code: 'owner',
-
   // Users + roles
   view_users: 'viewer',
   invite_user: 'owner',
@@ -62,8 +48,6 @@ export const CAPABILITY: Record<string, UserRole> = {
 
   // System
   view_audit_log: 'viewer',
-  view_snapshots: 'viewer',
-  restore_snapshot: 'editor',
   manage_zoho_integration: 'owner',
   view_runbook: 'viewer',
   edit_runbook: 'owner',
@@ -91,8 +75,8 @@ export class ForbiddenError extends Error {
 }
 
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
-  owner: 'Full control. Can edit code, manage users, change billing, restore snapshots. There must always be at least 2 active owners.',
-  editor: 'Edit any content + publish to live site. Approve contributor drafts. Cannot edit code or manage users.',
-  contributor: 'Draft content edits for review. Drafts are held until an editor or owner approves them. Cannot publish directly.',
+  owner: 'Full operational control. Can manage users, integrations, media, events, area-guide records, and the runbook. Keep at least 2 active owners.',
+  editor: 'Manage operational website data, including media, events, area-guide records, and park-map details. Cannot manage users.',
+  contributor: 'Can upload media and view operational records. Public-page changes use Netlify Agent Runners and Git review.',
   viewer: 'Read-only access to admin. Useful for board members who want visibility without edit risk.',
 };

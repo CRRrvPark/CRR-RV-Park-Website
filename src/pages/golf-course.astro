@@ -1,0 +1,86 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+
+const title = 'Crooked River Ranch Golf Course | Golf beside the RV Park';
+const description = 'Plan a round at the independently managed Crooked River Ranch Golf Course beside the RV park. Find course details, pro-shop contact information, and RV-stay planning.';
+const canonical = 'https://www.crookedriverranchrv.com/golf-course';
+---
+<Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/golf_aerial_canyon.jpg" heroImagePreload="/images/golf_course.webp">
+  <main id="main-content">
+    <PageHero
+      eyebrow="Golf beside the park"
+      headline="A round on"
+      accent="the canyon rim."
+      body="The golf course sits beside the RV park, with juniper, open high-desert terrain, and the Crooked River canyon shaping the view."
+      image="/images/golf_course.webp"
+      imageMobile="/images/golf_course-mobile.webp"
+      imageJpg="/images/golf_course.jpg"
+      alt="Crooked River Ranch Golf Course beside the canyon"
+      caption="Crooked River Ranch Golf Course"
+      primaryHref="https://www.crookedriverranchgc.com"
+      primaryLabel="Visit the golf course"
+      secondaryHref="/golf-stays"
+      secondaryLabel="Plan a golf stay"
+    />
+
+    <section class="crr-section-soft">
+      <div class="v2-shell">
+        <div class="crr-management-note v2-reveal">
+          <div>
+            <strong>The golf course is managed independently.</strong>
+            <p>Tee times, green fees, lessons, tournaments, rentals, and current course conditions are handled by the golf course pro shop.</p>
+          </div>
+          <div class="crr-management-actions">
+            <a href="https://www.crookedriverranchgc.com" target="_blank" rel="noreferrer">Golf course website ↗</a>
+            <a href="tel:+15419236343">Pro shop · 541-923-6343</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">The setting</p>
+          <h2>Golf built into the landscape.</h2>
+          <p>The 18-hole, par-71 course follows the mesa through juniper and sage, with elevation changes and canyon views throughout the round.</p>
+          <p>RV park guests can walk from camp to the course area, then return to the site for lunch, pool time, or a quiet evening.</p>
+          <a class="v2-button v2-button-blue" href="https://www.crookedriverranchgc.com" target="_blank" rel="noreferrer">Check current course details <span aria-hidden="true">↗</span></a>
+        </div>
+        <figure class="crr-media v2-reveal">
+          <img src="/images/golf_aerial_canyon.webp" alt="Aerial view of the golf course and Crooked River canyon" loading="lazy" />
+          <figcaption>Course, canyon, and RV park in one landscape</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-soft">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div><p class="v2-eyebrow">Plan the round</p><h2>Two bookings.<br />One easy trip.</h2></div>
+          <p>Reserve the RV site with the park. Reserve the tee time with the golf course. Each team can answer the right questions directly.</p>
+        </div>
+        <div class="crr-detail-grid">
+          <article class="crr-detail-card v2-reveal">
+            <small>RV park</small>
+            <h3>Choose your home base.</h3>
+            <p>Use live availability to compare RV sites, exact rig fit, hookups, and position inside the park.</p>
+            <ul><li>Live site availability</li><li>Site photos and dimensions where available</li><li>Park office · 541-923-1441</li></ul>
+          </article>
+          <article class="crr-detail-card v2-reveal">
+            <small>Golf course</small>
+            <h3>Choose your tee time.</h3>
+            <p>Use the official course site or call the pro shop for current rates, conditions, rentals, and tee-time availability.</p>
+            <ul><li>Current green fees</li><li>Tee times and course conditions</li><li>Pro shop · 541-923-6343</li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <FinalCta headline="Keep the clubs close and the campsite closer." body="Check RV site availability, then arrange the round directly with the golf course." image="/images/golf_bridge.webp" primaryHref="/availability" primaryLabel="See open RV sites" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Golf course website" />
+  </main>
+</Base>

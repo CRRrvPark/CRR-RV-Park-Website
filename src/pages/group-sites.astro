@@ -1,0 +1,66 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import GuestReviews from '@components/site/GuestReviews.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+
+const title = 'Group RV Stays in Central Oregon | Crooked River Ranch';
+const description = 'Plan adjacent RV sites for a reunion, club trip, golf group, or shared Central Oregon getaway at Crooked River Ranch RV Park.';
+const canonical = 'https://www.crookedriverranchrv.com/group-sites';
+---
+<Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/family_reunion.jpg" heroImagePreload="/images/family_reunion.webp">
+  <main id="main-content">
+    <PageHero
+      eyebrow="Group stays"
+      headline="Stay close to"
+      accent="the people you brought."
+      body="For family gatherings, RV clubs, golf trips, and friends traveling together, the office can help identify neighboring sites and a practical plan."
+      image="/images/family_reunion.webp"
+      imageMobile="/images/family_reunion-mobile.webp"
+      imageJpg="/images/family_reunion.jpg"
+      alt="Friends and family gathering outdoors at Crooked River Ranch"
+      caption="Shared days with each campsite close by"
+      primaryHref="tel:+15419231441"
+      primaryLabel="Call to coordinate"
+      secondaryHref="/park-map"
+      secondaryLabel="See the park layout"
+    />
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">One point of contact</p>
+          <h2>Let the office help with the site puzzle.</h2>
+          <p>Adjacent sites depend on dates, rig sizes, hookups, and what is already reserved. A short call gives the office enough information to identify the best available arrangement.</p>
+          <ol class="crr-steps">
+            <li><div><strong>Count the rigs</strong><p>Collect exact length, slides, hookup preference, and arrival/departure dates for each reservation.</p></div></li>
+            <li><div><strong>Review the park layout</strong><p>Use the interactive map to understand loops, pool, bathhouse, dog run, and shared areas.</p></div></li>
+            <li><div><strong>Coordinate reservations</strong><p>Call 541-923-1441 so the office can explain the adjacent options available for those dates.</p></div></li>
+          </ol>
+        </div>
+        <figure class="crr-media v2-reveal">
+          <img src="/images/aerial_aloop.webp" alt="Aerial view of adjacent RV sites among juniper trees" loading="lazy" />
+          <figcaption>Adjacent arrangements are subject to availability</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-soft">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div><p class="v2-eyebrow">Build the gathering</p><h2>Enough structure.<br />Room to be together.</h2></div>
+          <p>Start with compatible sites. Then use the park and area to give every part of the group something useful to do.</p>
+        </div>
+        <div class="crr-detail-grid">
+          <article class="crr-detail-card v2-reveal"><small>At the park</small><h3>Easy shared time.</h3><p>Heated seasonal pool, playground, courts, dog run, and outdoor spaces give the group natural places to reconnect.</p><ul><li>Free showers and coin-op laundry</li><li>Pets welcome; off-leash dog run</li><li>Golf course managed next door</li></ul></article>
+          <article class="crr-detail-card v2-reveal"><small>Around Central Oregon</small><h3>Split up. Meet back at camp.</h3><p>Some guests can hike or golf while others book a massage, visit a winery, or spend the afternoon at the pool.</p><ul><li>Live area map</li><li>Dining and current directions</li><li>Trails sorted by useful details</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <GuestReviews compact={true} />
+    <FinalCta headline="Bring the dates, rigs, and headcount." body="The office can help turn the group details into the clearest available site arrangement." image="/images/gazebo_fall.webp" primaryHref="tel:+15419231441" primaryLabel="Call 541-923-1441" secondaryHref="/park-map" secondaryLabel="Open the park map" />
+  </main>
+</Base>

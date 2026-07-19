@@ -1,0 +1,137 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import FinalCta from '@components/site/FinalCta.astro';
+
+const title = 'Winter Monthly RV Sites | Crooked River Ranch';
+const description = 'Apply for a winter monthly full-hookup RV stay at Crooked River Ranch. Review the October–April season, rate, application steps, and park details.';
+const canonical = 'https://www.crookedriverranchrv.com/extended-stays';
+---
+<Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/winter_sunset.jpg" heroImagePreload="/images/winter_sunset.webp">
+  <main id="main-content">
+    <PageHero
+      eyebrow="Extended stays"
+      headline="Make the canyon"
+      accent="your winter address."
+      body="Monthly full-hookup stays are available during the October–April season, subject to application approval and site availability."
+      image="/images/winter_sunset.webp"
+      imageMobile="/images/winter_sunset-mobile.webp"
+      imageJpg="/images/winter_sunset.jpg"
+      alt="Winter sunset over the Crooked River canyon"
+      caption="Winter monthly season · October through April"
+      primaryHref="#monthly-form"
+      primaryLabel="Start the application"
+      secondaryHref="tel:+15419231441"
+      secondaryLabel="Call the office"
+    />
+
+    <section class="crr-fact-strip">
+      <div class="v2-shell crr-fact-grid">
+        <div><strong>$850</strong><span>Full-hookup monthly rate</span></div>
+        <div><strong>Oct–Apr</strong><span>Monthly season</span></div>
+        <div><strong>Full hookups</strong><span>Water · power · sewer</span></div>
+        <div><strong>Year-round park</strong><span>Seasonal amenities vary</span></div>
+        <a href="#monthly-form">Apply →</a>
+      </div>
+    </section>
+
+    <section class="crr-section">
+      <div class="v2-shell crr-two-column">
+        <div class="crr-copy v2-reveal">
+          <p class="v2-eyebrow">The monthly rhythm</p>
+          <h2>More time. Fewer moving parts.</h2>
+          <p>A full-hookup site gives the winter stay a dependable home base. The park remains open while the heated pool and some recreation features are seasonal.</p>
+          <ul>
+            <li>$850 per month for a full-hookup site during the monthly season</li>
+            <li>Electric use and additional charges are confirmed during approval</li>
+            <li>Site assignment depends on RV fit, dates, and availability</li>
+            <li>Park policies and the monthly agreement apply throughout the stay</li>
+          </ul>
+          <a class="v2-button v2-button-blue" href="/park-policies">Review park policies <span aria-hidden="true">→</span></a>
+        </div>
+        <figure class="crr-media v2-reveal">
+          <img src="/images/stars.webp" alt="Star-filled night sky over Crooked River Ranch" loading="lazy" />
+          <figcaption>Clear nights and a settled home base</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="crr-section crr-section-soft">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div><p class="v2-eyebrow">Before applying</p><h2>A clear path<br />to a monthly site.</h2></div>
+          <p>The application gives the office the information needed to review fit, dates, and the monthly agreement before a site is confirmed.</p>
+        </div>
+        <div class="crr-detail-grid">
+          <article class="crr-detail-card v2-reveal"><small>What to have ready</small><h3>Your stay and RV details.</h3><ul><li>Requested move-in and move-out dates</li><li>RV year, make, model, type, and exact length</li><li>Occupants, vehicles, pets, and emergency contact</li><li>Insurance and recent housing or RV-park history</li></ul></article>
+          <article class="crr-detail-card v2-reveal"><small>What happens next</small><h3>Review before confirmation.</h3><ul><li>The office checks seasonal and site availability</li><li>Application details and any inspection needs are reviewed</li><li>Approved applicants receive agreement and payment instructions</li><li>A site is confirmed only after the required steps are complete</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="crr-section" id="monthly-form">
+      <div class="v2-shell">
+        <div class="crr-form-shell v2-reveal">
+          <div class="crr-form-heading">
+            <div><p class="v2-eyebrow v2-eyebrow-light">Apply online</p><h2>Monthly stay application.</h2></div>
+            <p>Submitting this form starts the review. It does not guarantee approval or reserve a site. The office will follow up with availability and next steps.</p>
+          </div>
+          <form class="crr-form" name="monthly-application" action="/extended-stays?submitted=true#monthly-form" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="monthly-application" />
+            <p hidden><label>Do not fill this out: <input name="bot-field" /></label></p>
+
+            <fieldset>
+              <legend>Applicant</legend>
+              <label>First name<input name="first_name" autocomplete="given-name" required /></label>
+              <label>Last name<input name="last_name" autocomplete="family-name" required /></label>
+              <label>Email<input type="email" name="email" autocomplete="email" required /></label>
+              <label>Phone<input type="tel" name="phone" autocomplete="tel" required /></label>
+              <label class="is-wide">Mailing address<input name="mailing_address" autocomplete="street-address" required /></label>
+              <label>Date of birth<input type="date" name="date_of_birth" required /></label>
+              <label>Returning guest?<select name="returning_guest"><option>No</option><option>Yes</option></select></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Requested stay</legend>
+              <label>Move-in date<input type="date" name="move_in_date" required /></label>
+              <label>Move-out date<input type="date" name="move_out_date" required /></label>
+              <label class="is-wide">Site preferences or accessibility needs<textarea name="site_preferences"></textarea></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>RV details</legend>
+              <label>Year<input type="number" name="rv_year" min="1970" max="2030" required /></label>
+              <label>Make and model<input name="rv_make_model" required /></label>
+              <label>Rig type<select name="rig_type" required><option value="">Select</option><option>Class A</option><option>Class B</option><option>Class C</option><option>Fifth wheel</option><option>Travel trailer</option><option>Truck camper</option><option>Other</option></select></label>
+              <label>Exact length (feet)<input type="number" name="rv_length" min="1" max="99" required /></label>
+              <label>Slides<select name="slides"><option>None</option><option>Driver side</option><option>Passenger side</option><option>Both sides</option></select></label>
+              <label>Insurance provider<input name="rv_insurance" required /></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Household</legend>
+              <label class="is-wide">All occupants (name, age, relationship)<textarea name="occupants" required></textarea></label>
+              <label class="is-wide">Pets (name, type or breed, age, and relevant care information)<textarea name="pets" placeholder="Leave blank if no pets"></textarea></label>
+              <label class="is-wide">Vehicles (year, make, model, license plate)<textarea name="vehicles" required></textarea></label>
+              <label>Emergency contact name<input name="emergency_contact_name" required /></label>
+              <label>Emergency contact phone<input type="tel" name="emergency_contact_phone" required /></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>History and notes</legend>
+              <label class="is-wide">Most recent residence or RV park, dates, and manager or landlord contact<textarea name="residence_history" required></textarea></label>
+              <label class="is-wide">Additional notes<textarea name="message"></textarea></label>
+              <label class="crr-form-check"><input type="checkbox" name="background_check_consent" value="Yes" required /><span>I consent to the application review and background-check process and understand that submission does not guarantee approval or reserve a site.</span></label>
+              <label class="crr-form-check"><input type="checkbox" name="policy_acknowledgment" value="Yes" required /><span>I have reviewed the park policies and understand that an approved monthly stay is also subject to the monthly agreement.</span></label>
+              <button type="submit">Submit monthly application →</button>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <FinalCta headline="Want to talk through the season first?" body="The office can explain timing, current monthly availability, and what to have ready before applying." image="/images/canyon_day.webp" primaryHref="tel:+15419231441" primaryLabel="Call 541-923-1441" secondaryHref="/amenities" secondaryLabel="See park amenities" />
+  </main>
+</Base>

@@ -10,7 +10,7 @@
 
 import { verifyRequestUser, type AuthedUser } from './auth';
 import { can, ForbiddenError, type Capability } from './rbac';
-import { BannedWordError } from './content';
+import { BannedWordError } from './content-safety';
 
 export function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
@@ -45,7 +45,7 @@ export async function requireRole(request: Request, capability: Capability): Pro
 }
 
 /**
- * SECURITY: gate for endpoints called by Netlify (webhook, scheduled
+ * SECURITY: gate for endpoints called by Netlify (scheduled
  * functions) where normal user-auth can't apply. Accepts either:
  *   - an authenticated user (admin manually triggering sync via the UI), OR
  *   - a shared secret in the `x-cron-secret` header
@@ -56,7 +56,7 @@ export async function requireRole(request: Request, capability: Capability): Pro
  *   - If SCHEDULED_FN_SECRET is not set, this FAILS CLOSED — the endpoint
  *     is unreachable without a user session. The previous fail-open behavior
  *     (HIGH-2 in SECURITY-AND-BUGS-REPORT.md) allowed anonymous attackers
- *     to trigger sync/webhook/prune endpoints on misconfigured servers.
+ *     to trigger integration endpoints on misconfigured servers.
  *
  * To run the scheduled endpoints you MUST set SCHEDULED_FN_SECRET in your
  * Netlify environment variables and include it as:

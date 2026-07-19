@@ -1,0 +1,156 @@
+---
+export const prerender = true;
+import Base from '@layouts/Base.astro';
+
+const title = "Terms of Use | Crooked River Ranch RV Park";
+const description = "Terms of Use for Crooked River Ranch RV Park website and reservations. Review our policies for site use, bookings, and guest conduct.";
+const canonical = "https://www.crookedriverranchrv.com/terms";
+const ogImage = "https://www.crookedriverranchrv.com/images/canyon_day.jpg";
+const heroImagePreload = "/images/canyon_day.webp";
+
+const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Terms of Use",
+      "description": "Terms of Use for the Crooked River Ranch RV Park website and reservations.",
+      "url": "https://www.crookedriverranchrv.com/terms",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Crooked River Ranch RV Park"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.crookedriverranchrv.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Terms of Use",
+          "item": "https://www.crookedriverranchrv.com/terms"
+        }
+      ]
+    }
+  ];
+---
+<Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
+<section class="page-hero">
+  <div class="hero-bg"><picture><source srcset="/images/canyon_day.webp" type="image/webp"><img src="/images/canyon_day.jpg" alt="Crooked River Ranch RV Park" width="1400" height="933" fetchpriority="high"></picture></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Terms of Use</div>
+    <h1 class="hero-hl">Policies for your <em>stay.</em></h1>
+    <p class="hero-sub">Review our terms, cancellation policy, and site rules.</p>
+  </div>
+</section>
+
+<div class="breadcrumbs"><a href="/index.html">Home</a><span>›</span> Terms of Use</div>
+
+<section>
+  <div class="container">
+    <div class="prose">
+
+<h2>Terms of Use</h2>
+
+<p><strong>Last Updated: April 7, 2026</strong></p>
+
+<p>These Terms of Use govern your use of the Crooked River Ranch RV Park website and your reservation with us. By using our website or booking a site at our park, you agree to these terms. If you do not agree, do not use our site or make a reservation.</p>
+
+<h2>Acceptance of Terms</h2>
+
+<p>By accessing this website and booking a reservation at Crooked River Ranch RV Park, you accept these Terms of Use and agree to comply with all applicable laws and regulations. We reserve the right to modify these terms at any time. Your continued use of the website or your reservation following any changes constitutes acceptance of the updated terms.</p>
+
+<h2>Use of Website</h2>
+
+<p>You agree to use this website lawfully and responsibly. You will not:</p>
+
+<ul>
+<li>Attempt to gain unauthorized access to our systems or servers</li>
+<li>Disrupt the normal operation or functionality of the site</li>
+<li>Upload or transmit viruses or malicious code</li>
+<li>Collect or harvest personal information from other users without consent</li>
+<li>Post hateful, harassing, defamatory, or otherwise inappropriate content</li>
+<li>Use automated systems or bots to scrape or copy content without permission</li>
+</ul>
+
+<p>Any violation of these restrictions may result in termination of your access to the site and your reservation.</p>
+
+<h2>Reservations and Booking</h2>
+
+<p><strong>Booking Process.</strong> All reservations are processed through Firefly Reservations, our third-party booking system. When you submit a reservation request through our website, you are working directly with Firefly to complete your booking. Firefly handles payment processing, booking confirmation, and reservation management.</p>
+
+<p><strong>Availability and Confirmation.</strong> Reservations are subject to availability at the time of booking. A reservation is not confirmed until you receive a confirmation email from Firefly and payment has been successfully processed. We reserve the right to refuse a reservation if it violates our policies or if information provided appears fraudulent.</p>
+
+<p><strong>Pricing.</strong> All prices are displayed in US dollars and are subject to change without notice. Current rates are shown on our website and through Firefly at the time of booking. Price includes your nightly site fee; taxes and additional fees may apply and will be shown before final confirmation.</p>
+
+<p><strong>Cancellation and Refund Policy.</strong> Cancellation policies are determined by Firefly Reservations. For specific details about cancellation windows, refund amounts, and any applicable fees, you must review Firefly's cancellation policy at the time you book or contact their customer service directly. We strongly recommend reviewing the cancellation policy before confirming your reservation, as terms vary depending on your booking dates and site type.</p>
+
+<p>For questions about your specific reservation's cancellation policy, contact Firefly Reservations or call us at 541-923-1441.</p>
+
+<h2>Guest Conduct and Property Rules</h2>
+
+<p>All guests agree to follow park rules and conduct themselves respectfully. This includes:</p>
+
+<ul>
+<li>No excessive noise after 10 PM or before 8 AM</li>
+<li>No loud music, parties, or gatherings that disturb other guests</li>
+<li>Respect for park property and other guests' sites</li>
+<li>Keep RVs and sites clean and maintained</li>
+<li>No commercial operations or business activities from your site without prior approval</li>
+<li>Leashed dogs only; no aggressive animals</li>
+<li>No hazardous materials or illegal substances</li>
+</ul>
+
+<p>Violation of these rules may result in immediate removal from the park without refund. We reserve the right to enforce these policies and involve local authorities if necessary.</p>
+
+<h2>Intellectual Property</h2>
+
+<p>All content on this website—including text, images, graphics, videos, logos, and design elements—is the property of Crooked River Ranch RV Park or its content providers and is protected by copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or transmit any content without our written permission. Limited copying for personal, non-commercial use is permitted.</p>
+
+<h2>Limitation of Liability</h2>
+
+<p>To the fullest extent permitted by law, Crooked River Ranch RV Park is not liable for any direct, indirect, incidental, special, or consequential damages arising from your use of this website or your stay at our park. This includes loss of profits, data, or interruption of business.</p>
+
+<p>We do not guarantee that our website will be error-free, uninterrupted, or secure. We do not warrant that the website will meet your specific needs or that information on the site is accurate, complete, or current.</p>
+
+<p>Some jurisdictions do not allow limitation of liability, so this restriction may not apply to you.</p>
+
+<h2>Disclaimer of Warranties</h2>
+
+<p>This website and all services are provided "as is" and "as available" without warranties of any kind, either express or implied. We disclaim all warranties, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+
+<h2>Governing Law</h2>
+
+<p>These Terms of Use are governed by and construed in accordance with the laws of the State of Oregon, without regard to its conflict of law provisions. Any legal dispute arising from these terms or your use of the website or your reservation shall be subject to the exclusive jurisdiction of the courts located in Wasco County, Oregon.</p>
+
+<h2>Modifications to Terms</h2>
+
+<p>We reserve the right to modify these Terms of Use at any time. We will post changes on this page with an updated "Last Updated" date. Your continued use of the website after changes constitutes your acceptance of the new terms. If you do not agree with any modifications, you should discontinue use of the website and cancel any existing reservations.</p>
+
+<h2>Severability</h2>
+
+<p>If any provision of these Terms of Use is found to be invalid or unenforceable, the remaining provisions will continue in full force and effect. The invalid provision will be modified to the minimum extent necessary to make it valid.</p>
+
+<h2>Contact Us</h2>
+
+<p>If you have questions about these Terms of Use, please contact us:</p>
+
+<p><strong>Crooked River Ranch Club and Maintenance Association<br>
+DBA Crooked River Ranch RV Park<br>
+14875 SW Hays Lane<br>
+Terrebonne, OR 97760<br>
+Phone: 541-923-1441</strong></p>
+
+<p>For booking-specific questions, contact Firefly Reservations directly at the contact information provided in your booking confirmation.</p>
+
+    </div>
+  </div>
+</section>
+</Base>

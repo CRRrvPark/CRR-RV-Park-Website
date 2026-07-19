@@ -66,9 +66,8 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     const { data: before } = await sb.from('media').select('*').eq('id', params.id).single();
     if (!before) return json({ error: 'not found' }, 404);
 
-    // Usage check: is this image referenced anywhere? Check BOTH the
-    // legacy content_blocks table AND the newer Puck page_builder_data
-    // JSONB column. (BUG-2 in SECURITY-AND-BUGS-REPORT.md.)
+    // Preserve rollback compatibility by checking both retired content stores
+    // before allowing a media record to be deactivated.
     //
     // MEDIUM-2: escape PostgREST filter-meta + LIKE wildcards so a
     // maliciously-named file can't inject additional filter clauses.
@@ -76,11 +75,11 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     if (imageUrl) {
       const escaped = String(imageUrl).replace(/[\\%_]/g, (m) => '\\' + m);
 
-      const [legacyExact, legacyText, legacyHtml, puckRefs] = await Promise.all([
+      const [legacyExact, legacyText, legacyHtml, legacyPageRefs] = await Promise.all([
         sb.from('content_blocks').select('*', { count: 'exact', head: true }).eq('value_image_url', imageUrl),
         sb.from('content_blocks').select('*', { count: 'exact', head: true }).ilike('value_text', `%${escaped}%`),
         sb.from('content_blocks').select('*', { count: 'exact', head: true }).ilike('value_html', `%${escaped}%`),
-        // Puck JSON lives in page_builder_data JSONB — search the text cast.
+        // Archived page-builder JSON lives in page_builder_data.
         sb.from('pages')
           .select('*', { count: 'exact', head: true })
           .filter('page_builder_data::text', 'ilike', `%${escaped}%`),
@@ -89,7 +88,7 @@ export const DELETE: APIRoute = async ({ request, params }) => {
         (legacyExact.count ?? 0) +
         (legacyText.count ?? 0) +
         (legacyHtml.count ?? 0) +
-        (puckRefs.count ?? 0);
+        (legacyPageRefs.count ?? 0);
       if (total > 0) {
         return json({
           error: `This image is still referenced by ${total} content item(s). Replace those references before deleting.`,
@@ -98,7 +97,7 @@ export const DELETE: APIRoute = async ({ request, params }) => {
             content_blocks_exact: legacyExact.count ?? 0,
             content_blocks_text: legacyText.count ?? 0,
             content_blocks_html: legacyHtml.count ?? 0,
-            puck_pages: puckRefs.count ?? 0,
+            archived_page_builder: legacyPageRefs.count ?? 0,
           },
         }, 409);
       }

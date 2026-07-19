@@ -1,0 +1,139 @@
+---
+export const prerender = true;
+import Base from '@layouts/Base.astro';
+
+const title = "Privacy Policy | Crooked River Ranch RV Park";
+const description = "Privacy policy for Crooked River Ranch RV Park. Learn how we handle your information and protect your privacy when you visit or book with us.";
+const canonical = "https://www.crookedriverranchrv.com/privacy";
+const ogImage = "https://www.crookedriverranchrv.com/images/canyon_day.jpg";
+const heroImagePreload = "/images/canyon_day.webp";
+
+const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Privacy Policy",
+      "description": "Privacy policy for Crooked River Ranch RV Park. Learn how we handle your information and protect your privacy.",
+      "url": "https://www.crookedriverranchrv.com/privacy",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Crooked River Ranch RV Park"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.crookedriverranchrv.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Privacy Policy",
+          "item": "https://www.crookedriverranchrv.com/privacy"
+        }
+      ]
+    }
+  ];
+---
+<Base title={title} description={description} canonical={canonical} ogImage={ogImage} heroImagePreload={heroImagePreload} schemas={schemas}>
+<section class="page-hero">
+  <div class="hero-bg"><picture><source srcset="/images/canyon_day.webp" type="image/webp"><img src="/images/canyon_day.jpg" alt="Crooked River Ranch RV Park" width="1400" height="933" fetchpriority="high"></picture></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Privacy Policy</div>
+    <h1 class="hero-hl">Your privacy <em>matters to us.</em></h1>
+    <p class="hero-sub">How we collect, use, and protect your information.</p>
+  </div>
+</section>
+
+<div class="breadcrumbs"><a href="/index.html">Home</a><span>›</span> Privacy Policy</div>
+
+<section>
+  <div class="container">
+    <div class="prose">
+
+<h2>Privacy Policy</h2>
+
+<p><strong>Last Updated: April 7, 2026</strong></p>
+
+<p>Crooked River Ranch Club and Maintenance Association, doing business as Crooked River Ranch RV Park, is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website or make a reservation with us.</p>
+
+<h2>Information We Collect</h2>
+
+<p>We collect information in several ways:</p>
+
+<p><strong>Contact Information.</strong> When you contact us via phone or our contact form, we collect your name, email address, phone number, and message content.</p>
+
+<p><strong>Reservation Information.</strong> When you book through Firefly Reservations, our booking system, we may collect your name, email, phone number, RV details, arrival and departure dates, and special requests. Note that Firefly is a third-party service and handles payment processing separately.</p>
+
+<p><strong>Website Information.</strong> When you browse our website, we automatically collect certain technical information like your IP address, browser type, pages visited, and the time spent on each page. This helps us understand how visitors use our site and improve your experience.</p>
+
+<p><strong>Cookies.</strong> Our website does not set its own cookies. However, Firefly Reservations (our booking partner) may use cookies to maintain your session and remember your preferences during the booking process.</p>
+
+<h2>How We Use Your Information</h2>
+
+<p>We use the information we collect for these purposes:</p>
+
+<ul>
+<li>Process and manage your reservation</li>
+<li>Send you confirmation emails and updates about your stay</li>
+<li>Respond to your inquiries and provide customer support</li>
+<li>Improve our website and services</li>
+<li>Understand visitor behavior and website usage patterns</li>
+<li>Comply with legal obligations</li>
+</ul>
+
+<p>We will not sell your personal information to third parties. We do not use your information for marketing purposes without your consent.</p>
+
+<h2>Third-Party Services</h2>
+
+<p><strong>Firefly Reservations.</strong> All bookings are processed through Firefly Reservations, a third-party reservation system. When you book through our site, your reservation data is shared with Firefly to complete your booking. Firefly collects payment information (credit card details) securely. You should review Firefly's privacy policy for details on how they handle your data. Firefly may use cookies and similar technologies to enhance your booking experience.</p>
+
+<p><strong>Google Fonts.</strong> Our website uses Google Fonts to display typefaces. When you load our site, your browser makes a request to Google's servers to fetch the fonts. This request may include your IP address and user agent information. Google may collect this data according to their privacy policy. This is a standard web practice and does not involve sharing your personal information with Google.</p>
+
+<h2>Data Security</h2>
+
+<p>We take reasonable steps to protect your information from unauthorized access, alteration, and disclosure. However, no method of transmission over the internet is 100% secure. We cannot guarantee absolute security of your data in transit or at rest. For payment information and sensitive booking details, Firefly uses industry-standard encryption and security practices.</p>
+
+<h2>Your Rights</h2>
+
+<p>Under Oregon's consumer privacy laws, you have the right to:</p>
+
+<ul>
+<li>Know what personal information is collected, used, and shared</li>
+<li>Delete personal information collected from you (with certain exceptions)</li>
+<li>Correct inaccurate personal information</li>
+<li>Opt out of the sale of your personal information (we do not sell your data)</li>
+</ul>
+
+<p>To exercise any of these rights, contact us using the information at the end of this policy.</p>
+
+<h2>Children's Privacy</h2>
+
+<p>Our website is not directed to children under 13. We do not knowingly collect personal information from children under 13. If we learn that we have collected information from a child under 13 without parental consent, we will delete that information promptly. Parents who believe their child has provided information to us should contact us immediately.</p>
+
+<h2>Changes to This Policy</h2>
+
+<p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. We will notify you of any material changes by posting the updated policy on this page and updating the "Last Updated" date. Your continued use of our website after changes constitutes your acceptance of the updated policy.</p>
+
+<h2>Contact Us</h2>
+
+<p>If you have questions about this Privacy Policy, wish to exercise your rights, or have concerns about how we handle your information, please contact us:</p>
+
+<p><strong>Crooked River Ranch Club and Maintenance Association<br>
+DBA Crooked River Ranch RV Park<br>
+14875 SW Hays Lane<br>
+Terrebonne, OR 97760<br>
+Phone: 541-923-1441</strong></p>
+
+<p>You may also submit inquiries through our website contact form. We will respond to your request within 30 days.</p>
+
+    </div>
+  </div>
+</section>
+</Base>

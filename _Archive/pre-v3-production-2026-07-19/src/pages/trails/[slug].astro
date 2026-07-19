@@ -1,0 +1,179 @@
+---
+/**
+ * /trails/[slug] — trail detail page.
+ *
+ * prerender = false because the slug list grows as admins add trails;
+ * Netlify caches each response per CDN policy. If we later decide it's
+ * cheap enough to prerender all trails at build time, switch this to
+ * `getStaticPaths` and prerender = true.
+ */
+export const prerender = false;
+
+import Base from '@layouts/Base.astro';
+import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
+import {
+  getTrailBySlug,
+  DIFFICULTY_LABELS,
+  formatDistance,
+  formatElevation,
+  formatHazard,
+} from '@lib/area-guide';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/trails', 302);
+
+const trail = await getTrailBySlug(slug);
+if (!trail) {
+  // 404 via redirect to the list + a hint. Astro's built-in 404 could
+  // also work but this is simpler and keeps users on /trails.
+  return Astro.redirect('/trails?not-found=1', 302);
+}
+
+const difficultyColor = {
+  easy: '#4A7C59',
+  moderate: '#D4A853',
+  hard: '#C4622D',
+  expert: '#8B1A1A',
+} as const;
+
+const pins: Pin[] =
+  trail.trailhead_lat !== null && trail.trailhead_lng !== null
+    ? [{
+        lat: trail.trailhead_lat,
+        lng: trail.trailhead_lng,
+        title: trail.name,
+        description: trail.parking_info ?? undefined,
+        iconEmoji: '🥾',
+      }]
+    : [];
+
+const title = `${trail.name} — Trail Guide | Crooked River Ranch RV Park`;
+const description = trail.summary ?? `Trail guide for ${trail.name}.`;
+const canonical = `https://www.crookedriverranchrv.com/trails/${trail.slug}`;
+---
+<Base title={title} description={description} canonical={canonical} ogImage={trail.hero_image_url ?? undefined}>
+  <section class="page-hero" style="min-height:50vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);">
+      {trail.hero_image_url && (
+        <img src={trail.hero_image_url} alt={trail.name} style="width:100%;height:100%;object-fit:cover;" />
+      )}
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow">
+        {trail.is_on_property ? 'On-property' : 'Nearby trail'}
+        {trail.drive_time_from_park && <> · {trail.drive_time_from_park}</>}
+      </div>
+      <h1 class="hero-hl">{trail.name}</h1>
+      {trail.summary && <p class="hero-sub">{trail.summary}</p>}
+    </div>
+  </section>
+
+  <section style="padding:3rem 3rem 1rem;background:var(--sand);">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;text-align:center;">
+        {formatDistance(trail) && (
+          <div style="padding:1rem;background:#fff;border-radius:4px;">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;">Distance</div>
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--text);">{formatDistance(trail)}</div>
+          </div>
+        )}
+        {formatElevation(trail) && (
+          <div style="padding:1rem;background:#fff;border-radius:4px;">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;">Elevation</div>
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--text);">{formatElevation(trail)}</div>
+          </div>
+        )}
+        {trail.difficulty && (
+          <div style="padding:1rem;background:#fff;border-radius:4px;">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;">Difficulty</div>
+            <div style={`display:inline-block;background:${difficultyColor[trail.difficulty]};color:#fff;padding:.2rem .8rem;border-radius:999px;font-weight:500;font-size:.95rem;`}>
+              {DIFFICULTY_LABELS[trail.difficulty]}
+            </div>
+          </div>
+        )}
+        {trail.season && (
+          <div style="padding:1rem;background:#fff;border-radius:4px;">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;">Season</div>
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--text);">{trail.season}</div>
+          </div>
+        )}
+        <div style="padding:1rem;background:#fff;border-radius:4px;">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;">Bring</div>
+          <div style="font-family:var(--serif);font-size:1.1rem;color:var(--text);">
+            {trail.pet_friendly && <span title="Pet-friendly" style="margin-right:.3rem;">🐕</span>}
+            {trail.kid_friendly && <span title="Kid-friendly" style="margin-right:.3rem;">👶</span>}
+            {!trail.pet_friendly && !trail.kid_friendly && <span style="color:var(--muted);font-size:.9rem;">—</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {trail.hazards && trail.hazards.length > 0 && (
+    <section style="padding:3rem 3rem 1rem;">
+      <div class="container" style="max-width:780px;">
+        <div style="background:#FFF4E5;border-left:4px solid #D4A853;padding:1.25rem 1.5rem;border-radius:4px;">
+          <div style="font-family:var(--serif);font-size:1.05rem;color:var(--text);margin-bottom:.6rem;">⚠ Before you go</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+            {trail.hazards.map((h) => (
+              <span style="background:#fff;padding:.3rem .7rem;border-radius:999px;font-size:.85rem;color:var(--text);border:1px solid #E8D8B3;">
+                {formatHazard(h)}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {trail.description && (
+    <section style="padding:3rem 3rem;">
+      <div class="container" style="max-width:780px;">
+        <div class="section-body" style="max-width:none;" set:html={trail.description}></div>
+      </div>
+    </section>
+  )}
+
+  {pins.length > 0 && (
+    <section style="padding:2rem 3rem 3rem;">
+      <div class="container">
+        <span class="section-label">Trailhead</span>
+        <h2 class="st" style="margin-top:.4rem;">Where to start.</h2>
+        {trail.parking_info && (
+          <p class="section-body" style="margin-bottom:1.5rem;">{trail.parking_info}</p>
+        )}
+        <GoogleMap
+          id={`trail-map-${trail.slug}`}
+          pins={pins}
+          centerLat={trail.trailhead_lat!}
+          centerLng={trail.trailhead_lng!}
+          zoom={14}
+          mapTypeId="terrain"
+          height="420px"
+          fitBounds={false}
+        />
+      </div>
+    </section>
+  )}
+
+  {trail.external_link && (
+    <section style="padding:1rem 3rem 5rem;text-align:center;">
+      <a href={trail.external_link} target="_blank" rel="noopener noreferrer" style="color:var(--rust);text-decoration:none;font-size:.9rem;">
+        Reference on AllTrails &rarr;
+      </a>
+    </section>
+  )}
+
+  <section style="padding:3rem;background:var(--deep);color:#fff;text-align:center;">
+    <div class="container" style="max-width:640px;">
+      <h2 class="st" style="color:#fff;">Stay at the trailhead.</h2>
+      <p style="color:rgba(255,255,255,.7);margin:1rem 0 2rem;">
+        Crooked River Ranch RV Park is 15 minutes from Smith Rock and directly on the Crooked River canyon rim.
+      </p>
+      <div class="section-cta section-cta-dark">
+        <a href="/book-now">Reserve Your Site</a>
+      </div>
+    </div>
+  </section>
+</Base>

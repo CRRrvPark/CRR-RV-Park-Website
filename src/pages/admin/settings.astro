@@ -2,12 +2,12 @@
 export const prerender = false;
 
 import AdminBase from '@layouts/AdminBase.astro';
-import { Settings } from '@components/react/Settings.tsx';
+import { Settings as SettingsPanel } from '@components/react/Settings.tsx';
 ---
 <AdminBase
   title="Settings"
   subtitle="Integrations, site configuration, and where to change things that aren't surfaced here."
   active="settings"
 >
-  <Settings client:only="react" />
+  <SettingsPanel client:only="react" />
 </AdminBase>

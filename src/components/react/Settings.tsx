@@ -14,7 +14,7 @@ import { Card, CardHeader } from './ui/Card';
 import { Button } from './ui/Button';
 import {
   IconCheck, IconAlert, IconSpinner, IconDownload,
-  IconExternal, IconSettings, IconGlobe, IconMail,
+  IconExternal, IconGlobe, IconMail,
 } from './ui/Icon';
 
 interface ZohoStatus {
@@ -47,7 +47,6 @@ interface CalendarListItem {
 function SettingsInner() {
   const [status, setStatus] = useState<ZohoStatus | null>(null);
   const [syncing, setSyncing] = useState<'drive' | 'calendar' | null>(null);
-  const [repairing, setRepairing] = useState(false);
   const [calendars, setCalendars] = useState<CalendarListItem[] | null>(null);
   const [loadingCalendars, setLoadingCalendars] = useState(false);
   const { toast } = useToast();
@@ -56,24 +55,6 @@ function SettingsInner() {
     apiGet<ZohoStatus>('/api/zoho/status').then(setStatus).catch(() => setStatus(null));
 
   useEffect(() => { reload(); }, []);
-
-  const repairHome = async () => {
-    setRepairing(true);
-    try {
-      const res = await apiPost<{ ok: boolean; changes: string[]; note?: string }>('/api/builder/repair-home');
-      if (!res.changes || res.changes.length === 0) {
-        toast.success('Home page already looks good', { detail: res.note ?? 'Nothing to repair.' });
-      } else {
-        toast.success('Home page content restored', {
-          detail: `${res.changes.length} change${res.changes.length === 1 ? '' : 's'} applied. A pre-repair snapshot was saved — roll back from Versions if needed.`,
-        });
-      }
-    } catch (err: any) {
-      toast.error('Repair failed', { detail: err.message });
-    } finally {
-      setRepairing(false);
-    }
-  };
 
   const findCalendars = async () => {
     setLoadingCalendars(true);
@@ -269,34 +250,14 @@ function SettingsInner() {
         ]} />
       </Card>
 
-      {/* Content repair */}
-      <Card>
-        <CardHeader
-          title="Home page content repair"
-          eyebrow="Diagnostics"
-          subtitle="Restore the canonical 4 site-type cards (Full Hookup, W&E, Tent, Dry Camp) and the Dark Skies nebula background if they migrated as empty."
-        />
-        <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-          <Button
-            size="sm"
-            variant="secondary"
-            loading={repairing}
-            onClick={repairHome}
-          >Restore default home content</Button>
-          <span className="text-xs text-muted">
-            Safe — creates a version snapshot first. Only fills fields that are currently empty.
-          </span>
-        </div>
-      </Card>
-
       {/* Where to go next */}
       <Card style={{ background: 'var(--c-surface-alt)' }}>
         <CardHeader title="Need to change something else?" eyebrow="Further reading" />
         <div className="text-sm" style={{ display: 'grid', gap: 'var(--sp-2)' }}>
           <div>· Brand colors & fonts: edit <code>public/styles/global.css</code>.</div>
-          <div>· Per-page meta & navigation: use the <a href="/admin/editor">Pages</a> tab.</div>
-          <div>· Role/capability rules: see <code>src/lib/rbac.ts</code> in the code editor.</div>
-          <div>· Publishing cadence: every publish triggers a Netlify build (~1–2 min).</div>
+          <div>· Public-page changes: use Claude Code or Codex from the Netlify Agent Runner dashboard.</div>
+          <div>· Review the generated Deploy Preview and file diff before merging its GitHub pull request.</div>
+          <div>· Role/capability rules: see <code>src/lib/rbac.ts</code> in the repository.</div>
           <div>· Ask for help: email <a href="mailto:rvpark@crookedriverranch.com">rvpark@crookedriverranch.com</a> or press <kbd style={kbdStyle}>?</kbd>.</div>
         </div>
       </Card>

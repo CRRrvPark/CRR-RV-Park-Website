@@ -46,7 +46,15 @@ const groups = [
 <header class="crr-header" data-site-header>
   <div class="v2-shell crr-header-inner">
     <a class="crr-brand" href="/" aria-label="Crooked River Ranch RV Park home">
-      <span class="crr-brand-mark" aria-hidden="true">CR</span>
+      <img
+        class="crr-brand-logo"
+        src="/images/crr-rv-park-logo.png"
+        width="225"
+        height="193"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+      />
       <span>
         <strong>Crooked River Ranch</strong>
         <small>RV Park</small>
@@ -80,6 +88,17 @@ const groups = [
     </nav>
 
     <div class="crr-header-actions">
+      <a
+        class="crr-header-map-link"
+        href="/park-map"
+        aria-current={isCurrent('/park-map') ? 'page' : undefined}
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17">
+          <path d="m3 6 5-2 8 2 5-2v14l-5 2-8-2-5 2V6Z"></path>
+          <path d="M8 4v14M16 6v14"></path>
+        </svg>
+        <span>Park map</span>
+      </a>
       <a class="v2-book-button" href="/availability">
         See open sites <span aria-hidden="true">→</span>
       </a>

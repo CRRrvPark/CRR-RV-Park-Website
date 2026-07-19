@@ -149,6 +149,12 @@ export const RV_PARK_SCHEMA: Record<string, unknown> = {
     `${SITE_ORIGIN}/images/canyon_sunset.jpg`,
     `${SITE_ORIGIN}/images/pool_aerial.jpg`,
   ],
+  logo: {
+    '@type': 'ImageObject',
+    url: `${SITE_ORIGIN}/images/crr-rv-park-logo.png`,
+    width: 225,
+    height: 193,
+  },
   address: {
     '@type': 'PostalAddress',
     streetAddress: '14875 SW Hays Lane',

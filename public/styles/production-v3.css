@@ -2216,6 +2216,36 @@
   color: #fff;
 }
 
+.crr-footer-app-disclosure {
+  grid-column: 1 / -1;
+  max-width: 920px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.crr-footer-app-disclosure strong {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.crr-footer-app-disclosure p {
+  margin: 0;
+}
+
+.crr-footer-app-disclosure a {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.crr-footer-app-disclosure a:hover {
+  color: #fff;
+}
+
 .crr-mobile-book {
   position: fixed;
   z-index: 220;

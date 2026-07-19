@@ -152,9 +152,16 @@ const polygons = sites.map((s) => {
     <span class="av-legend-item"><span class="av-swatch av-swatch--blocked"></span>Not bookable online</span>
   </div>
 
-  <div class="av-freshness">
-    <span class="av-freshness-stamp" id="avFreshness" role="status" aria-live="polite" hidden></span>
-    <span class="av-freshness-caveat">Bookings are confirmed through our reservation office — availability shown is a live snapshot.</span>
+  <div class="av-freshness" role="note" aria-label="Live site map status">
+    <div class="av-freshness-heading">
+      <span class="av-freshness-badge">Live map beta</span>
+      <span class="av-freshness-stamp" id="avFreshness" role="status" aria-live="polite" hidden></span>
+    </div>
+    <p class="av-freshness-caveat">
+      <strong>This live site map is still under construction.</strong>
+      Site details and availability may not be perfect. Final availability is shown when you continue to Firefly to book.
+      We are actively improving this feature — stay tuned.
+    </p>
   </div>
 
   <div class="av-wrap" data-natural-w={parkMap.natural_width} data-natural-h={parkMap.natural_height}>
@@ -510,17 +517,45 @@ const polygons = sites.map((s) => {
   .av-legend-item { display: inline-flex; align-items: center; gap: 0.4rem; }
 
   .av-freshness {
+    margin: -0.35rem 0 0.85rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(47, 111, 96, 0.18);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(224, 239, 234, 0.62));
+    box-shadow: 0 10px 30px rgba(23, 79, 66, 0.06);
+    color: var(--muted, #665040);
+    backdrop-filter: blur(12px);
+  }
+  .av-freshness-heading {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.15rem 0.9rem;
-    margin: -0.35rem 0 0.85rem;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    color: var(--muted, #665040);
+    align-items: center;
+    gap: 0.35rem 0.7rem;
+    margin-bottom: 0.35rem;
   }
-  .av-freshness-stamp { font-weight: 500; color: #2f5238; }
+  .av-freshness-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: #174f42;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .av-freshness-stamp {
+    color: #2f5238;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
   .av-freshness-stamp[hidden] { display: none; }
-  .av-freshness-caveat { font-style: italic; opacity: 0.85; }
+  .av-freshness-caveat {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  .av-freshness-caveat strong { color: #173c34; }
   .av-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
   .av-swatch--avail   { background: rgba(74,124,89,0.55); border-color: var(--av-green); }
   .av-swatch--unavail { background: rgba(154,147,138,0.4); border-color: var(--av-grey); }

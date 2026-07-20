@@ -31,6 +31,8 @@ Completed:
   Smith Rock routes, local bungee/balloon experiences, and the current
   Deschutes County Expo calendar. A dated Fair/ArenaCross callout automatically
   retires to evergreen Expo copy after August 8, 2026.
+- Park + Area photo cards use a dedicated high-contrast glass text panel at
+  phone widths so labels, descriptions, and links never compete with the image.
 - The Park Amenities hero now uses the owner-authored headline:
   “Things to do. A little help to carry the day.”
 - Reset-day family finish around a policy-compliant propane fire.

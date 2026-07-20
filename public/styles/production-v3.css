@@ -2281,6 +2281,72 @@
     font-size: 13px;
   }
 
+  .v3-page .v2-experience,
+  .v3-page .v2-experience-wide {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    background: #eef6f2;
+  }
+
+  .v3-page .v2-experience img,
+  .v3-page .v2-experience-wide img {
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: clamp(240px, 68vw, 330px);
+    min-height: 0;
+    border-radius: 27px 27px 0 0;
+    grid-column: 1;
+    grid-row: 1;
+    object-fit: cover;
+  }
+
+  .v3-page .v2-experience::after {
+    z-index: 1;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 34%);
+  }
+
+  .v3-page .v2-experience > div {
+    position: relative;
+    z-index: 2;
+    min-height: 238px;
+    border-top: 1px solid rgba(255, 255, 255, 0.9);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.82), transparent 45%),
+      linear-gradient(145deg, rgba(244, 250, 247, 0.98), rgba(220, 237, 230, 0.98));
+    padding: 24px;
+    grid-column: 1;
+    grid-row: 2;
+    backdrop-filter: blur(22px) saturate(120%);
+  }
+
+  .v3-page .v2-experience span {
+    margin-bottom: 16px;
+    color: #246c59;
+    font-size: 10px;
+  }
+
+  .v3-page .v2-experience h3 {
+    margin-bottom: 12px;
+    color: #0b2b22;
+    font-size: clamp(27px, 8vw, 34px);
+    line-height: 1.04;
+  }
+
+  .v3-page .v2-experience p {
+    color: #405b52;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .v3-page .v2-experience a {
+    margin-top: 22px;
+    color: #155b49;
+    font-size: 13px;
+  }
+
   .crr-brand-logo {
     width: 54px;
   }

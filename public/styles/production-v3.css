@@ -1963,6 +1963,28 @@
   font-weight: 800;
 }
 
+/* Flexible Area Guide choices */
+
+.crr-itinerary-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 14px;
+}
+
+.v2-itinerary-list .crr-itinerary-links a {
+  border-bottom: 1px solid rgba(199, 236, 224, 0.42);
+  color: #c7ece0;
+  padding-bottom: 3px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.v2-itinerary-list .crr-itinerary-links a:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
 /* Footer */
 
 .crr-footer {

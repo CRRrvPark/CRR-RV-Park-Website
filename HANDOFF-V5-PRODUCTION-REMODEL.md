@@ -38,6 +38,11 @@ version-controlled Astro rather than a database-rendered WYSIWYG.
 - Bathhouse, laundry, EV, recreation, and dump-station details are explicit.
 - The Google-powered area map remains part of the stay-planning flow.
 - Massage, pedicure, pool, and nearby wine are included without overclaiming.
+- The Area Guide no longer presents an hour-by-hour sample itinerary. It now
+  offers three flexible active-day directions—Smith Rock, local air/adrenaline
+  experiences, and current Deschutes County Expo events—with direct detail
+  links. The July/August 2026 Fair and ArenaCross callout expires automatically
+  into evergreen Expo copy after the events pass.
 
 ## System decisions
 

@@ -27,6 +27,10 @@ Completed:
   beta map search, and distinguish other site types from unavailable matches.
 - The Park + Area hero now uses the owner-authored headline:
   “Settle in. A site for every stay.”
+- The Park + Area timed itinerary is now a flexible set of active-day choices:
+  Smith Rock routes, local bungee/balloon experiences, and the current
+  Deschutes County Expo calendar. A dated Fair/ArenaCross callout automatically
+  retires to evergreen Expo copy after August 8, 2026.
 - The Park Amenities hero now uses the owner-authored headline:
   “Things to do. A little help to carry the day.”
 - Reset-day family finish around a policy-compliant propane fire.

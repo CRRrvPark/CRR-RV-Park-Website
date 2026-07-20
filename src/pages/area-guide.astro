@@ -11,6 +11,7 @@ const pins = await getRegionMapPins(20260719);
 const title = 'Central Oregon Area Guide | Crooked River Ranch RV Park';
 const description = 'Build a Central Oregon day from Crooked River Ranch RV Park. Explore the live regional map, Smith Rock, trails, golf, dining, wineries, spa time, and park amenities.';
 const canonical = 'https://www.crookedriverranchrv.com/area-guide';
+const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
 ---
 <Base
   title={title}
@@ -182,15 +183,48 @@ const canonical = 'https://www.crookedriverranchrv.com/area-guide';
     <section class="v2-itinerary">
       <div class="v2-shell v2-itinerary-grid">
         <div class="v2-itinerary-copy v2-reveal">
-          <p class="v2-eyebrow v2-eyebrow-light">One active rhythm</p>
-          <h2>Trail early.<br />Pool or golf later.<br />Canyon light at dusk.</h2>
-          <p>Use the outline, change it, or skip it entirely. The distances stay simple.</p>
+          <p class="v2-eyebrow v2-eyebrow-light">Choose the energy</p>
+          <h2>Three directions.<br />No timetable.</h2>
+          <p>Start anywhere, stay as long as you like, and leave room to change your mind. Check current hours, weather, and event details before you go.</p>
         </div>
-        <ol class="v2-itinerary-list">
-          <li class="v2-reveal"><span>7:30</span><div><strong>Drive to Smith Rock</strong><p>Pack water, check conditions, and choose the route that fits the group.</p></div></li>
-          <li class="v2-reveal"><span>12:30</span><div><strong>Return to the ranch</strong><p>Make lunch at the site, swim, or head beside the park for a round of golf.</p></div></li>
-          <li class="v2-reveal"><span>18:30</span><div><strong>Finish close to home</strong><p>Pick up dinner nearby and come back for the changing light over the canyon.</p></div></li>
-        </ol>
+        <ul class="v2-itinerary-list">
+          <li class="v2-reveal">
+            <span>Trail</span>
+            <div>
+              <strong>Choose a Smith Rock route</strong>
+              <p>The river walk, canyon viewpoints, and Misery Ridge put very different days at the same trailhead.</p>
+              <div class="crr-itinerary-links">
+                <a href="/trails">Browse nearby trails <span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </li>
+          <li class="v2-reveal">
+            <span>Air</span>
+            <div>
+              <strong>See Central Oregon from the air</strong>
+              <p>Step off the Crooked River Gorge bridge with Central Oregon Bungee, or let sunrise lift the day with a Big Sky Balloon flight from Redmond or Terrebonne.</p>
+              <div class="crr-itinerary-links">
+                <a href="/things-to-do/bungee-crooked-river-bridge">Bungee details <span aria-hidden="true">→</span></a>
+                <a href="/things-to-do/hot-air-balloon-bigsky">Balloon details <span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </li>
+          <li class="v2-reveal">
+            <span>Events</span>
+            <div>
+              <strong>Follow the crowd to Redmond</strong>
+              <p>
+                {showSummerExpoCallout
+                  ? 'The 2026 Fair & Rodeo runs July 29–August 2, followed by ArenaCross August 7–8. Concerts, rodeos, motorsports, and shows keep the Expo calendar moving.'
+                  : 'Concerts, rodeos, motorsports, shows, and community events keep the Deschutes County Expo calendar moving year-round.'}
+              </p>
+              <div class="crr-itinerary-links">
+                <a href="/things-to-do/redmond-expo-center">Explore the Expo <span aria-hidden="true">→</span></a>
+                <a href="https://expo.deschutes.org/events/public" target="_blank" rel="noopener noreferrer">Current event calendar <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </section>
 

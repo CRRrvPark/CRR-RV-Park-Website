@@ -6,6 +6,7 @@ import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getTrails, DIFFICULTY_LABELS, formatDistance, formatElevation } from '@lib/area-guide';
+import { getGooglePlaceIdFromPhotoUrl } from '@lib/place-photo';
 
 const trails = await getTrails();
 const onProperty = trails.filter((trail) => trail.is_on_property);
@@ -56,10 +57,29 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
             <section class="crr-list-section">
               <div class="v2-section-heading v2-reveal"><div><p class="v2-eyebrow">{group.label}</p><h2>{group.heading}</h2></div><p>Every card opens a practical guide with known cautions, parking information, and a mapped start when available.</p></div>
               <div class="crr-card-grid">
-                {group.items.map((trail) => (
+                {group.items.map((trail) => {
+                  // Trail heroes are Google Static Maps of the trailhead
+                  // (/api/static-map, same-origin) — they carry no Place ID, so
+                  // this is null today and the card renders the map through the
+                  // graceful loader below. It future-proofs any trail hero that
+                  // is ever backfilled to a Google Place photo.
+                  const googlePlaceId = getGooglePlaceIdFromPhotoUrl(trail.hero_image_url);
+                  return (
                   <a class="crr-list-card v2-reveal" href={`/trails/${trail.slug}`}>
-                    <div class="crr-list-card-visual">
-                      {trail.hero_image_url && <img src={trail.hero_image_url} alt={trail.name} loading="lazy" />}
+                    <div
+                      class:list={['crr-list-card-visual', googlePlaceId && 'crr-google-place-photo']}
+                      data-google-place-photo={googlePlaceId || undefined}
+                      data-photo-width={googlePlaceId ? '1200' : undefined}
+                    >
+                      <span class="crr-photo-placeholder" aria-hidden="true">{trail.is_on_property ? 'On property' : 'Trail'}</span>
+                      {googlePlaceId ? (
+                        <>
+                          <img data-google-photo-image alt={trail.name} loading="lazy" />
+                          <small class="crr-google-photo-attribution" data-google-photo-attribution hidden></small>
+                        </>
+                      ) : trail.hero_image_url ? (
+                        <img src={trail.hero_image_url} alt={trail.name} loading="lazy" data-card-image />
+                      ) : null}
                       {trail.drive_time_from_park && <span class="crr-list-card-badge">{trail.drive_time_from_park}</span>}
                     </div>
                     <div class="crr-list-card-body">
@@ -75,7 +95,8 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
                       </div>
                     </div>
                   </a>
-                ))}
+                  );
+                })}
               </div>
             </section>
           ) : null)

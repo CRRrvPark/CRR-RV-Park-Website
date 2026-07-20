@@ -138,6 +138,10 @@ Operational data remains editable in `/admin`.
 - Guest-review quotes and ratings must come live from Google Places API (New).
   Never hand-type, paraphrase, seed, or cache testimonials. If the API is
   unavailable, link to Google Maps without showing substitute review content.
+- Google Places photo resource names are temporary. Activity imagery must
+  resolve a current photo from the stable Place ID at request time, retain
+  Google/author attribution, and fail into an intentional fixed-height
+  placeholder rather than a broken image.
 
 ## Stack
 

@@ -9,6 +9,7 @@ export interface Props {
   imageJpg?: string;
   alt: string;
   caption?: string;
+  googlePlaceId?: string;
   primaryHref?: string;
   primaryLabel?: string;
   secondaryHref?: string;
@@ -25,6 +26,7 @@ const {
   imageJpg,
   alt,
   caption,
+  googlePlaceId,
   primaryHref,
   primaryLabel,
   secondaryHref,
@@ -46,11 +48,19 @@ const {
       )}
     </div>
     <figure class="v2-inner-image v2-reveal">
-      <picture>
-        {imageMobile && <source media="(max-width: 720px)" srcset={imageMobile} type="image/webp" />}
-        <source srcset={image} type="image/webp" />
-        <img src={imageJpg ?? image} alt={alt} fetchpriority="high" />
-      </picture>
+      {googlePlaceId ? (
+        <div class="crr-google-place-photo crr-google-place-photo-hero" data-google-place-photo={googlePlaceId} data-photo-width="1800">
+          <span class="crr-photo-placeholder" aria-hidden="true">Local view</span>
+          <img data-google-photo-image alt={alt} />
+          <small class="crr-google-photo-attribution" data-google-photo-attribution hidden></small>
+        </div>
+      ) : (
+        <picture>
+          {imageMobile && <source media="(max-width: 720px)" srcset={imageMobile} type="image/webp" />}
+          <source srcset={image} type="image/webp" />
+          <img src={imageJpg ?? image} alt={alt} fetchpriority="high" />
+        </picture>
+      )}
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
   </div>

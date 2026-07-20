@@ -11,6 +11,7 @@
     "seo:check": "node scripts/verify-seo.mjs",
     "seo:check:live": "node scripts/verify-seo-live.mjs",
     "booking:check": "node scripts/verify-booking-paths.mjs",
+    "images:check": "node scripts/verify-things-images.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",

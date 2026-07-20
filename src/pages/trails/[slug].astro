@@ -6,6 +6,7 @@ import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getTrailBySlug, DIFFICULTY_LABELS, formatDistance, formatElevation, formatHazard } from '@lib/area-guide';
+import { getGooglePlaceIdFromPhotoUrl } from '@lib/place-photo';
 
 const { slug } = Astro.params;
 if (!slug) return new Response('Not Found', { status: 404 });
@@ -17,6 +18,10 @@ const pins: Pin[] = trail.trailhead_lat !== null && trail.trailhead_lng !== null
 const title = `${trail.name} Trail Guide | Crooked River Ranch RV Park`;
 const description = trail.summary ?? `Plan a visit to ${trail.name} from Crooked River Ranch RV Park.`;
 const canonical = `https://www.crookedriverranchrv.com/trails/${trail.slug}`;
+// Trail heroes are Static Maps of the trailhead (no Place ID), so this is null
+// today and PageHero renders the map. It future-proofs any trail hero later
+// backfilled to a Google Place photo (then it uses the progressive loader).
+const googlePlaceId = getGooglePlaceIdFromPhotoUrl(trail.hero_image_url);
 ---
 <Base title={title} description={description} canonical={canonical} ogImage={trail.hero_image_url ?? undefined}>
   <main id="main-content">
@@ -28,6 +33,7 @@ const canonical = `https://www.crookedriverranchrv.com/trails/${trail.slug}`;
       imageJpg={trail.hero_image_url ?? '/images/smith_rock.jpg'}
       alt={trail.name}
       caption="Confirm current access and conditions before departure"
+      googlePlaceId={googlePlaceId ?? undefined}
       primaryHref="#trail-details"
       primaryLabel="Review trail details"
       secondaryHref="/trails"

@@ -6,6 +6,7 @@ import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getThingBySlug, CATEGORY_LABELS } from '@lib/area-guide';
+import { getGooglePlaceIdFromPhotoUrl } from '@lib/place-photo';
 
 const { slug } = Astro.params;
 if (!slug) return new Response('Not Found', { status: 404 });
@@ -17,6 +18,7 @@ const pins: Pin[] = thing.lat !== null && thing.lng !== null
 const title = `${thing.title} | Things to Do near Crooked River Ranch`;
 const description = thing.summary ?? `${thing.title} in Central Oregon near Crooked River Ranch RV Park.`;
 const canonical = `https://www.crookedriverranchrv.com/things-to-do/${thing.slug}`;
+const googlePlaceId = getGooglePlaceIdFromPhotoUrl(thing.hero_image_url);
 ---
 <Base title={title} description={description} canonical={canonical} ogImage={thing.hero_image_url ?? undefined}>
   <main id="main-content">
@@ -28,6 +30,7 @@ const canonical = `https://www.crookedriverranchrv.com/things-to-do/${thing.slug
       imageJpg={thing.hero_image_url ?? '/images/central_oregon.jpg'}
       alt={thing.title}
       caption={thing.location_name ?? 'Central Oregon'}
+      googlePlaceId={googlePlaceId ?? undefined}
       primaryHref="#details"
       primaryLabel="See the details"
       secondaryHref="/things-to-do"

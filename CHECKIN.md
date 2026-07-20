@@ -67,6 +67,17 @@ Completed:
 - Guest testimonials now come from the live, no-store Google Places review
   endpoint with author/source attribution; the fail-soft state contains no
   quotes or rating.
+- Things to Do cards now resolve current Google Place photos from stable Place
+  IDs, display current author attribution, progressively reveal valid images,
+  and fail into a fixed-height branded placeholder instead of a broken-image
+  panel. A dedicated image crawl is available through `npm run images:check`.
+- The same progressive loader + attribution now also backs the dining/area
+  place cards (`LocalPlaceCard`, keyed by each row's stable `google_place_id`)
+  and the trail cards/hero (which use working `/api/static-map` heroes today,
+  wired to auto-adopt the loader if a trail hero is ever a Google photo).
+- `/api/place-photo` gained a 45-minute in-memory resolve cache
+  (`placeId:index:width`) so an N-card grid no longer costs `2N` billed Google
+  calls per visitor; the browser response stays `no-store`.
 - `npm run seo:check`: passed for all prerendered public pages.
 - Live local SEO crawl: passed all 216 sitemap pages, including 144 image
   entries, dynamic detail routes, canonical alignment, and intentional 404s.

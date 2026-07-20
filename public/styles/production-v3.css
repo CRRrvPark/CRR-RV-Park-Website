@@ -1117,20 +1117,102 @@
 
 .crr-list-card-visual {
   position: relative;
+  height: 230px;
   min-height: 230px;
   overflow: hidden;
   background: linear-gradient(135deg, #cfe5de, #7eaa9b);
 }
 
 .crr-list-card-visual img {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   min-height: 230px;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.crr-list-card-visual.is-photo-loaded img {
+  opacity: 1;
+}
+
+.crr-photo-placeholder {
+  position: absolute;
+  z-index: 0;
+  inset: 50% auto auto 50%;
+  color: rgba(13, 55, 44, 0.72);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%);
+}
+
+.crr-google-place-photo {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.54), transparent 11rem),
+    linear-gradient(135deg, #cfe5de, #7eaa9b);
+}
+
+.crr-google-place-photo-hero {
+  width: 100%;
+  height: 100%;
+}
+
+.crr-google-place-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.crr-google-place-photo.is-photo-loaded img {
+  opacity: 1;
+}
+
+.crr-google-photo-attribution {
+  position: absolute;
+  z-index: 4;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  width: fit-content;
+  max-width: calc(100% - 20px);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(9, 35, 28, 0.76);
+  box-shadow: 0 10px 24px rgba(7, 27, 22, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 9px;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.25;
+  backdrop-filter: blur(14px);
+}
+
+.crr-google-photo-attribution a {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  text-underline-offset: 2px;
+}
+
+.v2-inner-image .crr-google-photo-attribution {
+  top: 16px;
+  right: auto;
+  bottom: auto;
+  left: 16px;
+  max-width: calc(100% - 32px);
 }
 
 .crr-list-card-badge {
   position: absolute;
+  z-index: 3;
   top: 15px;
   left: 15px;
   border: 1px solid rgba(255, 255, 255, 0.44);
@@ -2345,6 +2427,15 @@
     margin-top: 22px;
     color: #155b49;
     font-size: 13px;
+  }
+
+  .crr-list-card-visual {
+    height: clamp(240px, 68vw, 300px);
+    min-height: clamp(240px, 68vw, 300px);
+  }
+
+  .crr-list-card-visual img {
+    min-height: 0;
   }
 
   .crr-brand-logo {

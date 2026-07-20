@@ -5,6 +5,7 @@ import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import { getThingsToDo, CATEGORY_LABELS, type ThingCategory } from '@lib/area-guide';
+import { getGooglePlaceIdFromPhotoUrl } from '@lib/place-photo';
 
 const things = await getThingsToDo();
 const categories: { key: 'all' | ThingCategory; label: string }[] = [
@@ -52,20 +53,35 @@ const canonical = 'https://www.crookedriverranchrv.com/things-to-do';
           <div class="crr-empty-state"><h3>The activity guide is refreshing.</h3><p>Use the <a href="/area-guide">park + area guide</a> in the meantime.</p></div>
         ) : (
           <div class="crr-card-grid" data-filter-grid>
-            {things.map((thing) => (
-              <a class="crr-list-card v2-reveal" href={`/things-to-do/${thing.slug}`} data-category={thing.category} data-personas={thing.personas.join(',')}>
-                <div class="crr-list-card-visual">
-                  {thing.hero_image_url ? <img src={thing.hero_image_url} alt={thing.title} loading="lazy" /> : <span class="crr-list-card-badge">{thing.icon ?? 'Explore'}</span>}
-                  {thing.distance_from_park && <span class="crr-list-card-badge">{thing.distance_from_park}</span>}
-                </div>
-                <div class="crr-list-card-body">
-                  <small>{CATEGORY_LABELS[thing.category]}</small>
-                  <h3>{thing.title}</h3>
-                  {thing.summary && <p>{thing.summary}</p>}
-                  <div class="crr-list-card-meta">{thing.personas.slice(0, 3).map((persona) => <span>{CATEGORY_LABELS[persona]}</span>)}</div>
-                </div>
-              </a>
-            ))}
+            {things.map((thing) => {
+              const googlePlaceId = getGooglePlaceIdFromPhotoUrl(thing.hero_image_url);
+              return (
+                <a class="crr-list-card v2-reveal" href={`/things-to-do/${thing.slug}`} data-category={thing.category} data-personas={thing.personas.join(',')}>
+                  <div
+                    class:list={['crr-list-card-visual', googlePlaceId && 'crr-google-place-photo']}
+                    data-google-place-photo={googlePlaceId || undefined}
+                    data-photo-width={googlePlaceId ? '1200' : undefined}
+                  >
+                    <span class="crr-photo-placeholder" aria-hidden="true">{thing.icon ?? 'Explore'}</span>
+                    {googlePlaceId ? (
+                      <>
+                        <img data-google-photo-image alt={thing.title} loading="lazy" />
+                        <small class="crr-google-photo-attribution" data-google-photo-attribution hidden></small>
+                      </>
+                    ) : thing.hero_image_url ? (
+                      <img src={thing.hero_image_url} alt={thing.title} loading="lazy" data-card-image />
+                    ) : null}
+                    {thing.distance_from_park && <span class="crr-list-card-badge">{thing.distance_from_park}</span>}
+                  </div>
+                  <div class="crr-list-card-body">
+                    <small>{CATEGORY_LABELS[thing.category]}</small>
+                    <h3>{thing.title}</h3>
+                    {thing.summary && <p>{thing.summary}</p>}
+                    <div class="crr-list-card-meta">{thing.personas.slice(0, 3).map((persona) => <span>{CATEGORY_LABELS[persona]}</span>)}</div>
+                  </div>
+                </a>
+              );
+            })}
             <div class="crr-empty-state" data-filter-empty hidden><h3>No ideas match that filter yet.</h3><p>Try another category or open the full area map.</p></div>
           </div>
         )}

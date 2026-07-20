@@ -108,6 +108,34 @@ auto-create new curated places merely because an API search returns them.
   relevance-order disclosure, and `no-store` response when changing this
   component.
 
+### Check Things to Do photos
+
+- Google-backed activity rows may retain their stable Google Place ID, but
+  Google photo resource names are temporary. `/api/place-photo` refreshes the
+  current photo through Place Details before it returns the media URL.
+- Activity cards load Google photos progressively and preserve the current
+  author attribution. A failed provider request leaves a compact branded
+  placeholder; it must never expose a browser broken-image icon or expand the
+  card layout.
+- `images.unsplash.com` is intentionally permitted by the production image CSP
+  for the curated thematic rows that are not tied to a specific Google Place.
+- Run `THINGS_IMAGE_CHECK_BASE=https://crookedriverranchrv.com npm run images:check`
+  after deployment. It verifies every Google Place ID and every direct/local
+  Things to Do image without inserting or expanding the curated activity list.
+  A `404` on a curated `images.unsplash.com` row means that stock photo was
+  removed upstream — refresh that single row's `hero_image_url`; the card
+  already fails soft to its placeholder in the meantime.
+- The same progressive loader + attribution now backs the **dining/area place
+  cards** (`LocalPlaceCard`, from each row's stable `google_place_id`) and any
+  future Google-photo **trail hero** (trail heroes are currently Static Maps of
+  the trailhead via `/api/static-map`, which carry no Place ID). One loader in
+  `production-v3.js` drives all three surfaces.
+- `/api/place-photo` keeps a short-lived (45-min) in-memory resolve cache keyed
+  by `placeId:index:width`, so a grid of N cards costs one Place Details + Photo
+  resolve per distinct card instead of `2N` billed Google calls per visitor. It
+  is per-warm-instance (Netlify Functions reset on cold start) and never changes
+  the `no-store` browser response — it only lowers our upstream Google spend.
+
 ### Search visibility and technical SEO
 
 The canonical public origin is `https://crookedriverranchrv.com` (no `www`).

@@ -18,12 +18,21 @@ export interface Props {
 const { place } = Astro.props;
 const g = place.cached_data ?? {};
 
-// Google's photo reference is `photos[].name` (e.g. "places/<id>/photos/<ref>").
-// /api/place-photo redirects to the signed Google CDN URL with our server key.
+// Photos load progressively client-side via the shared Google-place-photo
+// loader (public/scripts/production-v3.js). It refreshes the current photo
+// through /api/place-photo?place=<id>&format=json — the stored photo name can
+// expire, but the stable Place ID recovers a current one — shows a placeholder
+// until it arrives, and renders Google's required author attribution. The
+// loader is only offered when the place has a cached photo; otherwise the
+// category emoji fallback stands in.
 const photo = g.photos?.[0];
-const photoUrl = photo?.name
-  ? `/api/place-photo?name=${encodeURIComponent(photo.name)}&w=600`
-  : null;
+const googlePlaceId = photo?.name && place.google_place_id ? place.google_place_id : null;
+const categoryEmoji =
+  place.category === 'restaurant' ? '🍽'
+  : place.category === 'brewery' ? '🍺'
+  : place.category === 'coffee' ? '☕'
+  : place.category === 'attraction' ? '🏞'
+  : '📍';
 
 const displayName = g.displayName?.text ?? place.name_override ?? '(Unnamed place)';
 const mapsHref = g.googleMapsUri ?? place.cached_data?.googleMapsUri ?? null;
@@ -34,12 +43,20 @@ const blurb = place.our_description ?? g.editorialSummary?.text ?? null;
 const openNow = g.regularOpeningHours?.openNow;
 ---
 <div class="lp-card">
-  <div class="lp-card-vis">
-    {photoUrl ? (
-      <img src={photoUrl} alt={displayName} loading="lazy" />
+  <div
+    class:list={['lp-card-vis', googlePlaceId && 'crr-google-place-photo']}
+    data-google-place-photo={googlePlaceId || undefined}
+    data-photo-width="600"
+  >
+    {googlePlaceId ? (
+      <>
+        <span class="crr-photo-placeholder" aria-hidden="true">{categoryEmoji}</span>
+        <img data-google-photo-image alt={displayName} loading="lazy" />
+        <small class="crr-google-photo-attribution" data-google-photo-attribution hidden></small>
+      </>
     ) : (
       <div class="lp-card-fallback">
-        <span>{place.category === 'restaurant' ? '🍽' : place.category === 'brewery' ? '🍺' : place.category === 'coffee' ? '☕' : place.category === 'attraction' ? '🏞' : '📍'}</span>
+        <span>{categoryEmoji}</span>
       </div>
     )}
     {place.featured && <div class="lp-card-badge">Editor's pick</div>}

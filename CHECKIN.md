@@ -35,7 +35,8 @@ Completed:
   phone widths so labels, descriptions, and links never compete with the image.
 - The Park Amenities hero now uses the owner-authored headline:
   “Things to do. A little help to carry the day.”
-- Reset-day family finish around a policy-compliant propane fire.
+- The reset-day sequence ends in shared laughter and family firelight; operating
+  fire restrictions remain in the dedicated Park Policies experience.
 - Correct heated-pool, pet, EV, bathhouse/laundry, recreation, and dump-station
   facts.
 - Retired WYSIWYG, page builder, browser code editor, snapshot/publish UI, APIs,

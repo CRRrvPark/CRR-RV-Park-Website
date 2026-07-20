@@ -19,7 +19,9 @@ version-controlled Astro rather than a database-rendered WYSIWYG.
 
 ## User feedback incorporated
 
-- The reset-day itinerary closes back at camp with family and a propane fire.
+- The reset-day itinerary closes back at camp with family, firelight, stories,
+  and shared laughter. Operational fire restrictions remain on Park Policies
+  rather than interrupting this experiential sequence.
 - The Sites page no longer repeats the rig-information form immediately below
   the availability search.
 - Firefly is the ordinary booking destination everywhere: persistent desktop,

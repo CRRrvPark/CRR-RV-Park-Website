@@ -6,6 +6,8 @@ import AvailabilityMap from '@components/AvailabilityMap.astro';
 import PageHero from '@components/site/PageHero.astro';
 import { getParkSites } from '@lib/area-guide';
 import { serverClient } from '@lib/supabase';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
+import FinalCta from '@components/site/FinalCta.astro';
 
 const sites = await getParkSites();
 let activeParkMap:
@@ -33,7 +35,7 @@ const polygonSites = sites.filter(
 const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
 
 const title = 'Plan Your Visit & Reserve | Crooked River Ranch RV Park';
-const description = 'Check live RV site availability, compare the park map, review rates and arrival details, and reserve through Firefly at Crooked River Ranch RV Park.';
+const description = 'Reserve an RV site directly through Firefly, review current rates and arrival details, or optionally preview the developing live map at Crooked River Ranch RV Park.';
 const canonical = 'https://www.crookedriverranchrv.com/book-now';
 ---
 <Base
@@ -46,28 +48,28 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
   <main id="main-content">
     <PageHero
       eyebrow="Plan your visit"
-      headline="Choose dates. See open sites."
-      accent="Reserve your fit."
-      body="Availability stays on this page while you compare the park map. Firefly handles payment and confirmation after you choose."
+      headline="Ready to reserve?"
+      accent="Book directly in Firefly."
+      body="Firefly is the current reservation system for availability, payment, and confirmation. The developing live map remains available as an optional planning preview."
       image="/images/winter_sunset.webp"
       imageMobile="/images/winter_sunset-mobile.webp"
       imageJpg="/images/winter_sunset.jpg"
       alt="Winter sunset over the Crooked River canyon"
       caption="Open year-round · Seasonal amenities vary"
-      primaryHref="#live-availability"
-      primaryLabel="Check my dates"
-      secondaryHref="/sites"
-      secondaryLabel="Compare site types"
+      primaryHref={FIREFLY_RESERVATION_URL}
+      primaryLabel="Book now on Firefly"
+      secondaryHref="#live-availability"
+      secondaryLabel="Try the live map beta"
     />
 
     <section class="v2-live-section" id="live-availability">
       <div class="v2-shell">
         <div class="v2-live-heading v2-reveal">
           <div>
-            <p class="v2-eyebrow">Live availability</p>
-            <h2>Find the sites<br />that work for you.</h2>
+            <p class="v2-eyebrow">Optional planning preview</p>
+            <h2>Try the live map<br />beta.</h2>
           </div>
-          <p>Enter dates and rig details. Compatible open sites appear on the map with a Firefly reservation handoff.</p>
+          <p>Enter dates and rig details to preview compatible sites. For authoritative availability and booking, continue directly to Firefly.</p>
         </div>
         <div class="v2-live-map v2-reveal">
           {canRenderMap && activeParkMap ? (
@@ -79,7 +81,7 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
               <p>Have your dates, rig type, exact length, and slide configuration ready.</p>
               <div>
                 <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
-                <a class="v2-inline-link" href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Search Firefly directly <span aria-hidden="true">↗</span></a>
+                <a class="v2-inline-link" href={FIREFLY_RESERVATION_URL} target="_blank" rel="noreferrer">Search Firefly directly <span aria-hidden="true">↗</span></a>
               </div>
             </div>
           )}
@@ -90,13 +92,13 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
     <section class="v2-booking-sequence">
       <div class="v2-shell">
         <div class="v2-sequence-heading v2-reveal">
-          <p class="v2-eyebrow v2-eyebrow-light">The booking path</p>
+          <p class="v2-eyebrow v2-eyebrow-light">The direct booking path</p>
           <h2>One decision<br />at a time.</h2>
         </div>
         <ol class="v2-sequence-grid">
-          <li class="v2-reveal"><span>01</span><h3>Search the dates.</h3><p>Add site type, exact length, and slides to narrow the map.</p></li>
-          <li class="v2-reveal"><span>02</span><h3>Choose an open site.</h3><p>Use its location and site details to confirm the fit.</p></li>
-          <li class="v2-reveal"><span>03</span><h3>Reserve through Firefly.</h3><p>Complete payment and receive the booking confirmation.</p></li>
+          <li class="v2-reveal"><span>01</span><h3>Open Firefly.</h3><p>Choose the arrival and departure dates in the park's current reservation system.</p></li>
+          <li class="v2-reveal"><span>02</span><h3>Choose an available site.</h3><p>Review the current choices and select the one that works for the stay.</p></li>
+          <li class="v2-reveal"><span>03</span><h3>Complete the reservation.</h3><p>Enter payment and receive the Firefly booking confirmation.</p></li>
         </ol>
       </div>
     </section>
@@ -175,5 +177,14 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
         </div>
       </div>
     </section>
+
+    <FinalCta
+      headline="Ready to lock in the stay?"
+      body="Check current inventory, enter payment, and receive the completed reservation confirmation through Firefly."
+      primaryHref={FIREFLY_RESERVATION_URL}
+      primaryLabel="Book now on Firefly"
+      secondaryHref="#live-availability"
+      secondaryLabel="Try the live map beta"
+    />
   </main>
 </Base>

@@ -19,6 +19,7 @@ import ConversionTracker from '@components/ConversionTracker.astro';
 import GoogleTagManager from '@components/GoogleTagManager.astro';
 import Lightbox from '@components/Lightbox.astro';
 import SeoBreadcrumbs from '@components/SeoBreadcrumbs.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 import {
   absoluteUrl,
   breadcrumbSchema,
@@ -122,12 +123,12 @@ const allSchemas = [...generatedSchemas, ...schemas];
   <SeoBreadcrumbs items={breadcrumbs} />
   <slot />
   <SiteFooter />
-  <a class="crr-mobile-book" href="/availability" aria-hidden="true" tabindex="-1">
-    <span>See open sites</span>
-    <span aria-hidden="true">→</span>
+  <a class="crr-mobile-book" href={FIREFLY_RESERVATION_URL} aria-hidden="true" tabindex="-1">
+    <span>Book on Firefly</span>
+    <span aria-hidden="true">↗</span>
   </a>
   <Lightbox />
   {!noAnalytics && <ConversionTracker />}
-  <script src="/scripts/production-v3.js?v=20260719a" is:inline defer></script>
+  <script src="/scripts/production-v3.js?v=20260719c" is:inline defer></script>
 </body>
 </html>

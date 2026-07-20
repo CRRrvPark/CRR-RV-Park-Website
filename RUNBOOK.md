@@ -83,6 +83,13 @@ auto-create new curated places merely because an API search returns them.
   `/api/availability`.
 - Reservation, payment, confirmation, or guest-login issue: use Firefly.
 - The website does not own or alter reservation records.
+- Conversion invariant: global Book/Reserve controls must link directly to
+  `https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK`.
+  `/availability` is an optional beta-map preview and must be labeled as such,
+  never used as the default booking gateway.
+- Run `BOOKING_CHECK_BASE=https://crookedriverranchrv.com npm run booking:check`
+  after a production deploy. It crawls every public sitemap route and verifies
+  the shared desktop/mobile/footer Firefly controls plus explicit beta-map copy.
 
 ### Check the Google review feed
 

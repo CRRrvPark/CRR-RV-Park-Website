@@ -4,6 +4,7 @@ export const prerender = true;
 import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const title = 'Golf RV Stays in Central Oregon | Crooked River Ranch';
 const description = 'Build an RV golf stay at Crooked River Ranch with full-hookup sites beside an independently managed 18-hole course and the Crooked River canyon.';
@@ -21,8 +22,8 @@ const canonical = 'https://www.crookedriverranchrv.com/golf-stays';
       imageJpg="/images/golf_aerial_canyon.jpg"
       alt="Crooked River Ranch golf course beside the RV park and canyon"
       caption="Golf course beside the RV park"
-      primaryHref="/availability"
-      primaryLabel="See open RV sites"
+      primaryHref={FIREFLY_RESERVATION_URL}
+      primaryLabel="Book the RV site"
       secondaryHref="/golf-course"
       secondaryLabel="Understand the course"
     />
@@ -69,6 +70,6 @@ const canonical = 'https://www.crookedriverranchrv.com/golf-stays';
       </div>
     </section>
 
-    <FinalCta headline="Choose the RV site. Then choose the tee time." body="Use the live park map for the stay and the golf course website for current tee-time details." image="/images/golf_course.webp" primaryHref="/availability" primaryLabel="Check RV availability" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Visit the golf course" />
+    <FinalCta headline="Choose the RV site. Then choose the tee time." body="Complete the RV reservation through Firefly, then use the golf course website for current tee-time details." image="/images/golf_course.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book the RV site" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Visit the golf course" />
   </main>
 </Base>

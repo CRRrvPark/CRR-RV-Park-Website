@@ -16,6 +16,11 @@ Completed:
 - Home V1-style image stack.
 - Sites page replacement for the redundant second rig form: photos, map,
   useful specifications, guest reviews, and call support.
+- Conversion-path correction: Firefly is the default reservation destination
+  in every shared desktop/mobile/footer conversion surface; the live map is an
+  explicitly labeled optional beta.
+- Site-type preview links preserve the selected filter, automatically run the
+  beta map search, and distinguish other site types from unavailable matches.
 - Reset-day family finish around a policy-compliant propane fire.
 - Correct heated-pool, pet, EV, bathhouse/laundry, recreation, and dump-station
   facts.

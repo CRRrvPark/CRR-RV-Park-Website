@@ -10,6 +10,7 @@
     "build": "astro build",
     "seo:check": "node scripts/verify-seo.mjs",
     "seo:check:live": "node scripts/verify-seo-live.mjs",
+    "booking:check": "node scripts/verify-booking-paths.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",

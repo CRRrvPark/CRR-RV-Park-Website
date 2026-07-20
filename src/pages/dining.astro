@@ -4,6 +4,7 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 import LocalPlaceCard from '@components/LocalPlaceCard.astro';
 import { getLocalPlaces } from '@lib/area-guide';
 
@@ -60,6 +61,6 @@ const canonical = 'https://www.crookedriverranchrv.com/dining';
       </div>
     </section>
 
-    <FinalCta headline="Bring dinner back to the canyon." body="Pick up something nearby, return to camp, and let the last part of the day stay easy." image="/images/firepit_evening.webp" primaryHref="/availability" primaryLabel="See open sites" secondaryHref="/area-guide" secondaryLabel="Plan the full day" />
+    <FinalCta headline="Bring dinner back to the canyon." body="Pick up something nearby, return to camp, and let the last part of the day stay easy." image="/images/firepit_evening.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book on Firefly" secondaryHref="/area-guide" secondaryLabel="Plan the full day" />
   </main>
 </Base>

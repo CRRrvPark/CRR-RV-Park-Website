@@ -7,6 +7,7 @@ import FinalCta from '@components/site/FinalCta.astro';
 import AvailabilityMap from '@components/AvailabilityMap.astro';
 import { getParkSites } from '@lib/area-guide';
 import { serverClient } from '@lib/supabase';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const sites = await getParkSites();
 let activeParkMap: { image_url: string; title: string; natural_width: number; natural_height: number } | null = null;
@@ -40,9 +41,9 @@ const canonical = 'https://www.crookedriverranchrv.com/availability';
       alt="Aerial view of Crooked River Ranch RV Park and the surrounding canyon"
       caption="Live site search on the full park layout"
       primaryHref="#live-availability"
-      primaryLabel="Start the search"
-      secondaryHref="/sites"
-      secondaryLabel="Compare site types"
+      primaryLabel="Try the live map beta"
+      secondaryHref={FIREFLY_RESERVATION_URL}
+      secondaryLabel="Book directly on Firefly"
     />
     <section class="crr-section crr-section-soft" id="live-availability">
       <div class="v2-shell">
@@ -59,6 +60,6 @@ const canonical = 'https://www.crookedriverranchrv.com/availability';
         </div>
       </div>
     </section>
-    <FinalCta headline="Need a second opinion on the fit?" body="The office can compare length, slides, hookups, and park location before you reserve." image="/images/canyon_sunset.webp" primaryHref="tel:+15419231441" primaryLabel="Call 541-923-1441" secondaryHref="/park-map" secondaryLabel="Browse the full park map" />
+    <FinalCta headline="Ready to complete the reservation?" body="Firefly holds the authoritative inventory and completes payment and confirmation. The office can help when fit is uncertain." image="/images/canyon_sunset.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book now on Firefly" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
   </main>
 </Base>

@@ -119,6 +119,7 @@ const polygons = sites.map((s) => {
           <option value="any">Any type</option>
           <option value="full-hookup">Full hookup</option>
           <option value="water_electric">Water + electric</option>
+          <option value="tent_or_dry">Tent + dry camp</option>
           <option value="dry">Dry (no hookups)</option>
           <option value="tent">Tent</option>
         </select>
@@ -148,6 +149,7 @@ const polygons = sites.map((s) => {
   <div class="av-legend" aria-hidden="true">
     <span class="av-legend-item"><span class="av-swatch av-swatch--avail"></span>Available</span>
     <span class="av-legend-item"><span class="av-swatch av-swatch--unavail"></span>Unavailable</span>
+    <span class="av-legend-item"><span class="av-swatch av-swatch--filtered"></span>Other site types</span>
     <span class="av-legend-item"><span class="av-swatch av-swatch--unknown"></span>Search to check</span>
     <span class="av-legend-item"><span class="av-swatch av-swatch--blocked"></span>Not bookable online</span>
   </div>
@@ -229,6 +231,7 @@ const polygons = sites.map((s) => {
       var poly = el.querySelector('.av-poly');
       if (poly.classList.contains('av-avail')) return 'avail';
       if (poly.classList.contains('av-unavail')) return 'unavail';
+      if (poly.classList.contains('av-filtered')) return 'filtered';
       if (poly.classList.contains('av-blocked')) return 'blocked';
       return 'unknown';
     }
@@ -276,6 +279,7 @@ const polygons = sites.map((s) => {
       var st = popover.querySelector('.av-pop-status');
       var labels = {
         avail: 'Available', unavail: 'Unavailable',
+        filtered: 'Other site type',
         blocked: 'Not bookable online', unknown: 'Search dates to check',
       };
       st.textContent = labels[state] || '';
@@ -300,6 +304,7 @@ const polygons = sites.map((s) => {
         book.hidden = true;
         msg.hidden = false;
         if (state === 'unavail') msg.textContent = reason || 'Not available for the selected dates.';
+        else if (state === 'filtered') msg.textContent = 'Change the site-type filter above to check this site.';
         else if (state === 'blocked') msg.textContent = 'Call the office at 541-923-1441 to book this site.';
         else msg.textContent = 'Pick your dates above and search to check this site.';
       }
@@ -382,21 +387,51 @@ const polygons = sites.map((s) => {
       sites.forEach(function (el) {
         var poly = el.querySelector('.av-poly');
         if (poly.classList.contains('av-blocked')) return; // stays blocked
-        poly.classList.remove('av-avail', 'av-unavail');
+        poly.classList.remove('av-avail', 'av-unavail', 'av-filtered');
         poly.classList.add('av-unknown');
         el.removeAttribute('data-reason');
       });
+    }
+    function matchesSelectedType(data, selectedType) {
+      if (!selectedType || selectedType === 'any') return true;
+      var type = data && data.type ? String(data.type) : '';
+      if (selectedType === 'full-hookup') {
+        return type === 'full-hookup' || type === 'pull-through-full' || type === 'pull-in-full';
+      }
+      if (selectedType === 'water_electric') return type === 'water-electric';
+      if (selectedType === 'tent_or_dry') return type === 'tent' || type === 'dry-camp';
+      if (selectedType === 'dry') return type === 'dry-camp';
+      if (selectedType === 'tent') return type === 'tent';
+      return true;
+    }
+    function resultNoun(count, selectedType) {
+      var singular = count === 1;
+      var labels = {
+        'full-hookup': singular ? 'full-hookup site' : 'full-hookup sites',
+        water_electric: singular ? 'water + electric site' : 'water + electric sites',
+        tent_or_dry: singular ? 'tent or dry-camp site' : 'tent or dry-camp sites',
+        dry: singular ? 'dry-camp site' : 'dry-camp sites',
+        tent: singular ? 'tent site' : 'tent sites',
+      };
+      return labels[selectedType] || (singular ? 'site' : 'sites');
     }
     function paint(list) {
       var byCode = {};
       list.forEach(function (s) { byCode[s.code] = s; });
       var availCount = 0;
+      var selectedType = form.type.value || 'any';
       sites.forEach(function (el) {
         var poly = el.querySelector('.av-poly');
         if (poly.classList.contains('av-blocked')) return;
+        var data = parseData(el);
         var code = el.getAttribute('data-site-code');
         var rec = byCode[code];
-        poly.classList.remove('av-unknown', 'av-avail', 'av-unavail');
+        poly.classList.remove('av-unknown', 'av-avail', 'av-unavail', 'av-filtered');
+        if (!matchesSelectedType(data, selectedType)) {
+          poly.classList.add('av-filtered');
+          el.removeAttribute('data-reason');
+          return;
+        }
         if (rec && rec.available) {
           poly.classList.add('av-avail');
           el.removeAttribute('data-reason');
@@ -448,10 +483,11 @@ const polygons = sites.map((s) => {
           var n = paint(data.sites || []);
           setFreshness(data.lastSyncedAt);
           var range = fmtDate(from) + ' – ' + fmtDate(to);
+          var noun = resultNoun(n, form.type.value);
           if (n === 0) {
-            setStatus('No sites match those dates and filters for ' + range + '. Try different dates or call 541-923-1441.', 'warn');
+            setStatus('No ' + noun + ' match those dates for ' + range + '. Try different dates or call 541-923-1441.', 'warn');
           } else {
-            setStatus(n + (n === 1 ? ' site is' : ' sites are') + ' available for ' + range + '. Tap a green site to reserve on Firefly.', 'ok');
+            setStatus(n + ' ' + noun + (n === 1 ? ' is' : ' are') + ' available for ' + range + '. Tap a green site to reserve on Firefly.', 'ok');
           }
         })
         .catch(function () {
@@ -559,6 +595,7 @@ const polygons = sites.map((s) => {
   .av-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
   .av-swatch--avail   { background: rgba(74,124,89,0.55); border-color: var(--av-green); }
   .av-swatch--unavail { background: rgba(154,147,138,0.4); border-color: var(--av-grey); }
+  .av-swatch--filtered { background: rgba(255,255,255,0.18); border-color: rgba(102,80,64,0.42); }
   .av-swatch--unknown { background: rgba(196,98,45,0.22); border-color: var(--rust, #C4622D); }
   .av-swatch--blocked { background: rgba(100,100,100,0.25); border-color: #555; }
 
@@ -588,6 +625,10 @@ const polygons = sites.map((s) => {
   /* Unavailable — dimmed grey, visibly not reservable. */
   .av-unavail { fill: rgba(154,147,138,0.32); stroke: #8a837a; opacity: 0.75; }
   .av-unavail:hover { fill: rgba(154,147,138,0.45); }
+  /* Filtered out — visible for park context without implying that the site
+     failed the selected date search. */
+  .av-filtered { fill: rgba(255,255,255,0.08); stroke: rgba(102,80,64,0.42); opacity: 0.38; }
+  .av-filtered:hover { fill: rgba(255,255,255,0.18); opacity: 0.7; }
   /* Blocked (never bookable online). */
   .av-blocked { fill: rgba(100,100,100,0.22); stroke: #555; stroke-dasharray: 4 3; opacity: 0.7; }
   .av-blocked:hover { fill: rgba(100,100,100,0.36); }
@@ -639,6 +680,7 @@ const polygons = sites.map((s) => {
   }
   .av-pop-status--avail   { background: rgba(74,124,89,0.14); color: #2f5238; }
   .av-pop-status--unavail { background: rgba(154,147,138,0.2); color: #5c554d; }
+  .av-pop-status--filtered { background: rgba(102,80,64,0.1); color: #5c554d; }
   .av-pop-status--blocked { background: rgba(100,100,100,0.15); color: #444; }
   .av-pop-status--unknown { background: rgba(196,98,45,0.12); color: #7a3a18; }
 

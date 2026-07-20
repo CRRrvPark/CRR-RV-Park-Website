@@ -1,4 +1,6 @@
 ---
+import { FIREFLY_GUEST_PORTAL_URL, FIREFLY_RESERVATION_URL } from '@lib/booking';
+
 const year = new Date().getFullYear();
 ---
 <footer class="crr-footer">
@@ -12,16 +14,17 @@ const year = new Date().getFullYear();
         </span>
       </a>
       <h2>Come for the canyon.<br />Arrive with a plan.</h2>
-      <a class="v2-book-button" href="/availability">
-        Find an open site <span aria-hidden="true">→</span>
+      <a class="v2-book-button" href={FIREFLY_RESERVATION_URL}>
+        Book on Firefly <span aria-hidden="true">↗</span>
       </a>
     </div>
 
     <div class="crr-footer-links">
       <div>
         <small>Stay</small>
+        <a href={FIREFLY_RESERVATION_URL}>Book a site on Firefly ↗</a>
         <a href="/sites">Sites &amp; site types</a>
-        <a href="/availability">Live availability</a>
+        <a href="/availability">Live map beta</a>
         <a href="/park-map">Park map</a>
         <a href="/group-sites">Group stays</a>
         <a href="/extended-stays">Extended stays</a>
@@ -42,7 +45,7 @@ const year = new Date().getFullYear();
         <a href="/park-policies">Park policies</a>
         <a href="tel:+15419231441">541-923-1441</a>
         <a href="https://maps.google.com/?q=14875+SW+Hays+Lane+Terrebonne+OR+97760">Directions</a>
-        <a href="https://app.fireflyreservations.com/GuestPortal/Property/CROOKEDRIVERRANCHRVPARK" target="_blank" rel="noreferrer">Manage a reservation ↗</a>
+        <a href={FIREFLY_GUEST_PORTAL_URL} target="_blank" rel="noreferrer">Manage a reservation ↗</a>
       </div>
     </div>
 

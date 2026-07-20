@@ -4,6 +4,7 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import RegionMap from '@components/RegionMap.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 import { getRegionMapPins, REGION_PIN_CATEGORIES } from '@lib/area-guide';
 
 const pins = await getRegionMapPins(20260719);
@@ -124,7 +125,7 @@ const canonical = 'https://www.crookedriverranchrv.com/area-guide';
               <span>After dark</span>
               <h3>Step outside for the sky.</h3>
               <p>Return to your site and leave the last part of the day open.</p>
-              <a href="/availability">Find a site →</a>
+              <a href={FIREFLY_RESERVATION_URL}>Book a site on Firefly ↗</a>
             </div>
           </article>
         </div>

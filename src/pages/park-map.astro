@@ -8,6 +8,7 @@ import { getParkSites } from '@lib/area-guide';
 import { ParkSiteMap } from '@components/react/ParkSiteMap.tsx';
 import ParkMapPolygons from '@components/ParkMapPolygons.astro';
 import { serverClient } from '@lib/supabase';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const sites = await getParkSites();
 let activeParkMap: { id: string; slug: string; title: string; image_url: string; natural_width: number; natural_height: number } | null = null;
@@ -59,7 +60,7 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
       primaryHref="#interactive-map"
       primaryLabel="Open the map"
       secondaryHref="/availability"
-      secondaryLabel="Search my dates"
+      secondaryLabel="Try the live map beta"
     />
     <section class="crr-section crr-section-soft" id="interactive-map">
       <div class="v2-shell">
@@ -78,6 +79,6 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
         </div>
       </div>
     </section>
-    <FinalCta headline="Now add dates to the map." body="Filter open sites by the exact rig length, slides, and hookup preference." image="/images/aerial_canyon_rim.webp" primaryHref="/availability" primaryLabel="Check live availability" secondaryHref="/sites" secondaryLabel="Compare site types" />
+    <FinalCta headline="Ready to reserve the stay?" body="Book through Firefly now, or explicitly open the developing live map to preview dates, rig fit, and hookup preferences." image="/images/aerial_canyon_rim.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book on Firefly" secondaryHref="/availability" secondaryLabel="Try the live map beta" />
   </main>
 </Base>

@@ -5,6 +5,7 @@ import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import { getParkSiteByCode, type ParkSiteStatus } from '@lib/area-guide';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const code = Astro.params.code;
 if (!code) return new Response('Not Found', { status: 404 });
@@ -21,7 +22,7 @@ const labels: Record<ParkSiteStatus, string> = {
 };
 const photos = [site.hero_image_url, ...(site.gallery_image_urls ?? [])].filter((url, index, list): url is string => Boolean(url) && list.indexOf(url) === index);
 const isBookable = site.status === 'available';
-const bookUrl = site.firefly_deep_link || 'https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK';
+const bookUrl = site.firefly_deep_link || FIREFLY_RESERVATION_URL;
 const title = `Site ${site.site_number} · Loop ${site.loop} | Crooked River Ranch`;
 const description = site.description
   ? site.description.replace(/<[^>]+>/g, '').slice(0, 155)
@@ -84,6 +85,6 @@ const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponen
         )}
       </div>
     </section>
-    <FinalCta headline={`Still deciding on Site ${site.site_number}?`} body="Compare it with the map, search the same dates, or call for help with slides and exact fit." image="/images/canyon_sunset.webp" primaryHref="/availability" primaryLabel="Search my dates" secondaryHref="/park-map" secondaryLabel="Compare on the park map" />
+    <FinalCta headline={`Still deciding on Site ${site.site_number}?`} body="Reserve it through Firefly when it is bookable, or call the office for help with slides and exact fit." image="/images/canyon_sunset.webp" primaryHref={isBookable ? bookUrl : 'tel:+15419231441'} primaryLabel={isBookable ? 'Reserve this site' : 'Call about this site'} secondaryHref="/park-map" secondaryLabel="Compare on the park map" />
   </main>
 </Base>

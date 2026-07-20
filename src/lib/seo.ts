@@ -35,7 +35,7 @@ export function canonicalUrl(value: string): string {
 const STATIC_BREADCRUMBS: Record<string, string> = {
   '/amenities': 'Park amenities',
   '/area-guide': 'Park + area guide',
-  '/availability': 'Live availability',
+  '/availability': 'Live map beta',
   '/book-now': 'Plan your visit',
   '/dining': 'Dining & local',
   '/events': 'Events',

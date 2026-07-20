@@ -4,6 +4,7 @@ export const prerender = true;
 import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const title = 'Crooked River Ranch Golf Course | Golf beside the RV Park';
 const description = 'Plan a round at the independently managed Crooked River Ranch Golf Course beside the RV park. Find course details, pro-shop contact information, and RV-stay planning.';
@@ -81,6 +82,6 @@ const canonical = 'https://www.crookedriverranchrv.com/golf-course';
       </div>
     </section>
 
-    <FinalCta headline="Keep the clubs close and the campsite closer." body="Check RV site availability, then arrange the round directly with the golf course." image="/images/golf_bridge.webp" primaryHref="/availability" primaryLabel="See open RV sites" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Golf course website" />
+    <FinalCta headline="Keep the clubs close and the campsite closer." body="Reserve the RV site through Firefly, then arrange the round directly with the golf course." image="/images/golf_bridge.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book the RV site" secondaryHref="https://www.crookedriverranchgc.com" secondaryLabel="Golf course website" />
   </main>
 </Base>

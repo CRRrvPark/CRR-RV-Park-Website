@@ -37,7 +37,8 @@
  * QUERY (this proxy's own, guest-facing shape):
  *   from        YYYY-MM-DD (required)
  *   to          YYYY-MM-DD (required)
- *   type        full-hookup | water_electric | dry | tent | any   (optional)
+ *   type        full-hookup | water_electric | tent_or_dry | dry | tent | any
+ *               (optional)
  *   rigLengthFt integer feet (optional)
  *   slides      yes | no | any (optional)
  *   resource    availability (default) | sites | map
@@ -45,6 +46,7 @@
  * The site-type → RR-param mapping lives HERE (single source of truth):
  *   full-hookup    → hookups=full
  *   water_electric → hookups=water_electric
+ *   tent_or_dry    → kind=tent PLUS hookups=dry, merged by site code
  *   dry            → hookups=dry
  *   tent           → kind=tent
  */
@@ -79,14 +81,22 @@ async function rrFetch(path: string): Promise<Response> {
   }
 }
 
-/** Translate the guest-facing `type` filter into RR query params. */
-function typeToRrParams(type: string | null): { hookups?: string; kind?: string } {
+interface RrTypeParams {
+  hookups?: string;
+  kind?: string;
+}
+
+/** Translate the guest-facing `type` filter into one or more RR queries.
+ *  `tent_or_dry` is the homepage's combined "smaller setups" decision, so it
+ *  needs an OR across Rimrock's separate kind and hookup filters. */
+function typeToRrParamSets(type: string | null): RrTypeParams[] {
   switch (type) {
-    case 'full-hookup':    return { hookups: 'full' };
-    case 'water_electric': return { hookups: 'water_electric' };
-    case 'dry':            return { hookups: 'dry' };
-    case 'tent':           return { kind: 'tent' };
-    default:               return {};
+    case 'full-hookup':    return [{ hookups: 'full' }];
+    case 'water_electric': return [{ hookups: 'water_electric' }];
+    case 'tent_or_dry':    return [{ kind: 'tent' }, { hookups: 'dry' }];
+    case 'dry':            return [{ hookups: 'dry' }];
+    case 'tent':           return [{ kind: 'tent' }];
+    default:               return [{}];
   }
 }
 
@@ -144,39 +154,55 @@ export const GET: APIRoute = async ({ url }) => {
     return json({ ok: false, reason: 'Departure must be after arrival.' }, 400);
   }
 
-  const params = new URLSearchParams({ from, to });
-  const { hookups, kind } = typeToRrParams(url.searchParams.get('type'));
-  if (hookups) params.set('hookups', hookups);
-  if (kind) params.set('kind', kind);
-
   const rig = url.searchParams.get('rigLengthFt');
-  if (rig && /^\d{1,3}$/.test(rig)) params.set('rigLengthFt', rig);
-
   const slides = url.searchParams.get('slides');
-  if (slides === 'yes') params.set('slides', 'true');
-  else if (slides === 'no') params.set('slides', 'false');
+  const requestPaths = typeToRrParamSets(url.searchParams.get('type')).map(({ hookups, kind }) => {
+    const params = new URLSearchParams({ from, to });
+    if (hookups) params.set('hookups', hookups);
+    if (kind) params.set('kind', kind);
+    if (rig && /^\d{1,3}$/.test(rig)) params.set('rigLengthFt', rig);
+    if (slides === 'yes') params.set('slides', 'true');
+    else if (slides === 'no') params.set('slides', 'false');
+    return `/api/public/map-availability?${params.toString()}`;
+  });
 
   try {
-    const res = await rrFetch(`/api/public/map-availability?${params.toString()}`);
-    if (!res.ok) {
-      return json({ ok: false, reason: `Availability service returned ${res.status}.` });
+    const responses = await Promise.all(requestPaths.map((path) => rrFetch(path)));
+    const failed = responses.find((response) => !response.ok);
+    if (failed) {
+      return json({ ok: false, reason: `Availability service returned ${failed.status}.` });
     }
-    const data = await res.json();
-    const sites = Array.isArray(data?.sites) ? data.sites : [];
+
+    const payloads = await Promise.all(responses.map((response) => response.json()));
+    const merged = new Map<string, { code: string; available: boolean; reason: string | null }>();
+    for (const data of payloads) {
+      const sites = Array.isArray(data?.sites) ? data.sites : [];
+      for (const site of sites) {
+        const code = String(site?.code ?? '');
+        if (!code) continue;
+        const available = Boolean(site?.available);
+        const reason = typeof site?.reason === 'string' ? site.reason : null;
+        const previous = merged.get(code);
+        merged.set(code, {
+          code,
+          available: Boolean(previous?.available || available),
+          reason: previous?.available || available ? null : (previous?.reason ?? reason),
+        });
+      }
+    }
+
     // Normalise to the exact shape the page expects: { code, available, reason }.
-    const normalised = sites.map((s: any) => ({
-      code: String(s?.code ?? ''),
-      available: Boolean(s?.available),
-      reason: typeof s?.reason === 'string' ? s.reason : null,
-    })).filter((s: { code: string }) => s.code.length > 0);
+    const normalised = Array.from(merged.values());
     // Freshness stamp: RR includes lastSyncedAt (ISO timestamp of its last
-    // Firefly sync) in newer deploys. Pass it through ONLY when present and
-    // well-formed — older RR builds omit it, and the page omits the stamp
-    // when the field is absent (defensive on both sides).
-    const lastSyncedAt =
-      typeof data?.lastSyncedAt === 'string' && !Number.isNaN(Date.parse(data.lastSyncedAt))
-        ? data.lastSyncedAt
-        : undefined;
+    // Firefly sync) in newer deploys. For a combined query, use the oldest
+    // valid timestamp so the displayed freshness never overstates either
+    // half of the result.
+    const freshnessTimes = payloads
+      .map((data) => typeof data?.lastSyncedAt === 'string' ? data.lastSyncedAt : null)
+      .filter((value): value is string => Boolean(value) && !Number.isNaN(Date.parse(value)));
+    const lastSyncedAt = freshnessTimes.length
+      ? freshnessTimes.reduce((oldest, value) => Date.parse(value) < Date.parse(oldest) ? value : oldest)
+      : undefined;
     return json({ ok: true, sites: normalised, ...(lastSyncedAt ? { lastSyncedAt } : {}) });
   } catch (err) {
     console.warn('[api/availability] RR map-availability fetch failed:', err);

@@ -22,6 +22,11 @@ version-controlled Astro rather than a database-rendered WYSIWYG.
 - The reset-day itinerary closes back at camp with family and a propane fire.
 - The Sites page no longer repeats the rig-information form immediately below
   the availability search.
+- Firefly is the ordinary booking destination everywhere: persistent desktop,
+  mobile, sticky, footer, and default closing CTAs route directly to Firefly.
+  The developing live map is optional and explicitly labeled beta/map/preview.
+- Site-type preview choices are carried directly into the beta map, preselected,
+  and automatically searched without asking the guest to choose the type again.
 - The replacement Sites section provides park imagery, map context, useful
   specifications, reviews, and office help.
 - Heated pool replaces all active saltwater language.

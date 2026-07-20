@@ -81,6 +81,7 @@
   };
   const params = new URLSearchParams(window.location.search);
   const today = localIso(new Date());
+  const siteTypes = new Set(['any', 'full-hookup', 'water_electric', 'tent_or_dry', 'dry', 'tent']);
 
   document.querySelectorAll('[data-site-search]').forEach((form) => {
     const arrival = form.querySelector('[data-site-arrival]');
@@ -95,7 +96,7 @@
     ['type', 'rigLengthFt', 'slides'].forEach((name) => {
       const field = form.elements.namedItem(name);
       const value = params.get(name);
-      if (field && value) field.value = value;
+      if (field && value && (name !== 'type' || siteTypes.has(value))) field.value = value;
     });
 
     arrival.addEventListener('change', () => {
@@ -107,15 +108,26 @@
 
   const liveForm = document.querySelector('#avForm');
   if (liveForm) {
+    const liveArrival = liveForm.elements.namedItem('from');
+    const liveDeparture = liveForm.elements.namedItem('to');
+    if (liveArrival && liveDeparture) {
+      liveArrival.min = today;
+      liveArrival.value = params.get('from') || today;
+      liveDeparture.min = addDays(liveArrival.value, 1);
+      liveDeparture.value = params.get('to') || addDays(liveArrival.value, 1);
+    }
     let prepared = false;
     ['from', 'to', 'type', 'rigLengthFt', 'slides'].forEach((name) => {
       const field = liveForm.elements.namedItem(name);
       const value = params.get(name);
-      if (!field || !value) return;
+      if (!field || !value || (name === 'type' && !siteTypes.has(value))) return;
       field.value = value;
       prepared = true;
     });
-    if (prepared && params.get('from') && params.get('to')) liveForm.requestSubmit();
+    const hasCompleteDates = Boolean(params.get('from') && params.get('to'));
+    const requestedType = params.get('type');
+    const hasSiteTypeDecision = Boolean(requestedType && siteTypes.has(requestedType) && requestedType !== 'any');
+    if (prepared && (hasCompleteDates || hasSiteTypeDecision)) liveForm.requestSubmit();
   }
 
   const filterGroup = document.querySelector('[data-experience-filters]');

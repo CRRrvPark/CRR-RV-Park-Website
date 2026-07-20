@@ -1,4 +1,6 @@
 ---
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
+
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 
 const isCurrent = (href: string) => {
@@ -11,8 +13,9 @@ const groups = [
     label: 'Stay',
     key: 'stay',
     links: [
+      { href: FIREFLY_RESERVATION_URL, label: 'Book a site', detail: 'Check dates and complete a reservation in Firefly' },
       { href: '/sites', label: 'Sites & site types', detail: 'Compare hookups, fit, and setup' },
-      { href: '/availability', label: 'Live availability', detail: 'See open sites on the park map' },
+      { href: '/availability', label: 'Live map beta', detail: 'Preview open sites on the developing map' },
       { href: '/park-map', label: 'Interactive park map', detail: 'Browse every site and location' },
       { href: '/group-sites', label: 'Group stays', detail: 'Keep the crew close together' },
       { href: '/extended-stays', label: 'Extended stays', detail: 'October–April monthly options' },
@@ -99,8 +102,9 @@ const groups = [
         </svg>
         <span>Park map</span>
       </a>
-      <a class="v2-book-button" href="/availability">
-        See open sites <span aria-hidden="true">→</span>
+      <a class="v2-book-button" href={FIREFLY_RESERVATION_URL}>
+        <span class="crr-book-wide">Book a site</span><span class="crr-book-short">Book</span>
+        <span aria-hidden="true">↗</span>
       </a>
       <button
         class="crr-menu-button"

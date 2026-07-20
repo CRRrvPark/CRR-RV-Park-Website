@@ -10,6 +10,7 @@ import {
   SITE_ORIGIN,
   WEBSITE_SCHEMA,
 } from '@lib/seo';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const title = 'Campground Near Smith Rock Oregon | Crooked River Ranch RV Park';
 const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. See live availability and book direct.";
@@ -29,6 +30,12 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
           <p class="v2-eyebrow">Crooked River canyon · Terrebonne, Oregon</p>
           <h1>Canyon views.<br />A site that fits.<br /><mark>Central Oregon ahead.</mark></h1>
           <p class="v2-hero-lead">Choose your dates, tell us about your rig, and see which sites are open before you reserve.</p>
+          <div class="crr-hero-actions">
+            <a class="v2-button v2-button-blue" href={FIREFLY_RESERVATION_URL}>
+              Book now on Firefly <span aria-hidden="true">↗</span>
+            </a>
+            <a class="v2-inline-link" href="/availability">Try the live map beta <span aria-hidden="true">→</span></a>
+          </div>
         </div>
 
         <figure class="v2-hero-image v2-reveal">
@@ -96,33 +103,33 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
         </div>
 
         <div class="v2-stay-grid">
-          <a class="v2-stay-card v2-stay-card-wide v2-reveal" href="/sites#full-hookup">
+          <a class="v2-stay-card v2-stay-card-wide v2-reveal" href="/availability?type=full-hookup#live-availability">
             <img src="/images/aerial_aloop.webp" alt="Aerial view of full-hookup RV sites at Crooked River Ranch" loading="lazy" />
             <div>
               <span>01 · Full hookup</span>
               <h3>Water, electric &amp; sewer</h3>
               <p>Back-in and pull-through choices, 30/50 amp service, and site-specific fit details.</p>
-              <strong>See full-hookup sites →</strong>
+              <strong>Preview full-hookup sites on the live map →</strong>
             </div>
           </a>
 
-          <a class="v2-stay-card v2-reveal" href="/sites#water-electric">
+          <a class="v2-stay-card v2-reveal" href="/availability?type=water_electric#live-availability">
             <img src="/images/site-a10-setup.webp" alt="Water and electric Site A-10 with its utility pedestal, lawn, trees, and gazebo at Crooked River Ranch RV Park" loading="lazy" />
             <div>
               <span>02 · Water + electric</span>
               <h3>A simple RV setup</h3>
               <p>30/50 amp service with water, plus access to the 24/7 card-reader dump station.</p>
-              <strong>See water + electric sites →</strong>
+              <strong>Preview water + electric sites on the live map →</strong>
             </div>
           </a>
 
-          <a class="v2-stay-card v2-reveal" href="/sites#tent-dry">
+          <a class="v2-stay-card v2-reveal" href="/availability?type=tent_or_dry#live-availability">
             <img src="/images/family_reunion.webp" alt="Guests gathered outside at Crooked River Ranch RV Park" loading="lazy" />
             <div>
               <span>03 · Tent + dry camp</span>
               <h3>Smaller setups</h3>
               <p>Tent sites, rooftop-tent options, and dry camp for qualifying vans and truck campers.</p>
-              <strong>See smaller-site options →</strong>
+              <strong>Preview smaller sites on the live map →</strong>
             </div>
           </a>
         </div>
@@ -146,7 +153,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
             <li><span>02</span> Compare compatible locations</li>
             <li><span>03</span> Complete the reservation through Firefly</li>
           </ul>
-          <a class="v2-button v2-button-yellow" href="/availability">Try live availability <span aria-hidden="true">→</span></a>
+          <a class="v2-button v2-button-yellow" href="/availability">Try the live map beta <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>

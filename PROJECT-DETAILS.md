@@ -16,10 +16,29 @@ comparative.
 
 Primary decision paths:
 
-- Home: orientation, image stack, site choices, park/area reasons, reviews.
+- Home: orientation, image stack, site choices, park/area reasons, reviews,
+  and direct Firefly booking. Site-type cards intentionally open the live-map
+  beta with the guest's selection preserved and the default-date search
+  already running.
 - Sites: availability, site types, photos, specifications, map, reviews.
 - Park + Area: amenities, live regional map, relaxation and active itineraries.
-- Plan: live availability, rates, booking handoff, arrival, policies.
+- Plan: direct Firefly booking first, optional live-map beta, rates, arrival,
+  and policies.
+
+## Reservation-path invariant
+
+Firefly is the authoritative and default reservation path. Persistent desktop
+and mobile header controls, the sticky mobile control, the footer, and the
+default closing conversion section link directly to Firefly on every public
+page. `/availability` is a developing planning preview, never a required
+gateway to a reservation, and every link into it is explicitly labeled as a
+map, preview, or beta.
+
+Site-type preview links retain the chosen type in the query string, preselect
+it on `/availability`, and automatically run the default-date search. The map
+mutes other site types separately from matching sites that are unavailable.
+`scripts/verify-booking-paths.mjs` crawls every sitemap route and enforces this
+contract.
 
 Supporting routes:
 

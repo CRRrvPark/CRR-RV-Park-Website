@@ -3,7 +3,6 @@ export const prerender = true;
 
 import Base from '@layouts/Base.astro';
 import SiteSearch from '@components/site/SiteSearch.astro';
-import GuestPhotos from '@components/site/GuestPhotos.astro';
 import GuestReviews from '@components/site/GuestReviews.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import {
@@ -185,25 +184,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
       </div>
     </section>
 
-    <GuestPhotos />
-
     <GuestReviews />
-
-    <section id="about-this-website" class="crr-app-purpose" aria-labelledby="crr-app-purpose-title">
-      <div class="v2-shell">
-        <div class="crr-app-purpose-card">
-          <div>
-            <p class="v2-eyebrow">About this website</p>
-            <h2 id="crr-app-purpose-title">Crooked River Ranch RV Park Website</h2>
-          </div>
-          <div class="crr-app-purpose-copy">
-            <p>This application is the official public website for Crooked River Ranch RV Park. Guests use it to explore RV sites and amenities, view park and area maps, see visitor photographs, plan local activities, check live availability, and continue to the park’s reservation system.</p>
-            <p>Park staff authorize the application to read public customer photographs and contributor attribution from the park’s Google Business Profile for the guest-photo gallery. It does not offer Google sign-in to guests, access private visitor Google Account information, or create, change, or delete reviews or customer photographs.</p>
-            <a class="v2-inline-link" href="/privacy">How this website handles information <span aria-hidden="true">→</span></a>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <FinalCta
       headline="Your dates. Your rig. Your open sites."

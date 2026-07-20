@@ -1,4 +1,6 @@
 /**
+ * Archived 2026-07-19 when the owner retired the Google guest-photo concept.
+ *
  * GET /api/google-photos
  *
  * Returns a small, live-only view of guest-contributed photos attached to the

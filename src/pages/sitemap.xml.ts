@@ -28,7 +28,6 @@ const STATIC_ENTRIES: SitemapEntry[] = [
   { path: '/group-sites', images: ['/images/family_reunion.jpg'] },
   { path: '/extended-stays', images: ['/images/winter_sunset.jpg'] },
   { path: '/park-policies', images: ['/images/firepit_evening.jpg'] },
-  { path: '/about-this-website', images: ['/images/canyon_day.jpg'] },
   { path: '/privacy', images: ['/images/canyon_day.jpg'] },
   { path: '/terms', images: ['/images/canyon_day.jpg'] },
 ].map((entry) => ({ ...entry, lastmod: STATIC_LASTMOD }));

@@ -1,4 +1,5 @@
 ---
+// Archived 2026-07-19 when the owner retired the Google guest-photo OAuth concept.
 export const prerender = true;
 
 import Base from '@layouts/Base.astro';
@@ -8,9 +9,9 @@ import { SITE_ORIGIN } from '@lib/seo';
 const appName = 'Crooked River Ranch RV Park Website';
 const title = `${appName} | Application Information`;
 const description = 'Purpose, functionality, Google Business Profile authorization, data use, privacy, and support information for the Crooked River Ranch RV Park Website.';
-const canonical = `${SITE_ORIGIN}/about-this-website`;
-const privacyUrl = `${SITE_ORIGIN}/privacy`;
-const termsUrl = `${SITE_ORIGIN}/terms`;
+const canonical = `${SITE_ORIGIN}/about-this-website/`;
+const privacyUrl = `${SITE_ORIGIN}/privacy/`;
+const termsUrl = `${SITE_ORIGIN}/terms/`;
 ---
 <Base title={title} description={description} canonical={canonical} ogImage={`${SITE_ORIGIN}/images/canyon_day.jpg`} heroImagePreload="/images/canyon_day.webp">
   <main id="main-content">

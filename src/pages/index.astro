@@ -2,7 +2,6 @@
 export const prerender = true;
 
 import Base from '@layouts/Base.astro';
-import SiteSearch from '@components/site/SiteSearch.astro';
 import GuestReviews from '@components/site/GuestReviews.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import {
@@ -13,7 +12,7 @@ import {
 import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const title = 'Campground Near Smith Rock Oregon | Crooked River Ranch RV Park';
-const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. See live availability and book direct.";
+const description = "Full hookup RV sites on Oregon's Crooked River canyon rim. 15 minutes from Smith Rock, beside an 18-hole golf course, open year-round. Check current availability and book directly through Firefly.";
 const canonical = `${SITE_ORIGIN}/`;
 const ogImage = `${SITE_ORIGIN}/images/hero.jpg`;
 const heroImagePreload = '/images/hero.webp';
@@ -29,7 +28,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
         <div class="v2-hero-copy v2-reveal">
           <p class="v2-eyebrow">Crooked River canyon · Terrebonne, Oregon</p>
           <h1>Canyon views.<br />A site that fits.<br /><mark>Central Oregon ahead.</mark></h1>
-          <p class="v2-hero-lead">Choose your dates, tell us about your rig, and see which sites are open before you reserve.</p>
+          <p class="v2-hero-lead">Check current availability, complete payment, and receive your reservation confirmation directly through Firefly.</p>
           <div class="crr-hero-actions">
             <a class="v2-button v2-button-blue" href={FIREFLY_RESERVATION_URL}>
               Book now on Firefly <span aria-hidden="true">↗</span>
@@ -51,9 +50,6 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
         </figure>
       </div>
 
-      <div class="v2-shell v2-home-search">
-        <SiteSearch id="home-site-search" />
-      </div>
     </section>
 
     <section class="crr-fact-strip" aria-label="Park highlights">
@@ -72,7 +68,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
           <p class="v2-eyebrow">Life at the ranch</p>
           <h2>Park the rig.<br />Keep the day open.</h2>
           <p>Morning can begin under the junipers, on the golf course beside the park, or at Smith Rock. Come back to the heated seasonal pool, a full-hookup site, and an evening close to the canyon.</p>
-          <p>The useful details stay close: live availability, site photos, the park map, policies, and a phone number when you want help choosing.</p>
+          <p>The useful details stay close: direct Firefly booking, site photos, the park map, policies, and a phone number when you want help choosing.</p>
           <a class="v2-inline-link" href="/area-guide">See the park and area <span aria-hidden="true">→</span></a>
         </div>
         <div class="crr-photo-story" aria-label="Views around Crooked River Ranch RV Park">
@@ -99,7 +95,7 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
             <p class="v2-eyebrow">Choose the stay</p>
             <h2>Start with what<br />you’re bringing.</h2>
           </div>
-          <p>Each site type answers a different need. Compare the basics, then use live availability for the exact site.</p>
+          <p>Each site type answers a different need. Compare the basics, then deliberately open the live map beta to preview matching sites.</p>
         </div>
 
         <div class="v2-stay-grid">
@@ -194,8 +190,8 @@ const schemas = [RV_PARK_SCHEMA, WEBSITE_SCHEMA];
     <GuestReviews />
 
     <FinalCta
-      headline="Your dates. Your rig. Your open sites."
-      body="Search the live park map, compare the details, and reserve the site that feels right."
+      headline="Ready to reserve the stay?"
+      body="Use Firefly for current inventory, payment, and confirmation. The developing live map remains available as an optional preview."
     />
   </main>
 </Base>

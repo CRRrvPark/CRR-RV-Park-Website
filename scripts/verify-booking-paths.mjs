@@ -4,6 +4,8 @@
  *   - ordinary booking controls go directly to Firefly;
  *   - the developing availability map is entered only through copy that
  *     explicitly says beta, map, or preview;
+ *   - the reusable date/rig quick-search instrument stays dormant while the
+ *     live map is experimental;
  *   - every public page retains persistent desktop, mobile, and footer
  *     booking access.
  *
@@ -59,6 +61,9 @@ for (const path of paths) {
   }
   if ($('.crr-footer-lead .v2-book-button').attr('href') !== FIREFLY) {
     failures.push(`${path}: footer booking control does not go directly to Firefly`);
+  }
+  if ($('[data-site-search]').length > 0) {
+    failures.push(`${path}: experimental date/rig quick-search instrument is publicly rendered`);
   }
 
   for (const link of links) {

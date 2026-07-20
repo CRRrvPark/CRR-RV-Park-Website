@@ -2,13 +2,12 @@
 export const prerender = true;
 
 import Base from '@layouts/Base.astro';
-import SiteSearch from '@components/site/SiteSearch.astro';
 import GuestReviews from '@components/site/GuestReviews.astro';
 import FinalCta from '@components/site/FinalCta.astro';
 import PageHero from '@components/site/PageHero.astro';
 
 const title = 'RV Sites & Site Types | Crooked River Ranch RV Park';
-const description = 'Compare full-hookup, water-and-electric, tent, and dry-camp sites at Crooked River Ranch RV Park. See fit details, photos, live availability, and the interactive park map.';
+const description = 'Compare full-hookup, water-and-electric, tent, and dry-camp sites at Crooked River Ranch RV Park. See fit details, photos, and the interactive park map, then book through Firefly.';
 const canonical = 'https://www.crookedriverranchrv.com/sites';
 ---
 <Base
@@ -23,7 +22,7 @@ const canonical = 'https://www.crookedriverranchrv.com/sites';
       eyebrow="Sites"
       headline="Find your fit"
       accent="before you pull in."
-      body="Start with dates, exact length, slides, and hookup preference. Then compare the site itself—its photo, location, and useful details."
+      body="Compare hookups, listed fit, setup style, photos, and park location. When you are ready, Firefly provides current inventory and completed booking."
       image="/images/aerial_wide.webp"
       imageMobile="/images/aerial_wide-mobile.webp"
       imageJpg="/images/aerial_wide.jpg"
@@ -33,11 +32,7 @@ const canonical = 'https://www.crookedriverranchrv.com/sites';
       primaryLabel="Compare site types"
       secondaryHref="/park-map"
       secondaryLabel="Open the park map"
-    >
-      <div class="v2-shell v2-inner-search">
-        <SiteSearch id="sites-search" compact={true} heading="Check your dates now" />
-      </div>
-    </PageHero>
+    />
 
     <section class="crr-section crr-section-soft">
       <div class="v2-shell">
@@ -46,7 +41,7 @@ const canonical = 'https://www.crookedriverranchrv.com/sites';
             <p class="v2-eyebrow">Choose with confidence</p>
             <h2>The questions after<br />“is it available?”</h2>
           </div>
-          <p>A date search is only the start. The site should fit the rig, the setup, and the way you want to use the park.</p>
+          <p>Current availability is only one question. The site should also fit the rig, the setup, and the way you want to use the park.</p>
         </div>
 
         <div class="crr-confidence-grid">

@@ -19,6 +19,10 @@ Completed:
 - Conversion-path correction: Firefly is the default reservation destination
   in every shared desktop/mobile/footer conversion surface; the live map is an
   explicitly labeled optional beta.
+- The date/rig quick-search instrument is no longer rendered on the homepage
+  or Sites page while the live map remains in beta. Its reusable component is
+  preserved for future launch; the homepage park-highlights strip now follows
+  the hero directly.
 - Site-type preview links preserve the selected filter, automatically run the
   beta map search, and distinguish other site types from unavailable matches.
 - Reset-day family finish around a policy-compliant propane fire.

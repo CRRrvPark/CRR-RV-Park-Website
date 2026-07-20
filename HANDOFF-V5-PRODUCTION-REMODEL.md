@@ -25,6 +25,10 @@ version-controlled Astro rather than a database-rendered WYSIWYG.
 - Firefly is the ordinary booking destination everywhere: persistent desktop,
   mobile, sticky, footer, and default closing CTAs route directly to Firefly.
   The developing live map is optional and explicitly labeled beta/map/preview.
+- Public marketing pages no longer render the date/rig quick-search instrument
+  while that map is experimental. `SiteSearch.astro` remains intact for a
+  future controlled launch, and the homepage park-highlights strip provides
+  the hero-to-content transition.
 - Site-type preview choices are carried directly into the beta map, preselected,
   and automatically searched without asking the guest to choose the type again.
 - The replacement Sites section provides park imagery, map context, useful

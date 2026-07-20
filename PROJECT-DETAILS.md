@@ -34,6 +34,11 @@ page. `/availability` is a developing planning preview, never a required
 gateway to a reservation, and every link into it is explicitly labeled as a
 map, preview, or beta.
 
+Public marketing pages must not render the date/rig `SiteSearch` instrument
+while the live map remains experimental. The component stays available in
+source for a future controlled launch, but guests should encounter test inputs
+only inside the dedicated beta-map flow.
+
 Site-type preview links retain the chosen type in the query string, preselect
 it on `/availability`, and automatically run the default-date search. The map
 mutes other site types separately from matching sites that are unavailable.

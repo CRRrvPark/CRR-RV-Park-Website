@@ -87,6 +87,9 @@ auto-create new curated places merely because an API search returns them.
   `https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK`.
   `/availability` is an optional beta-map preview and must be labeled as such,
   never used as the default booking gateway.
+- While the map is experimental, do not render the reusable `SiteSearch.astro`
+  date/rig quick-search instrument on any public page. Preserve the component
+  for future activation; keep test inputs inside the dedicated beta-map flow.
 - Run `BOOKING_CHECK_BASE=https://crookedriverranchrv.com npm run booking:check`
   after a production deploy. It crawls every public sitemap route and verifies
   the shared desktop/mobile/footer Firefly controls plus explicit beta-map copy.

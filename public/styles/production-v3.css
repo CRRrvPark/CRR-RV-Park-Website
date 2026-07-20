@@ -1061,6 +1061,7 @@
 .crr-legal-aside {
   align-self: start;
   position: sticky;
+  min-width: 0;
   top: 130px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 22px;
@@ -2007,6 +2008,7 @@
 }
 
 .crr-prose {
+  min-width: 0;
   max-width: 820px;
   margin-inline: auto;
   color: #304842;
@@ -2040,6 +2042,11 @@
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.crr-prose code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .crr-note {

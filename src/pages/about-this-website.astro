@@ -1,0 +1,83 @@
+---
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+import PageHero from '@components/site/PageHero.astro';
+import { SITE_ORIGIN } from '@lib/seo';
+
+const appName = 'Crooked River Ranch RV Park Website';
+const title = `${appName} | Application Information`;
+const description = 'Purpose, functionality, Google Business Profile authorization, data use, privacy, and support information for the Crooked River Ranch RV Park Website.';
+const canonical = `${SITE_ORIGIN}/about-this-website`;
+const privacyUrl = `${SITE_ORIGIN}/privacy`;
+const termsUrl = `${SITE_ORIGIN}/terms`;
+---
+<Base title={title} description={description} canonical={canonical} ogImage={`${SITE_ORIGIN}/images/canyon_day.jpg`} heroImagePreload="/images/canyon_day.webp">
+  <main id="main-content">
+    <PageHero
+      eyebrow="Application information"
+      headline={appName}
+      body="The official public website for Crooked River Ranch RV Park. Guests use this application to understand the park, plan a stay, check live availability, and continue to the reservation system."
+      image="/images/canyon_day.webp"
+      imageMobile="/images/canyon_day-mobile.webp"
+      imageJpg="/images/canyon_day.jpg"
+      alt="Crooked River canyon near Crooked River Ranch RV Park"
+      caption="Crooked River Ranch · Terrebonne, Oregon"
+      primaryHref={privacyUrl}
+      primaryLabel="Privacy policy"
+      secondaryHref={termsUrl}
+      secondaryLabel="Website terms"
+    />
+
+    <section class="crr-section crr-section-soft">
+      <div class="v2-shell crr-legal-shell">
+        <aside class="crr-legal-aside">
+          <strong>Application operator</strong>
+          <p>
+            Crooked River Ranch Club and Maintenance Association<br />
+            DBA Crooked River Ranch RV Park<br />
+            14875 SW Hays Lane<br />
+            Terrebonne, OR 97760
+          </p>
+          <a href="mailto:rvpark@crookedriverranch.com">rvpark@crookedriverranch.com</a>
+          <a href="tel:+15419231441">541-923-1441</a>
+        </aside>
+
+        <article class="crr-prose">
+          <h2>Purpose of the application</h2>
+          <p><strong>Crooked River Ranch RV Park Website</strong> is the park’s official public web application. It helps prospective and current guests:</p>
+          <ul>
+            <li>Explore RV site types, individual site details, amenities, policies, and park maps</li>
+            <li>View park photographs, attributed guest photographs, and live Google reviews</li>
+            <li>Plan nearby dining, trails, activities, golf, events, and other Central Oregon experiences</li>
+            <li>Check live site availability and continue to Firefly Reservations to complete a reservation</li>
+            <li>Find directions, contact information, arrival details, and reservation-management links</li>
+          </ul>
+          <p>The public website does not require a visitor account or Google sign-in.</p>
+
+          <h2>Why the application requests Google authorization</h2>
+          <p>Google requires the <code>https://www.googleapis.com/auth/business.manage</code> OAuth scope for the Google Business Profile API endpoint that lists customer media. A Crooked River Ranch RV Park administrator authorizes the connection using a Google Account that manages the park’s Business Profile.</p>
+          <p>The application uses that authorization only to read public customer photographs and the contributor attribution supplied with those photographs on the Crooked River Ranch RV Park Business Profile. The purpose is to display a current, properly attributed guest-photo gallery on this website.</p>
+
+          <h2>Google data used by the application</h2>
+          <p>The integration processes the park’s Business Profile account and location identifiers and customer-media information returned by Google, which can include photograph and thumbnail URLs, image dimensions, creation time, Google source links, contributor name, and contributor profile photograph.</p>
+          <p>The application does not use this authorization to offer Google sign-in to park guests, access a visitor’s private Google Account information, create or change reviews, edit the Business Profile, or create, alter, or delete customer photographs.</p>
+
+          <h2>Storage, sharing, and access boundaries</h2>
+          <p>OAuth client credentials and refresh tokens are stored only in the server environment and are never included in public website code or sent to website visitors. Customer media is requested for the live gallery with its Google-provided attribution. Google user data obtained through this integration is not sold, used for advertising, or used to train artificial-intelligence models.</p>
+          <p>OAuth access is limited to park-authorized administrators and can be revoked through the managing Google Account. Ordinary website visitors cannot use or control the Business Profile connection.</p>
+
+          <h2>Privacy, terms, and support</h2>
+          <p>
+            Read the application’s
+            <a href={privacyUrl}>Privacy Policy</a>
+            and
+            <a href={termsUrl}>Website Terms</a>.
+            Use these exact URLs in the Google OAuth consent-screen configuration.
+          </p>
+          <p>Questions about the application, its Google authorization, or its data practices can be sent to <a href="mailto:rvpark@crookedriverranch.com">rvpark@crookedriverranch.com</a> or directed to the park office at <a href="tel:+15419231441">541-923-1441</a>.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+</Base>

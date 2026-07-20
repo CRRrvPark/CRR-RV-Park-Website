@@ -25,6 +25,8 @@ Completed:
   the hero directly.
 - Site-type preview links preserve the selected filter, automatically run the
   beta map search, and distinguish other site types from unavailable matches.
+- The Park + Area hero now uses the owner-authored headline:
+  “Settle in. A site for every stay.”
 - Reset-day family finish around a policy-compliant propane fire.
 - Correct heated-pool, pet, EV, bathhouse/laundry, recreation, and dump-station
   facts.

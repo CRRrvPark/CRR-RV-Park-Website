@@ -28,6 +28,11 @@ import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 
 const PILOT_URL = 'https://crr.stratapms.com/'; // the live guest portal (StrataPMS door)
+// The pilot embeds the real booking widget in PILOT mode: full flow (live map,
+// search, pick a site, reserve) with the deposit auto-recorded as a test — the
+// guest enters no card. `embed=1` drops the widget's own header/hero; `pilot=1`
+// turns on the sandbox auto-charge (the RR server honors it only in sandbox).
+const PILOT_EMBED_URL = 'https://crr.stratapms.com/?embed=1&pilot=1';
 
 const title = 'Try Our New Reservation System | Crooked River Ranch RV Park';
 const description = 'Help us test a more modern, more intuitive way to reserve your site at Crooked River Ranch RV Park — and earn a $10 credit toward a future stay for your feedback.';
@@ -86,9 +91,9 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
               <h2>A better way<br />to book.</h2>
             </div>
             <p>
-              Browse real availability, pick your site, and walk through a reservation
-              just like the real thing — then tell us what you loved, what confused you,
-              and what you'd change. Want a quick look first? The
+              Browse real availability on the live map, pick your site, and complete a
+              reservation right here — no card needed for the pilot. Then tell us what you
+              loved, what confused you, and what you'd change. Prefer a quick look first? The
               <a href="/availability">live availability map</a> shows today's open sites
               with a last-updated stamp.
             </p>
@@ -98,8 +103,9 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
             <p class="v2-eyebrow">Before you begin — please read</p>
             <ul class="pilot-terms">
               <li>
-                <strong>No payment information is collected.</strong> This trial never
-                asks for — and never captures — your credit card or any payment details.
+                <strong>No card needed — you enter no payment details.</strong> For this
+                pilot the deposit is handled automatically as a test, so you can try the
+                whole flow without a real charge.
               </li>
               <li>
                 <strong>Availability is close, not guaranteed.</strong> The site
@@ -107,9 +113,9 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
                 the park's final word.
               </li>
               <li>
-                <strong>Your reservation is confirmed by us, personally.</strong> No
-                reservation is final until we follow up with you directly from the park
-                office to confirm your site and take the deposit.
+                <strong>We confirm with you, personally.</strong> Your reservation is
+                recorded in our new system and we follow up from the park office to
+                finalize your site — this pilot never replaces that call.
               </li>
               <li>
                 <strong>Your feedback earns you $10.</strong> Share your feedback on the
@@ -119,19 +125,28 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
             </ul>
             <div class="pilot-actions">
               <button type="button" class="v2-button v2-button-blue pilot-accept" id="pilot-accept">
-                I've read this — take me to the new system
+                I've read this — start booking
               </button>
-              <a
-                class="v2-button v2-button-blue pilot-go"
-                id="pilot-go"
-                href={PILOT_URL}
-                target="_blank"
-                rel="noopener"
-              >Open the new reservation system &rarr;</a>
+            </div>
+            <!-- The real booking widget, embedded in pilot mode. Revealed only after
+                 the disclaimer is accepted (progressive disclosure keeps the terms front
+                 and centre). Same-origin to the guest is crr.stratapms.com; the site CSP
+                 allows framing that trusted subdomain (netlify.toml frame-src). -->
+            <div class="pilot-embed-wrap" id="pilot-embed" hidden>
+              <iframe
+                class="pilot-embed"
+                id="pilot-embed-frame"
+                data-src={PILOT_EMBED_URL}
+                title="Crooked River Ranch — new reservation system (pilot)"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+              ></iframe>
               <p class="pilot-go-note" id="pilot-go-note">
-                Opens in a new tab. When you're done, call us at
-                <a href="tel:+15419231441">541-923-1441</a> or mention your feedback when
-                we follow up to confirm — that's all it takes to earn your $10 credit.
+                On a small screen this is easier full-size —
+                <a href={`${PILOT_URL}?pilot=1`} target="_blank" rel="noopener">open the pilot in a new tab &rarr;</a>.
+                When you're done, call us at <a href="tel:+15419231441">541-923-1441</a> or mention your
+                feedback when we follow up to confirm — that's all it takes to earn your $10 credit.
               </p>
             </div>
           </div>
@@ -171,15 +186,23 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
     }
     .pilot-actions { text-align: center; margin-top: 0.5rem; }
     .pilot-accept { cursor: pointer; font-family: inherit; }
-    /* The real CTA + its note stay hidden until the disclaimer is accepted. */
-    .pilot-go, .pilot-go-note { display: none; }
+    /* The embedded widget stays hidden until the disclaimer is accepted. */
     .pilot-gate.accepted .pilot-accept { display: none; }
-    .pilot-gate.accepted .pilot-go { display: inline-flex; }
-    .pilot-gate.accepted .pilot-go-note { display: block; }
-    .pilot-go-note { margin-top: 1rem; font-size: 0.9rem; line-height: 1.6; }
+    .pilot-embed-wrap { margin-top: 1.5rem; }
+    .pilot-embed {
+      width: 100%;
+      height: min(85vh, 900px);
+      min-height: 620px;
+      border: 1px solid var(--v2-line, rgba(0,0,0,0.12));
+      border-radius: 14px;
+      background: #fff;
+      display: block;
+    }
+    .pilot-go-note { margin-top: 1rem; font-size: 0.9rem; line-height: 1.6; text-align: center; }
     .pilot-footnote { margin-top: 2rem; line-height: 1.7; }
     @media (max-width: 640px) {
       .pilot-actions .v2-button { display: flex; width: 100%; justify-content: center; }
+      .pilot-embed { height: min(90vh, 780px); min-height: 560px; }
     }
   </style>
 
@@ -223,14 +246,27 @@ const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
         })
         .catch(function () { /* closed notice stands — fail closed */ });
 
-      // Click-through disclaimer gate: reveal the CTA only after acceptance.
+      // Click-through disclaimer gate: reveal the embedded booking widget only after
+      // acceptance (the iframe's src is server-rendered, so nothing loads the widget
+      // — or fires any pilot request — until the guest has read + accepted the terms).
       var gate = document.getElementById('pilot-gate');
       var accept = document.getElementById('pilot-accept');
       if (gate && accept) {
         accept.addEventListener('click', function () {
           gate.classList.add('accepted');
-          var go = document.getElementById('pilot-go');
-          if (go) go.focus();
+          var embed = document.getElementById('pilot-embed');
+          if (embed) {
+            embed.hidden = false;
+            var frame = document.getElementById('pilot-embed-frame');
+            // load the widget ONLY now (src held in data-src), so no pilot request
+            // fires — and no widget loads — before the guest has accepted the terms
+            if (frame && !frame.getAttribute('src')) {
+              var ds = frame.getAttribute('data-src');
+              if (ds) frame.setAttribute('src', ds);
+            }
+            embed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (frame) frame.focus();
+          }
         });
       }
     })();

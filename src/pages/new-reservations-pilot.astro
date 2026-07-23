@@ -1,0 +1,256 @@
+---
+/**
+ * /new-reservations-pilot — the RR-GATED pilot page for the new reservation
+ * system (re-ported 2026-07-22 from the pre-V3 `feat/rr-pilot-gate` branch,
+ * upgraded to the LIVE Rimrock gate).
+ *
+ * THE GATE IS RIMROCK'S, NOT THE PAGE'S: on load the page asks the same-origin
+ * proxy `/api/pilot-status` (→ crr.stratapms.com/api/public/pilot-status) and
+ *   • CLOSED (or unreachable, or JS off) → a polite "currently closed" notice
+ *     with the open schedule. FAIL-CLOSED by construction: the closed notice is
+ *     the server-rendered default and only an explicit `open: true` reveals
+ *     the pilot. The owner opens/closes it from Rimrock; no site deploy needed.
+ *   • OPEN → the disclaimer interstitial (unchanged from the original design):
+ *     (a) no credit card / payment info is captured in the trial,
+ *     (b) availability is accurate within a reasonable margin,
+ *     (c) real reservations are confirmed by the park office directly,
+ *     (d) feedback earns a $10 credit toward a future stay of 2+ nights —
+ *     then the click-through CTA to the live guest portal.
+ *
+ * Unlinked (not in Nav) + noindex: reachable by direct URL, handed out by the
+ * park during open hours. Guests who bookmark it while open simply see the
+ * closed notice after hours.
+ */
+export const prerender = true;
+
+import Base from '@layouts/Base.astro';
+
+const PILOT_URL = 'https://crr.stratapms.com/'; // the live guest portal (StrataPMS door)
+
+const title = 'Try Our New Reservation System | Crooked River Ranch RV Park';
+const description = 'Help us test a more modern, more intuitive way to reserve your site at Crooked River Ranch RV Park — and earn a $10 credit toward a future stay for your feedback.';
+const canonical = 'https://www.crookedriverranchrv.com/new-reservations-pilot';
+---
+<Base title={title} description={description} canonical={canonical} robots="noindex, nofollow">
+  <section class="page-hero" style="min-height:42vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow" style="justify-content:center;">You're invited</div>
+      <h1 class="hero-hl">Try our new <em>reservation system.</em></h1>
+      <p class="hero-sub" style="margin-left:auto;margin-right:auto;">
+        We are currently exploring an alternative, more modern, and more intuitive
+        system. We would love your feedback!
+      </p>
+    </div>
+  </section>
+
+  <section style="padding:3.5rem 1.5rem 4rem;">
+    <div class="container" style="max-width:760px;">
+
+      <!-- CLOSED is the DEFAULT (fail-closed): shown until the live gate says open -->
+      <div id="pilot-closed">
+        <span class="section-label">The Pilot</span>
+        <h2 class="st">The test window is <em>currently closed.</em></h2>
+        <p class="section-body" style="max-width:none;">
+          The new reservation system opens for guest testing during office hours so
+          our staff can follow up with you personally. Please check back
+          <strong id="pilot-schedule">Monday–Saturday, 10:00 AM–3:00 PM Pacific</strong> —
+          or call the office at
+          <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+          and we'll be happy to help with your reservation right now.
+        </p>
+        <p class="section-body" style="max-width:none;">
+          You can browse <a href="/availability" style="color:var(--rust);">live site availability</a>
+          any time.
+        </p>
+      </div>
+
+      <!-- OPEN content: revealed ONLY when Rimrock's gate answers open:true -->
+      <div id="pilot-open" hidden>
+        <span class="section-label">The Pilot</span>
+        <h2 class="st">A better way to <em>book.</em></h2>
+        <p class="section-body" style="max-width:none;">
+          You've been invited to test-drive the reservation system we're evaluating
+          for the park. Browse real availability, pick your site, and walk through a
+          reservation just like you would on the real thing — then tell us what you
+          loved, what confused you, and what you'd change. Your honest feedback is
+          exactly what we need.
+        </p>
+        <p class="section-body" style="max-width:none;">
+          Want a quick look first? The
+          <a href="/availability" style="color:var(--rust);">live availability map</a>
+          shows today's real site availability (with its last-updated stamp).
+        </p>
+
+        <div class="pilot-gate" id="pilot-gate">
+          <h3 class="pilot-gate-title">Before you begin — please read</h3>
+          <ul class="pilot-terms">
+            <li>
+              <strong>No payment information is collected.</strong> This trial never
+              asks for — and never captures — your credit card or any payment details.
+            </li>
+            <li>
+              <strong>Availability is close, not guaranteed.</strong> The site
+              availability shown is accurate within a reasonable margin, but it isn't
+              the park's final word.
+            </li>
+            <li>
+              <strong>Your reservation is confirmed by us, personally.</strong> No
+              reservation is final until we follow up with you directly from the park
+              office to confirm your site and take the deposit.
+            </li>
+            <li>
+              <strong>Your feedback earns you $10.</strong> Share your feedback on the
+              new system and we'll credit <strong>$10</strong> toward a future stay of
+              2 or more nights.
+            </li>
+          </ul>
+          <div class="pilot-actions">
+            <button type="button" class="btn-p pilot-accept" id="pilot-accept">
+              I've read this — take me to the new system
+            </button>
+            <a
+              class="btn-p pilot-go"
+              id="pilot-go"
+              href={PILOT_URL}
+              target="_blank"
+              rel="noopener"
+            >Open the new reservation system &rarr;</a>
+            <p class="pilot-go-note" id="pilot-go-note">
+              Opens in a new tab. When you're done, call us at
+              <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+              or mention your feedback when we follow up to confirm — that's all it
+              takes to earn your $10 credit.
+            </p>
+          </div>
+        </div>
+
+        <p class="section-body" style="max-width:none;margin-top:2.25rem;">
+          Questions first? Call the office at
+          <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a> —
+          we're happy to walk you through it. And thank you: pilots like this are how
+          we make staying on the canyon rim even easier.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .pilot-gate {
+      margin-top: 2.5rem;
+      background: var(--sand);
+      border: 1px solid rgba(196, 98, 45, 0.25);
+      border-left: 4px solid var(--rust);
+      border-radius: 4px;
+      padding: 1.75rem 1.75rem 2rem;
+    }
+    .pilot-gate-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rust);
+      margin: 0 0 1.1rem;
+    }
+    .pilot-terms {
+      list-style: none;
+      margin: 0 0 1.6rem;
+      padding: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+    .pilot-terms li {
+      position: relative;
+      padding-left: 1.6rem;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    .pilot-terms li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--rust);
+      font-weight: 600;
+    }
+    .pilot-terms li strong { color: var(--text); }
+    .pilot-actions { text-align: center; }
+    .pilot-accept { cursor: pointer; border: none; font-family: inherit; }
+    /* The real CTA + its note stay hidden until the disclaimer is accepted. */
+    .pilot-go, .pilot-go-note { display: none; }
+    .pilot-gate.accepted .pilot-accept { display: none; }
+    .pilot-gate.accepted .pilot-go { display: inline-block; }
+    .pilot-gate.accepted .pilot-go-note { display: block; }
+    .pilot-go-note {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    @media (max-width: 640px) {
+      .pilot-gate { padding: 1.4rem 1.15rem 1.6rem; }
+      .pilot-actions .btn-p { display: block; width: 100%; text-align: center; }
+    }
+  </style>
+
+  <script is:inline>
+    // THE LIVE GATE: closed is the server-rendered default; only an explicit
+    // open:true from Rimrock (via the same-origin proxy) reveals the pilot.
+    // Any failure leaves the closed notice standing — fail closed, never crash.
+    (function () {
+      var DAY_LABELS = {
+        'mon-sat': 'Monday–Saturday',
+        'mon-fri': 'Monday–Friday',
+        'mon-sun': 'every day',
+      };
+      function fmtTime(t) {
+        var m = /^(\d{1,2}):(\d{2})$/.exec(t || '');
+        if (!m) return t || '';
+        var h = parseInt(m[1], 10);
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        var h12 = h % 12 === 0 ? 12 : h % 12;
+        return h12 + ':' + m[2] + ' ' + ampm;
+      }
+      fetch('/api/pilot-status', { headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          // defense-in-depth: require the proxy's own ok flag AND the gate flag —
+          // the proxy never sends open without ok today, but the client must not
+          // trust that forever (Grok review 2026-07-22)
+          if (s && s.ok === true && s.open === true) {
+            var closed = document.getElementById('pilot-closed');
+            var open = document.getElementById('pilot-open');
+            if (closed) closed.hidden = true;
+            if (open) open.hidden = false;
+            return;
+          }
+          // stay closed; refine the schedule line when Rimrock told us one
+          var sched = s && s.schedule;
+          var el = document.getElementById('pilot-schedule');
+          if (el && sched && sched.start && sched.end) {
+            var days = DAY_LABELS[sched.days] || sched.days || '';
+            el.textContent =
+              days + ', ' + fmtTime(sched.start) + '–' + fmtTime(sched.end) + ' Pacific';
+          }
+        })
+        .catch(function () { /* closed notice stands — fail closed */ });
+
+      // Click-through disclaimer gate: reveal the CTA only after acceptance.
+      var gate = document.getElementById('pilot-gate');
+      var accept = document.getElementById('pilot-accept');
+      if (gate && accept) {
+        accept.addEventListener('click', function () {
+          gate.classList.add('accepted');
+          var go = document.getElementById('pilot-go');
+          if (go) go.focus();
+        });
+      }
+    })();
+  </script>
+
+  <!-- No JS ⇒ the gate cannot be checked ⇒ the closed notice stands (fail closed).
+       Guests without JS are pointed at the phone + the availability page, which is
+       exactly the pre-pilot experience. -->
+</Base>

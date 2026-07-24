@@ -2,168 +2,128 @@
 /**
  * Live Rimrock map mirror for the public beta path.
  * Embeds crr.stratapms.com in embed+request mode (exact RR map UI).
- * Site selection posts a message to prefill the Netlify request form below;
- * guests must still call to confirm and pay deposit — staff create the stay in Firefly.
+ * Guests use the normal Rimrock booking screens inside the iframe; RR emails
+ * the park invisibly on submit. No website form on this page.
+ * Optional: postMessage also lets this page silently POST to Netlify Forms.
  */
 
 export interface Props {
-  /** Optional site-type hint for the request form (website query ?type=). */
   preferredType?: string;
 }
 
 const { preferredType = '' } = Astro.props;
 
-const RR_EMBED_URL = 'https://crr.stratapms.com/?embed=1&request=1';
-const submitted = Astro.url.searchParams.get('submitted') === 'true';
-
-const typeLabel: Record<string, string> = {
-  'full-hookup': 'Full hookup',
-  water_electric: 'Water + electric',
-  tent_or_dry: 'Tent or dry camp',
-  tent: 'Tent',
-  dry: 'Dry camp',
-};
-const preferredTypeLabel = typeLabel[preferredType] ?? preferredType;
+const params = new URLSearchParams({ embed: '1', request: '1' });
+if (preferredType) params.set('type', preferredType);
+const RR_EMBED_URL = `https://crr.stratapms.com/?${params.toString()}`;
 ---
 <div class="crr-rr-beta" data-rimrock-beta>
-  <div class="crr-rr-disclaimers v2-reveal">
-    <p class="v2-eyebrow">Before you start</p>
-    <h2>This is the live Rimrock map beta</h2>
-    <ul class="crr-rr-disclaimer-list">
-      <li>What you see is Rimrock’s live park map — a preview that may not be perfect.</li>
-      <li>Submitting a request is <strong>not</strong> a confirmed reservation and does <strong>not</strong> take payment.</li>
-      <li>After you submit, you <strong>must call</strong> <a href="tel:+15419231441">541-923-1441</a> to confirm the site is still available, complete the reservation, and <strong>pay your deposit</strong>.</li>
-      <li>Park staff create the stay in Firefly after that call, using the details you send below.</li>
-    </ul>
+  <div class="v2-section-heading v2-reveal">
+    <div>
+      <p class="v2-eyebrow">Live map · beta</p>
+      <h2>Use the map like a<br />normal booking.</h2>
+    </div>
+    <p>
+      This is Rimrock’s live park map — a preview that may not be perfect.
+      Search dates, pick a site, and enter your details inside the map.
+      Submitting is <strong>not</strong> a confirmed reservation and does <strong>not</strong> take payment.
+      After you submit, <strong>call <a href="tel:+15419231441">541-923-1441</a></strong> to confirm the site is still available and pay your deposit.
+      Staff create the stay in Firefly from the request we receive.
+    </p>
   </div>
 
-  <div class="crr-rr-embed-wrap v2-reveal">
+  <div class="crr-live-panel crr-rr-embed-wrap v2-reveal">
     <iframe
       class="crr-rr-embed"
       src={RR_EMBED_URL}
       title="Crooked River Ranch — live Rimrock map (beta)"
-      loading="lazy"
+      loading="eager"
       referrerpolicy="strict-origin-when-cross-origin"
       allow="fullscreen"
     ></iframe>
-    <p class="crr-rr-embed-note">
-      Use the map to search dates and pick a site. Then complete the request form below —
-      or <a href="https://crr.stratapms.com/?request=1" target="_blank" rel="noopener">open the map in a new tab</a>.
-    </p>
   </div>
 
-  <div class="crr-form-shell v2-reveal" id="beta-request">
-    {submitted ? (
-      <div class="crr-empty-state">
-        <h3>Request received.</h3>
-        <p>
-          Call <a href="tel:+15419231441">541-923-1441</a> to confirm the site is still available,
-          finish the reservation, and pay your deposit. We’ll use the details you submitted when we create the stay.
-        </p>
-      </div>
-    ) : (
-      <>
-        <div class="crr-form-heading">
-          <div>
-            <p class="v2-eyebrow v2-eyebrow-light">Live map beta · request</p>
-            <h2>Send your details to the office.</h2>
-          </div>
-          <p>
-            This beta request notifies the park by email. It does not confirm or charge.
-            Call after you submit.
-          </p>
-        </div>
-        <form
-          class="crr-form"
-          name="beta-reservation-request"
-          action="/availability?submitted=true#beta-request"
-          method="POST"
-          data-netlify="true"
-          data-netlify-honeypot="bot-field"
-          data-beta-request-form
-        >
-          <input type="hidden" name="form-name" value="beta-reservation-request" />
-          <input type="hidden" name="source_page" value="availability-beta" />
-          <p class="crr-form-beta-tag" aria-hidden="true">Live map beta request</p>
-          <p hidden><label>Do not fill this out: <input name="bot-field" /></label></p>
-
-          <fieldset>
-            <legend>Guest</legend>
-            <label>First name<input name="first_name" autocomplete="given-name" required /></label>
-            <label>Last name<input name="last_name" autocomplete="family-name" required /></label>
-            <label>Email<input type="email" name="email" autocomplete="email" required /></label>
-            <label>Phone<input type="tel" name="phone" autocomplete="tel" required /></label>
-          </fieldset>
-
-          <fieldset>
-            <legend>Requested stay</legend>
-            <label>Arrival<input type="date" name="arrival" data-beta-arrival required /></label>
-            <label>Departure<input type="date" name="departure" data-beta-departure required /></label>
-            <label>Site number<input name="site_number" data-beta-site placeholder="e.g. A12" required /></label>
-            <label>
-              Site type
-              <input
-                name="site_type"
-                data-beta-site-type
-                value={preferredTypeLabel}
-                placeholder="Full hookup, water+electric, tent…"
-              />
-            </label>
-            <label>Party size<input type="number" name="party_size" min="1" max="20" value="2" /></label>
-            <label class="is-wide">Notes<textarea name="notes" rows="3" placeholder="Anything else the office should know"></textarea></label>
-          </fieldset>
-
-          <fieldset>
-            <legend>Rig</legend>
-            <label>Exact length (feet)<input type="number" name="rig_length_ft" min="1" max="99" data-beta-rig-length /></label>
-            <label>
-              Slides
-              <select name="slides" data-beta-slides>
-                <option value="">Select</option>
-                <option>None</option>
-                <option>Yes</option>
-                <option>Driver side</option>
-                <option>Passenger side</option>
-                <option>Both sides</option>
-              </select>
-            </label>
-          </fieldset>
-
-          <p class="crr-form-note">
-            By submitting, you agree to call the office to confirm availability and pay the deposit before the stay is reserved.
-          </p>
-          <button class="v2-button v2-button-blue" type="submit">Submit site request</button>
-        </form>
-      </>
-    )}
-  </div>
+  <p class="crr-rr-embed-note v2-reveal">
+    Prefer a larger view?
+    <a href={`https://crr.stratapms.com/?request=1${preferredType ? `&type=${encodeURIComponent(preferredType)}` : ''}`} target="_blank" rel="noopener">
+      Open the live map in a new tab
+    </a>
+    · or book and pay now via
+    <a href="https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK">Firefly</a>.
+  </p>
 </div>
+
+{/* Invisible Netlify Forms bridge — kept off-screen; RR posts here when a request completes. */}
+<form
+  class="crr-beta-netlify-bridge"
+  name="beta-reservation-request"
+  method="POST"
+  data-netlify="true"
+  data-netlify-honeypot="bot-field"
+  data-beta-netlify-bridge
+  hidden
+  aria-hidden="true"
+  tabindex="-1"
+>
+  <input type="hidden" name="form-name" value="beta-reservation-request" />
+  <input type="hidden" name="source_page" value="availability-beta" />
+  <input type="text" name="bot-field" />
+  <input type="text" name="first_name" data-nf-first />
+  <input type="text" name="last_name" data-nf-last />
+  <input type="email" name="email" data-nf-email />
+  <input type="tel" name="phone" data-nf-phone />
+  <input type="date" name="arrival" data-nf-arrival />
+  <input type="date" name="departure" data-nf-departure />
+  <input type="text" name="site_number" data-nf-site />
+  <input type="text" name="site_type" data-nf-site-type />
+  <input type="number" name="party_size" data-nf-party />
+  <textarea name="notes" data-nf-notes></textarea>
+  <input type="number" name="rig_length_ft" data-nf-rig />
+  <input type="text" name="slides" data-nf-slides />
+</form>
 
 <script is:inline>
   (function () {
-    var root = document.querySelector('[data-rimrock-beta]');
-    if (!root) return;
-    var form = root.querySelector('[data-beta-request-form]');
+    var form = document.querySelector('[data-beta-netlify-bridge]');
     if (!form) return;
 
-    function setVal(sel, value) {
+    function set(sel, value) {
       var el = form.querySelector(sel);
-      if (!el || value == null || value === '') return;
+      if (!el || value == null) return;
       el.value = String(value);
+    }
+
+    function splitName(full) {
+      var parts = String(full || '').trim().split(/\s+/);
+      if (!parts.length || !parts[0]) return { first: '', last: '' };
+      return { first: parts[0], last: parts.slice(1).join(' ') };
     }
 
     window.addEventListener('message', function (event) {
       if (event.origin !== 'https://crr.stratapms.com') return;
       var data = event.data;
-      if (!data || data.type !== 'rimrock-site-request') return;
-      setVal('[data-beta-site]', data.siteCode || data.code);
-      setVal('[data-beta-arrival]', data.dateIn || data.in);
-      setVal('[data-beta-departure]', data.dateOut || data.out);
-      setVal('[data-beta-rig-length]', data.rigLengthFt);
-      if (data.slides) setVal('[data-beta-slides]', data.slides === 'none' ? 'None' : 'Yes');
-      if (data.siteType) setVal('[data-beta-site-type]', data.siteType);
-      var target = document.getElementById('beta-request');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!data || data.type !== 'rimrock-beta-request') return;
+
+      var names = splitName(data.guestName || data.name);
+      set('[data-nf-first]', data.firstName || names.first);
+      set('[data-nf-last]', data.lastName || names.last);
+      set('[data-nf-email]', data.email);
+      set('[data-nf-phone]', data.phone);
+      set('[data-nf-arrival]', data.dateIn || data.arrival);
+      set('[data-nf-departure]', data.dateOut || data.departure);
+      set('[data-nf-site]', data.siteCode || data.site);
+      set('[data-nf-site-type]', data.siteType || '');
+      set('[data-nf-party]', data.partySize || data.party || '');
+      set('[data-nf-notes]', data.notes || 'Submitted from Rimrock live map beta (invisible bridge).');
+      set('[data-nf-rig]', data.rigLengthFt || '');
+      set('[data-nf-slides]', data.slides || '');
+
+      var body = new URLSearchParams(new FormData(form)).toString();
+      fetch('/__forms.html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body,
+      }).catch(function () { /* RR email is the primary path */ });
     });
   })();
 </script>

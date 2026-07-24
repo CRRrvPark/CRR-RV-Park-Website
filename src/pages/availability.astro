@@ -11,23 +11,23 @@ const preferredType = Astro.url.searchParams.get('type') ?? '';
 
 const title = 'Live Map Beta — Request a Site | Crooked River Ranch RV Park';
 const description =
-  'Try the Rimrock live map beta: preview open sites, send a request to the park, then call 541-923-1441 to confirm and pay your deposit. Not a confirmed reservation.';
+  'Try the Rimrock live map beta: search dates, pick a site, and send a request. Then call 541-923-1441 to confirm and pay your deposit. Not a confirmed reservation.';
 const canonical = 'https://www.crookedriverranchrv.com/availability';
 ---
 <Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/aerial_wide.jpg" heroImagePreload="/images/aerial_wide.webp">
   <main id="main-content">
     <PageHero
       eyebrow="Live map · beta"
-      headline="Request a site"
-      accent="on the Rimrock map."
-      body="This is Rimrock’s live park map — a preview, not a confirmed booking. Pick a site, send your details, then call 541-923-1441 to confirm availability and pay your deposit. Staff create the stay in Firefly after that call."
+      headline="Try the live map."
+      accent="Then call to confirm."
+      body="Search dates and pick a site in Rimrock just like a normal booking. Your request is sent to the office — it is not a confirmed reservation and does not take payment. Call 541-923-1441 to confirm availability and pay your deposit."
       image="/images/aerial_wide.webp"
       imageMobile="/images/aerial_wide-mobile.webp"
       imageJpg="/images/aerial_wide.jpg"
       alt="Aerial view of Crooked River Ranch RV Park and the surrounding canyon"
       caption="Rimrock live map · request path · call required"
       primaryHref="#live-availability"
-      primaryLabel="Open live map (beta)"
+      primaryLabel="Open the live map"
       secondaryHref="tel:+15419231441"
       secondaryLabel="Call 541-923-1441"
     />

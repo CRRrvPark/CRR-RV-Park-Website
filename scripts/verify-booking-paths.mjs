@@ -112,8 +112,12 @@ for (const path of paths) {
     if (!/541-923-1441/.test(pageText)) {
       failures.push(`${path}: missing required call-to-confirm phone number`);
     }
-    if ($('form[name="beta-reservation-request"]').length === 0 && !pageText.includes('Request received')) {
-      failures.push(`${path}: beta reservation request form is missing`);
+    // Visible guest form must not appear — RR collects details inside the embed.
+    if ($('.crr-form-shell form[name="beta-reservation-request"]').length > 0) {
+      failures.push(`${path}: visible website request form must not appear on beta (RR collects invisibly)`);
+    }
+    if ($('[data-beta-netlify-bridge]').length === 0) {
+      failures.push(`${path}: invisible Netlify bridge for beta-reservation-request is missing`);
     }
     // Beta surface must not hand guests to Firefly from the map UI.
     const fireflyFromBetaUi = $('main a').toArray().filter((a) => {

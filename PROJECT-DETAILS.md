@@ -36,11 +36,13 @@ Primary decision paths:
    This is the authoritative path for payment and confirmation.
 2. **Rimrock live-map beta (request only).** `/availability` embeds the live
    Rimrock guest map (`https://crr.stratapms.com/?embed=1&request=1`) — not
-   the website Supabase `AvailabilityMap`. Guests pick a site, submit a
-   Netlify form (`beta-reservation-request`) that emails the park, then
-   **must call** 541-923-1441 to confirm availability and pay the deposit.
-   Staff create the stay in Firefly. Submit is not a reservation and takes
-   no payment. Preview may be imperfect.
+   the website Supabase `AvailabilityMap`. Guests use the **normal Rimrock
+   booking screens** inside the iframe (search → pick → enter details). On
+   submit, Rimrock emails the park invisibly (`POST /api/public/beta-site-request`)
+   and may also postMessage to a hidden Netlify Forms bridge on this site.
+   **No visible website form.** Submit is not a reservation and takes no
+   payment. Guest **must call** 541-923-1441 to confirm and pay the deposit;
+   staff create the stay in Firefly. Preview may be imperfect.
 
 Beta discovery is isolated: a sitewide clickable banner; Stay mega keeps only
 **Interactive park map** (`/park-map`); default FinalCta secondary is the park
@@ -55,11 +57,11 @@ on ordinary pages. Mid-page “book this type” CTAs may route to
 `scripts/verify-booking-paths.mjs` crawls every sitemap route and enforces
 Firefly persistence + labeled beta entry.
 
-**Ops:** after deploy, set Netlify Forms notification for
-`beta-reservation-request` to `rvpark@crookedriverranch.com`. Rimrock guest
-`?request=1` (postMessage on site pick) must be deployed to
-`crr.stratapms.com` for map→form prefills to work; until then guests can still
-type site/dates into the form.
+**Ops:** Netlify Forms notification for `beta-reservation-request` should remain
+wired to `RVPark@crookedriverranch.com` as a backup bridge. Primary path is
+Rimrock `POST /api/public/beta-site-request` → tenant `notification_emails`.
+Deploy Rimrock guest+API with `?request=1` support to `crr.stratapms.com` for
+the invisible submit path to work end-to-end.
 
 Supporting routes:
 

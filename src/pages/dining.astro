@@ -10,13 +10,14 @@ import { getLocalPlaces } from '@lib/area-guide';
 
 const places = await getLocalPlaces();
 const groups = [
-  { key: 'restaurant', label: 'Restaurants', heading: 'Dinner, lunch, and an easy night out.' },
-  { key: 'brewery', label: 'Breweries', heading: 'A local pour and something to eat.' },
-  { key: 'coffee', label: 'Coffee', heading: 'Coffee before the day gets moving.' },
-  { key: 'shop', label: 'Local shops', heading: 'Useful stops and local finds.' },
-  { key: 'attraction', label: 'Attractions', heading: 'Places worth adding to the route.' },
-  { key: 'other', label: 'More nearby', heading: 'A few more useful local stops.' },
+  { key: 'restaurant', label: 'Restaurants', heading: 'Sit-down and easy nights out.' },
+  { key: 'brewery', label: 'Breweries', heading: 'A local pour.' },
+  { key: 'coffee', label: 'Coffee', heading: 'Coffee to start the day.' },
+  { key: 'shop', label: 'Local shops', heading: 'Useful stops.' },
+  { key: 'attraction', label: 'Attractions', heading: 'Worth a short drive.' },
+  { key: 'other', label: 'More nearby', heading: 'More nearby.' },
 ] as const;
+const placeCardHelper = 'Open a card for directions, the official website, current rating context, and availability details when supplied by Google.';
 const title = 'Dining, Coffee & Local Favorites near Crooked River Ranch';
 const description = 'Browse nearby restaurants, breweries, coffee, shops, and local favorites with current Google details and directions from Crooked River Ranch RV Park.';
 const canonical = 'https://www.crookedriverranchrv.com/dining';
@@ -24,10 +25,10 @@ const canonical = 'https://www.crookedriverranchrv.com/dining';
 <Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/central_oregon.jpg" heroImagePreload="/images/central_oregon.webp">
   <main id="main-content">
     <PageHero
-      eyebrow="Food + local favorites"
-      headline="Choose the stop."
-      accent="Keep the drive simple."
-      body="Find a table, coffee, local pour, or useful stop with current details and directions carried by Google."
+      eyebrow="Food & local stops"
+      headline="Where to eat"
+      accent="near the Ranch."
+      body="Restaurants, coffee, local pours, and useful stops — with current details from Google."
       image="/images/central_oregon.webp"
       imageMobile="/images/central_oregon-mobile.webp"
       imageJpg="/images/central_oregon.jpg"
@@ -44,23 +45,25 @@ const canonical = 'https://www.crookedriverranchrv.com/dining';
         {!places.length ? (
           <div class="crr-empty-state"><h3>The local guide is refreshing.</h3><p>Open the <a href="/area-guide#area-map">area map</a> or ask the office for a nearby recommendation.</p></div>
         ) : (
-          groups.map((group) => {
-            const matches = places.filter((place) => place.category === group.key);
-            return matches.length ? (
-              <section class="crr-list-section">
-                <div class="v2-section-heading v2-reveal">
-                  <div><p class="v2-eyebrow">{group.label}</p><h2>{group.heading}</h2></div>
-                  <p>Open a card for directions, the official website, current rating context, and availability details when supplied by Google.</p>
-                </div>
-                <div class="crr-card-grid">{matches.map((place) => <LocalPlaceCard place={place} />)}</div>
-              </section>
-            ) : null;
-          })
+          <>
+            <p class="crr-data-note v2-reveal" style="margin-bottom: 1.5rem;">{placeCardHelper}</p>
+            {groups.map((group) => {
+              const matches = places.filter((place) => place.category === group.key);
+              return matches.length ? (
+                <section class="crr-list-section">
+                  <div class="v2-section-heading v2-reveal">
+                    <div><p class="v2-eyebrow">{group.label}</p><h2>{group.heading}</h2></div>
+                  </div>
+                  <div class="crr-card-grid">{matches.map((place) => <LocalPlaceCard place={place} />)}</div>
+                </section>
+              ) : null;
+            })}
+          </>
         )}
         <p class="crr-data-note">Place details are supplied by Google and may change. Confirm hours and availability with the business before driving.</p>
       </div>
     </section>
 
-    <FinalCta headline="Bring dinner back to the canyon." body="Pick up something nearby, return to camp, and let the last part of the day stay easy." image="/images/firepit_evening.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book on Firefly" secondaryHref="/area-guide" secondaryLabel="Plan the full day" />
+    <FinalCta headline="Bring dinner back to camp." body="Grab something nearby and finish the evening on the canyon." image="/images/firepit_evening.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="/area-guide" secondaryLabel="Plan the full day" />
   </main>
 </Base>

@@ -48,10 +48,10 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
 <Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/rv_park_map.jpg" heroImagePreload="/images/aerial_aloop.webp">
   <main id="main-content">
     <PageHero
-      eyebrow="Interactive park map"
-      headline="Choose the site"
+      eyebrow="Park map"
+      headline="See every site"
       accent="in context."
-      body="See loops, site positions, and individual details together. Open a site for its fit, photos, status, and reservation path."
+      body="Loops, amenities, and site photos in one place. Open a site for details, then book online when you’re set."
       image="/images/aerial_aloop.webp"
       imageMobile="/images/aerial_aloop-mobile.webp"
       imageJpg="/images/aerial_aloop.jpg"
@@ -60,13 +60,13 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
       primaryHref="#interactive-map"
       primaryLabel="Open the map"
       secondaryHref="/availability"
-      secondaryLabel="Try the live map beta"
+      secondaryLabel="Live map (beta)"
     />
     <section class="crr-section crr-section-soft" id="interactive-map">
       <div class="v2-shell">
         <div class="v2-section-heading v2-reveal">
-          <div><p class="v2-eyebrow">The full layout</p><h2>Open a site.<br />Understand the fit.</h2></div>
-          <p>Use the map for location and site details. Use live availability when dates are the deciding factor.</p>
+          <div><p class="v2-eyebrow">The full layout</p><h2>Location first.<br />Dates when you need them.</h2></div>
+          <p>Use this map to understand the layout. Use the live map beta when dates and rig filters matter.</p>
         </div>
         <div class="crr-map-panel v2-reveal">
           {!sites.length ? (
@@ -79,6 +79,6 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
         </div>
       </div>
     </section>
-    <FinalCta headline="Ready to reserve the stay?" body="Book through Firefly now, or explicitly open the developing live map to preview dates, rig fit, and hookup preferences." image="/images/aerial_canyon_rim.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book on Firefly" secondaryHref="/availability" secondaryLabel="Try the live map beta" />
+    <FinalCta headline="Ready to book?" body="Reserve online, or try the live map beta if you want to preview dates and fit first." image="/images/aerial_canyon_rim.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="/availability" secondaryLabel="Live map (beta)" />
   </main>
 </Base>

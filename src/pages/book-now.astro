@@ -34,9 +34,34 @@ const polygonSites = sites.filter(
 );
 const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
 
-const title = 'Plan Your Visit & Reserve | Crooked River Ranch RV Park';
-const description = 'Reserve an RV site directly through Firefly, review current rates and arrival details, or optionally preview the developing live map at Crooked River Ranch RV Park.';
+const title = 'Rates, Arrival & Reservations | Crooked River Ranch RV Park';
+const description = 'Current starting rates, check-in times, and how to reserve an RV site at Crooked River Ranch near Smith Rock. Book online or call the office.';
 const canonical = 'https://www.crookedriverranchrv.com/book-now';
+
+const bookingFaqs = [
+  {
+    question: 'Do I book on this website?',
+    answer: 'You’ll start here and finish in our reservation system (Firefly) for payment and confirmation.',
+  },
+  {
+    question: 'Is there a reservation fee?',
+    answer: 'Yes — $6, plus tax on rates.',
+  },
+  {
+    question: 'What’s the monthly rate?',
+    answer: '$850 for full hookup, October–April, application required.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: bookingFaqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+};
 ---
 <Base
   title={title}
@@ -44,22 +69,23 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
   canonical={canonical}
   ogImage="https://www.crookedriverranchrv.com/images/winter_sunset.jpg"
   heroImagePreload="/images/winter_sunset.webp"
+  schemas={[faqSchema]}
 >
   <main id="main-content">
     <PageHero
       eyebrow="Plan your visit"
-      headline="Ready to reserve?"
-      accent="Book directly in Firefly."
-      body="Firefly is the current reservation system for availability, payment, and confirmation. The developing live map remains available as an optional planning preview."
+      headline="Rates, arrival details,"
+      accent="and how to book."
+      body="Reserve online for live availability, payment, and confirmation. Optional: preview sites on the live map first. Or call 541-923-1441."
       image="/images/winter_sunset.webp"
       imageMobile="/images/winter_sunset-mobile.webp"
       imageJpg="/images/winter_sunset.jpg"
       alt="Winter sunset over the Crooked River canyon"
       caption="Open year-round · Seasonal amenities vary"
       primaryHref={FIREFLY_RESERVATION_URL}
-      primaryLabel="Book now on Firefly"
+      primaryLabel="Book your site"
       secondaryHref="#live-availability"
-      secondaryLabel="Try the live map beta"
+      secondaryLabel="Live map (beta)"
     />
 
     <section class="v2-live-section" id="live-availability">
@@ -67,9 +93,9 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
         <div class="v2-live-heading v2-reveal">
           <div>
             <p class="v2-eyebrow">Optional planning preview</p>
-            <h2>Try the live map<br />beta.</h2>
+            <h2>Optional: preview<br />on the live map</h2>
           </div>
-          <p>Enter dates and rig details to preview compatible sites. For authoritative availability and booking, continue directly to Firefly.</p>
+          <p>Enter dates and rig details to look around. When you’re ready to pay and confirm, book online.</p>
         </div>
         <div class="v2-live-map v2-reveal">
           {canRenderMap && activeParkMap ? (
@@ -81,7 +107,7 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
               <p>Have your dates, rig type, exact length, and slide configuration ready.</p>
               <div>
                 <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
-                <a class="v2-inline-link" href={FIREFLY_RESERVATION_URL} target="_blank" rel="noreferrer">Search Firefly directly <span aria-hidden="true">↗</span></a>
+                <a class="v2-inline-link" href={FIREFLY_RESERVATION_URL} target="_blank" rel="noreferrer">Book online <span aria-hidden="true">↗</span></a>
               </div>
             </div>
           )}
@@ -92,13 +118,13 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
     <section class="v2-booking-sequence">
       <div class="v2-shell">
         <div class="v2-sequence-heading v2-reveal">
-          <p class="v2-eyebrow v2-eyebrow-light">The direct booking path</p>
-          <h2>One decision<br />at a time.</h2>
+          <p class="v2-eyebrow v2-eyebrow-light">How booking works</p>
+          <h2>How booking works</h2>
         </div>
         <ol class="v2-sequence-grid">
-          <li class="v2-reveal"><span>01</span><h3>Open Firefly.</h3><p>Choose the arrival and departure dates in the park's current reservation system.</p></li>
-          <li class="v2-reveal"><span>02</span><h3>Choose an available site.</h3><p>Review the current choices and select the one that works for the stay.</p></li>
-          <li class="v2-reveal"><span>03</span><h3>Complete the reservation.</h3><p>Enter payment and receive the Firefly booking confirmation.</p></li>
+          <li class="v2-reveal"><span>01</span><h3>Open the reservation page.</h3><p>Choose your arrival and departure dates online.</p></li>
+          <li class="v2-reveal"><span>02</span><h3>Pick an available site.</h3><p>Review the current choices for your dates and select the one that works.</p></li>
+          <li class="v2-reveal"><span>03</span><h3>Pay and receive confirmation.</h3><p>You’ll finish payment and confirmation in Firefly.</p></li>
         </ol>
       </div>
     </section>
@@ -108,9 +134,9 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
         <div class="v2-section-heading v2-reveal">
           <div>
             <p class="v2-eyebrow">Rates at a glance</p>
-            <h2>Current starting<br />site rates.</h2>
+            <h2>Current starting<br />rates</h2>
           </div>
-          <p>Taxes and the reservation fee are added in Firefly. Review the final total and cancellation terms before confirming.</p>
+          <p>Taxes and the reservation fee are added when you book. Review the final total and cancellation terms before confirming.</p>
         </div>
         <div class="crr-table-wrap v2-reveal">
           <table class="crr-table">
@@ -132,9 +158,9 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
         <div class="v2-section-heading v2-reveal">
           <div>
             <p class="v2-eyebrow">Before the drive</p>
-            <h2>The details worth<br />knowing now.</h2>
+            <h2>Arrival basics</h2>
           </div>
-          <p>Arrival basics, current policies, and a phone number stay close to the reservation path.</p>
+          <p>14875 SW Hays Lane, Terrebonne, OR 97760. Check-in 2:00 pm · Check-out 12:00 pm. Open year-round; the pool and some recreation are seasonal. Pets are welcome.</p>
         </div>
         <div class="v2-arrival-grid">
           <article class="v2-arrival-primary v2-reveal">
@@ -154,8 +180,8 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
       <div class="v2-shell v2-policy-grid">
         <div class="v2-reveal">
           <p class="v2-eyebrow">Current terms</p>
-          <h2>Policies belong<br />before the reservation.</h2>
-          <p>Review cancellation terms, pet rules, quiet hours, fire safety, and park expectations from one maintained source.</p>
+          <h2>Read the policies<br />before you book</h2>
+          <p>Quiet hours, propane-only fires, pet rules, and cancellation terms — better now than at the gate.</p>
         </div>
         <div class="v2-policy-actions v2-reveal">
           <a class="v2-policy-link" href="/park-policies"><span>Read park policies</span><i>→</i></a>
@@ -168,23 +194,42 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
     <section class="v2-help-strip">
       <div class="v2-shell v2-help-strip-grid">
         <div class="v2-reveal">
-          <p class="v2-eyebrow v2-eyebrow-light">Want a second opinion?</p>
-          <h2>Tell us the rig.<br />We’ll help with the fit.</h2>
+          <p class="v2-eyebrow v2-eyebrow-light">Need a hand?</p>
+          <h2>Need help choosing a site?</h2>
         </div>
         <div class="v2-help-actions v2-reveal">
-          <p>The office can help with slide configuration, group stays, extended stays, and site location.</p>
+          <p>Tell us your rig length, slides, and what you care about (canyon, shade, near the pool). We’ll help.</p>
           <a class="v2-button v2-button-yellow" href="tel:+15419231441">Call the park <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
 
+    <section class="crr-section crr-section-soft" id="booking-faq">
+      <div class="v2-shell">
+        <div class="v2-section-heading v2-reveal">
+          <div>
+            <p class="v2-eyebrow">Common questions</p>
+            <h2>Booking FAQ</h2>
+          </div>
+        </div>
+        <div class="crr-faq-list v2-reveal">
+          {bookingFaqs.map((faq) => (
+            <details class="crr-faq-item">
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
     <FinalCta
-      headline="Ready to lock in the stay?"
-      body="Check current inventory, enter payment, and receive the completed reservation confirmation through Firefly."
+      headline="Book your site."
+      body="Check dates, pay, and get confirmation online."
       primaryHref={FIREFLY_RESERVATION_URL}
-      primaryLabel="Book now on Firefly"
+      primaryLabel="Book your site"
       secondaryHref="#live-availability"
-      secondaryLabel="Try the live map beta"
+      secondaryLabel="Live map (beta)"
     />
   </main>
 </Base>

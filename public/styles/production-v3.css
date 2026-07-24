@@ -1913,6 +1913,37 @@
   text-align: center;
 }
 
+.crr-faq-list {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+}
+
+.crr-faq-item {
+  border: 1px solid rgba(20, 40, 36, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 4px 18px;
+}
+
+.crr-faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 14px 0;
+  font-weight: 600;
+  color: #142824;
+}
+
+.crr-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.crr-faq-item p {
+  margin: 0 0 16px;
+  color: rgba(20, 40, 36, 0.72);
+  line-height: 1.55;
+}
+
 .crr-prose {
   min-width: 0;
   max-width: 820px;
@@ -2100,6 +2131,14 @@
 .crr-footer-lead h2 {
   margin: 42px 0 34px;
   font-size: clamp(38px, 4vw, 64px);
+}
+
+.crr-footer-lead > p {
+  max-width: 34ch;
+  margin: -18px 0 28px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .crr-footer-links {

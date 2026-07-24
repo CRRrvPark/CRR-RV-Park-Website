@@ -30,8 +30,8 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
       <div class="v2-park-hero-overlay"></div>
       <div class="v2-shell v2-park-hero-inner v2-reveal">
         <p class="v2-eyebrow v2-eyebrow-light">Park + area</p>
-        <h1>Settle in.<br />A site for every stay.</h1>
-        <p>Swim, golf, book a little restoration, walk the canyon, or start the day at Smith Rock. The site stays ready for your return.</p>
+        <h1>Your Central Oregon<br />base camp.</h1>
+        <p>Smith Rock about 15 minutes away. Canyon walks from the park. Golf and the pool next door. Redmond, Sisters, and Bend when you want town.</p>
         <a class="v2-button v2-button-yellow" href="#build-the-day">Build the day <span aria-hidden="true">↓</span></a>
       </div>
       <div class="v2-park-hero-index">
@@ -47,10 +47,10 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
         <div class="v2-section-heading v2-reveal">
           <div>
             <p class="v2-eyebrow">Build the day</p>
-            <h2>Start with how<br />you want it to feel.</h2>
+            <h2>Build a day<br />from here.</h2>
           </div>
           <div class="v3-heading-side">
-            <p>Filter the highlights by travel time or pace. The live area map keeps current places, directions, and trip ideas together.</p>
+            <p>Filter by drive time or pace, then open the map. Your site is waiting when you get back.</p>
             <a class="v3-area-map-link" href="#area-map">
               <span class="v3-map-pulse" aria-hidden="true"></span>
               Open the Google-powered area map
@@ -126,7 +126,7 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
               <span>After dark</span>
               <h3>Step outside for the sky.</h3>
               <p>Return to your site and leave the last part of the day open.</p>
-              <a href={FIREFLY_RESERVATION_URL}>Book a site on Firefly ↗</a>
+              <a href={FIREFLY_RESERVATION_URL}>Book your site ↗</a>
             </div>
           </article>
         </div>
@@ -138,7 +138,7 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
         <div class="v2-section-heading v2-reveal">
           <div>
             <p class="v2-eyebrow">Live regional map</p>
-            <h2>See what is<br />actually nearby.</h2>
+            <h2>What’s actually<br />nearby.</h2>
           </div>
           <p>Trails, dining, attractions, local services, and trip ideas share one map. Filter the pins, open a place, and carry the directions into your day.</p>
         </div>
@@ -164,13 +164,13 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
         </figure>
         <div class="v3-unwind-copy v2-reveal">
           <p class="v2-eyebrow v2-eyebrow-light">The reset day</p>
-          <h2>Self-care.<br />Heated pool.<br />Local wine.<br />Laughter.</h2>
-          <p>Book a little care close to the ranch, spend the warmest part of the day poolside, then bring the evening back to the people you came with.</p>
+          <h2>An easy<br />reset day.</h2>
+          <p>Swim when the pool’s open, sit on the rim, or drive about 20 minutes for a local tasting room. No itinerary required.</p>
           <ol class="v3-unwind-steps">
             <li><span>01</span><div><strong>Book the quiet hour</strong><p>Find massage and pedicure options near the ranch using the live area map.</p></div></li>
             <li><span>02</span><div><strong>Keep the afternoon open</strong><p>Come back for the heated pool, a book, and nowhere else to be.</p></div></li>
             <li><span>03</span><div><strong>Bring home the bottle</strong><p>Local wineries and tasting rooms are within roughly 20 minutes of the park.</p></div></li>
-            <li><span>04</span><div><strong>Stay for the firelight</strong><p>Pull the chairs close, settle in with the family, and let good stories and easy laughter carry the evening.</p></div></li>
+            <li><span>04</span><div><strong>Stay for the firelight</strong><p>Pull the chairs close and settle in for the evening back at your site.</p></div></li>
           </ol>
           <div class="v3-unwind-actions">
             <a class="v2-button v2-button-yellow" href="#area-map">Plan it on the area map <span aria-hidden="true">↑</span></a>
@@ -184,8 +184,8 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
       <div class="v2-shell v2-itinerary-grid">
         <div class="v2-itinerary-copy v2-reveal">
           <p class="v2-eyebrow v2-eyebrow-light">Choose the energy</p>
-          <h2>Three directions.<br />No timetable.</h2>
-          <p>Start anywhere, stay as long as you like, and leave room to change your mind. Check current hours, weather, and event details before you go.</p>
+          <h2>Three directions<br />if you want a nudge.</h2>
+          <p>Start with a trail, something in the air, or an event in Redmond. Check current hours, weather, and event details before you go.</p>
         </div>
         <ul class="v2-itinerary-list">
           <li class="v2-reveal">
@@ -252,9 +252,11 @@ const showSummerExpoCallout = Date.now() < Date.parse('2026-08-09T07:00:00Z');
     </section>
 
     <FinalCta
-      headline="Build the day. Keep the site ready for your return."
-      body="Find an open site, then let Central Oregon fill in as much—or as little—of the trip as you want."
+      headline="Book the site. Fill in the days as you go."
+      body="Reserve online, then decide how much of Central Oregon belongs in the trip."
       image="/images/canyon_sunset.webp"
+      primaryLabel="Book your site"
+      secondaryLabel="Live map (beta)"
     />
   </main>
 </Base>

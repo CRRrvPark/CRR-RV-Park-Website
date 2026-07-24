@@ -22,9 +22,9 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
   <main id="main-content">
     <PageHero
       eyebrow="Trails"
-      headline="Choose the walk"
-      accent="before the trailhead."
-      body="See difficulty, distance, elevation, cautions, and drive time before the group commits to the route."
+      headline="Trails near the park —"
+      accent="and from it."
+      body="Distance, difficulty, elevation, pets, and cautions before you commit the group."
       image="/images/smith_rock.webp"
       imageMobile="/images/smith_rock-mobile.webp"
       imageJpg="/images/smith_rock.jpg"
@@ -38,7 +38,7 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
 
     <section class="crr-section crr-section-soft" id="trail-map">
       <div class="v2-shell">
-        <div class="v2-section-heading v2-reveal"><div><p class="v2-eyebrow">Location first</p><h2>See the drive<br />before the hike.</h2></div><p>Open a map pin for the matching trail guide, then confirm current access and conditions before departure.</p></div>
+        <div class="v2-section-heading v2-reveal"><div><p class="v2-eyebrow">Location first</p><h2>Know the drive<br />before you lace up.</h2></div><p>Open a map pin for the matching trail guide, then confirm current access and conditions before departure.</p></div>
         <div class="crr-map-panel v2-reveal">
           {pins.length ? <GoogleMap id="trails-map" pins={pins} centerLat={44.3485} centerLng={-121.2055} zoom={11} mapTypeId="terrain" height="520px" /> : <div class="crr-empty-state"><h3>Trail locations are refreshing.</h3><p>The trail cards remain available below.</p></div>}
         </div>
@@ -103,6 +103,6 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
         )}
       </div>
     </section>
-    <FinalCta headline="Come back to a site that is already set." body="Find an open RV site, then choose as much trail—or as little—as the day calls for." image="/images/canyon_sunset.webp" />
+    <FinalCta headline="Come back to a site that’s already set." body="Book your RV site, then pick a trail that matches the day." image="/images/canyon_sunset.webp" />
   </main>
 </Base>

@@ -15,7 +15,10 @@ version-controlled Astro rather than a database-rendered WYSIWYG.
 - V1 image-stack rhythm on the home page.
 - Verified guest reviews near high-consideration decisions.
 - Clear access to policies, maps, arrival information, and phone help.
-- Affirmative copy that describes the park without comparing it to competitors.
+- Affirmative blend-voice copy (crisp above the fold, park-host body) that
+  describes the park without comparing it to competitors. See PROJECT-DETAILS
+  **Voice & identity**. Guest-facing CTAs prefer “Book your site”; Firefly is
+  named in helper text where needed. Live map links stay labeled beta/map/preview.
 
 ## User feedback incorporated
 

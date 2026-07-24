@@ -9,8 +9,9 @@ uncertainty.
 
 The approved V3 design system uses layered photography, restrained
 glass-gradient surfaces, clear hierarchy, calm motion, direct decisions, and
-multiple useful conversion points. Copy is affirmative and factual rather than
-comparative.
+multiple useful conversion points. Copy uses the blend voice (crisp above the
+fold, park-host body) — affirmative and factual rather than comparative. See
+**Voice & identity** below.
 
 ## Public information architecture
 
@@ -125,7 +126,6 @@ Operational data remains editable in `/admin`.
 
 - Palette: forest, deep mineral, warm neutral, and sea-glass accents.
 - Glass/gradient surfaces add depth without reducing legibility.
-- Keep body copy concise and decision-oriented.
 - Never use comparative “other parks” marketing.
 - Do not claim a saltwater pool; the seasonal pool is heated.
 - Pets are welcome; do not invent a two-pet maximum.
@@ -142,6 +142,39 @@ Operational data remains editable in `/admin`.
   resolve a current photo from the stable Place ID at request time, retain
   Google/author attribution, and fail into an intentional fixed-height
   placeholder rather than a broken image.
+
+## Voice & identity (blend)
+
+**Who we are.** Crooked River Ranch is a real Central Oregon community
+(~10–12k acres between the Crooked and Deschutes rivers; Oregon’s largest
+HOA). The RV Park is the Association’s year-round guest campground inside
+that community — canyon-rim sites, full hookups, walkable golf and pool,
+Smith Rock about 15 minutes away. Not a highway overnight lot; not a
+monthly-only worker park. Legal: Crooked River Ranch Club & Maintenance
+Association, DBA Crooked River Ranch RV Park.
+
+**Internal positioning.** Year-round RV camping on the Crooked River canyon,
+inside a real ranch community — full hookups, golf and pool next door,
+Smith Rock fifteen minutes out.
+
+**Blend voice.**
+- Above the fold: place + offer + one proof fact + primary CTA. Short
+  sentences. Numbers welcome.
+- Body: park-host tone — sounds like the office talking to a guest. Specific
+  Ranch details (canyon rim, junipers, golf next door, pool in season,
+  propane-only fires). Friendly, not cute. Never explain “decision
+  frameworks.”
+- CTAs: prefer `Book your site` / `Book online` on buttons; mention Firefly
+  once in helper text where needed. Beta links labeled `Live map (beta)`.
+- Headlines: one natural sentence (optional short second line). H1 should
+  echo the page’s search intent. PageHero `<mark>` may highlight place or
+  proof — not poetic fragments.
+
+**Banned register (in addition to `content-safety.ts` tourism clichés):**
+authoritative inventory; compatible sites; decision-oriented; useful details
+in view; “Start with how you want it to feel”; “Self-care… Laughter”;
+“See the fit. See the location. Then decide.”; stacked Firefly/beta sermons
+on every page.
 
 ## Stack
 

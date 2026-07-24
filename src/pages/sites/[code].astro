@@ -40,7 +40,7 @@ const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponen
       alt={site.hero_image_url ? `Site ${site.site_number} at Crooked River Ranch RV Park` : 'Aerial view of RV sites among junipers'}
       caption={site.hero_image_url ? `Actual photo · Site ${site.site_number}` : 'Park overview · Individual photo coming soon'}
       primaryHref={isBookable ? bookUrl : 'tel:+15419231441'}
-      primaryLabel={isBookable ? 'Reserve this site' : 'Call about this site'}
+      primaryLabel={isBookable ? 'Book this site' : 'Call about this site'}
       secondaryHref="/park-map"
       secondaryLabel="Back to the park map"
     />
@@ -67,7 +67,7 @@ const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponen
               {site.weekly_rate && <div><dt>Weekly</dt><dd>${site.weekly_rate}</dd></div>}
               {site.monthly_rate && <div><dt>Monthly</dt><dd>${site.monthly_rate}</dd></div>}
             </dl>
-            {isBookable ? <a class="v2-button v2-button-blue" href={bookUrl} target="_blank" rel="noreferrer">Reserve this site <span aria-hidden="true">↗</span></a> : <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>}
+            {isBookable ? <a class="v2-button v2-button-blue" href={bookUrl} target="_blank" rel="noreferrer">Book this site <span aria-hidden="true">↗</span></a> : <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>}
           </aside>
         </div>
       </div>
@@ -75,7 +75,7 @@ const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponen
 
     <section class="crr-section">
       <div class="v2-shell">
-        <div class="v2-section-heading v2-reveal"><div><p class="v2-eyebrow">Site photos</p><h2>See the space<br />before arrival.</h2></div><p>Photos represent this individual site when labeled as such. Use listed dimensions and call the office when slide clearance is uncertain.</p></div>
+        <div class="v2-section-heading v2-reveal"><div><p class="v2-eyebrow">Site photos</p><h2>Photos of this site</h2></div><p>Photos show this individual site when labeled as such. Use listed dimensions and call the office when slide clearance is uncertain.</p></div>
         {photos.length ? (
           <div class="crr-site-photo-grid">
             {photos.map((photo, index) => <a href={photo} data-lightbox="true" class="v2-reveal"><img src={photo} alt={`Site ${site.site_number} photo ${index + 1}`} loading={index ? 'lazy' : 'eager'} /></a>)}
@@ -85,6 +85,6 @@ const canonical = `https://www.crookedriverranchrv.com/sites/${encodeURIComponen
         )}
       </div>
     </section>
-    <FinalCta headline={`Still deciding on Site ${site.site_number}?`} body="Reserve it through Firefly when it is bookable, or call the office for help with slides and exact fit." image="/images/canyon_sunset.webp" primaryHref={isBookable ? bookUrl : 'tel:+15419231441'} primaryLabel={isBookable ? 'Reserve this site' : 'Call about this site'} secondaryHref="/park-map" secondaryLabel="Compare on the park map" />
+    <FinalCta headline={`Questions about Site ${site.site_number}?`} body="Reserve online when it’s bookable, or call the office for help with slides and exact fit." image="/images/canyon_sunset.webp" primaryHref={isBookable ? bookUrl : 'tel:+15419231441'} primaryLabel={isBookable ? 'Book this site' : 'Call about this site'} secondaryHref="/park-map" secondaryLabel="Compare on the park map" />
   </main>
 </Base>

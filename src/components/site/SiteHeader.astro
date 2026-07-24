@@ -13,25 +13,25 @@ const groups = [
     label: 'Stay',
     key: 'stay',
     links: [
-      { href: FIREFLY_RESERVATION_URL, label: 'Book a site', detail: 'Check dates and complete a reservation in Firefly' },
-      { href: '/sites', label: 'Sites & site types', detail: 'Compare hookups, fit, and setup' },
-      { href: '/availability', label: 'Live map beta', detail: 'Preview open sites on the developing map' },
-      { href: '/park-map', label: 'Interactive park map', detail: 'Browse every site and location' },
-      { href: '/group-sites', label: 'Group stays', detail: 'Keep the crew close together' },
-      { href: '/extended-stays', label: 'Extended stays', detail: 'October–April monthly options' },
-      { href: '/golf-stays', label: 'Golf stays', detail: 'RV site beside an 18-hole course' },
+      { href: FIREFLY_RESERVATION_URL, label: 'Book a site', detail: 'Check dates and reserve online' },
+      { href: '/sites', label: 'Sites & site types', detail: 'Hookups, length, and how each site works' },
+      { href: '/availability', label: 'Live map (beta)', detail: 'Optional preview of open sites' },
+      { href: '/park-map', label: 'Interactive park map', detail: 'Loops, amenities, and site photos' },
+      { href: '/group-sites', label: 'Group stays', detail: 'Neighboring sites for reunions and clubs' },
+      { href: '/extended-stays', label: 'Extended stays', detail: 'Monthly full-hookup, October–April' },
+      { href: '/golf-stays', label: 'Golf stays', detail: 'Camp beside the 18-hole course' },
     ],
   },
   {
     label: 'Park + area',
     key: 'explore',
     links: [
-      { href: '/amenities', label: 'At the park', detail: 'Pool, bathhouse, recreation, and more' },
-      { href: '/area-guide', label: 'Area guide + map', detail: 'Build a day around how you want it to feel' },
-      { href: '/trails', label: 'Trails', detail: 'Distances, difficulty, and useful cautions' },
-      { href: '/things-to-do', label: 'Things to do', detail: 'Central Oregon ideas for every pace' },
-      { href: '/dining', label: 'Dining & local', detail: 'Current hours, ratings, and directions' },
-      { href: '/events', label: 'Events', detail: 'What is happening during your stay' },
+      { href: '/amenities', label: 'At the park', detail: 'Pool, showers, laundry, dog run, recreation' },
+      { href: '/area-guide', label: 'Area guide + map', detail: 'Smith Rock, canyon, and day trips' },
+      { href: '/trails', label: 'Trails', detail: 'Distance, difficulty, and what to expect' },
+      { href: '/things-to-do', label: 'Things to do', detail: 'Climbing, water, towns, and easy days' },
+      { href: '/dining', label: 'Dining & local', detail: 'Food, coffee, and stops nearby' },
+      { href: '/events', label: 'Events', detail: 'What’s on the calendar' },
     ],
   },
 ] as const;
@@ -74,7 +74,7 @@ const groups = [
           <div class="crr-mega" data-nav-panel>
             <div class="crr-mega-heading">
               <small>{group.label}</small>
-              <strong>{group.key === 'stay' ? 'Choose the stay with the useful details in view.' : 'Plan the park time and the day beyond it.'}</strong>
+              <strong>{group.key === 'stay' ? 'Sites, maps, and ways to stay — then book online.' : 'What’s at the park, and what’s worth the drive.'}</strong>
             </div>
             <div class="crr-mega-links">
               {group.links.map((link) => (

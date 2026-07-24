@@ -25,31 +25,31 @@ try {
 
 const polygonSites = sites.filter((site) => Array.isArray(site.map_polygon) && site.map_polygon.length > 0 && site.is_published !== false);
 const title = 'Live RV Site Availability | Crooked River Ranch RV Park';
-const description = 'Enter your dates, rig length, slide configuration, and hookup preference to see compatible open sites at Crooked River Ranch RV Park.';
+const description = 'Enter your dates, rig length, slide configuration, and hookup preference to preview matching open sites at Crooked River Ranch RV Park.';
 const canonical = 'https://www.crookedriverranchrv.com/availability';
 ---
 <Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/aerial_wide.jpg" heroImagePreload="/images/aerial_wide.webp">
   <main id="main-content">
     <PageHero
-      eyebrow="Live availability"
-      headline="See what is open."
-      accent="See what fits."
-      body="Enter the exact trip and rig details once. Compatible open sites appear on the park map with a direct reservation handoff."
+      eyebrow="Live map · beta"
+      headline="Preview open sites"
+      accent="on the map."
+      body="Enter your dates and rig details to see matching sites. This map is a planning preview — you’ll complete payment and confirmation when you book online."
       image="/images/aerial_wide.webp"
       imageMobile="/images/aerial_wide-mobile.webp"
       imageJpg="/images/aerial_wide.jpg"
       alt="Aerial view of Crooked River Ranch RV Park and the surrounding canyon"
       caption="Live site search on the full park layout"
       primaryHref="#live-availability"
-      primaryLabel="Try the live map beta"
+      primaryLabel="Live map (beta)"
       secondaryHref={FIREFLY_RESERVATION_URL}
-      secondaryLabel="Book directly on Firefly"
+      secondaryLabel="Book your site"
     />
     <section class="crr-section crr-section-soft" id="live-availability">
       <div class="v2-shell">
         <div class="v2-section-heading v2-reveal">
-          <div><p class="v2-eyebrow">Your dates + your rig</p><h2>Compatible sites<br />on the map.</h2></div>
-          <p>Green sites match the current search. Open a site for details, then continue to Firefly for payment and confirmation.</p>
+          <div><p class="v2-eyebrow">Your dates + your rig</p><h2>Matching sites<br />show on the map.</h2></div>
+          <p>Open a site for details, then continue online to reserve.</p>
         </div>
         <div class="crr-live-panel v2-reveal">
           {activeParkMap && polygonSites.length ? (
@@ -60,6 +60,6 @@ const canonical = 'https://www.crookedriverranchrv.com/availability';
         </div>
       </div>
     </section>
-    <FinalCta headline="Ready to complete the reservation?" body="Firefly holds the authoritative inventory and completes payment and confirmation. The office can help when fit is uncertain." image="/images/canyon_sunset.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book now on Firefly" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
+    <FinalCta headline="Ready to reserve?" body="Book online for current availability and confirmation, or call 541-923-1441 if you’re unsure about fit." image="/images/canyon_sunset.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
   </main>
 </Base>

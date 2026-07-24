@@ -4,6 +4,7 @@ export const prerender = true;
 import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
+import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
 const title = 'Park Rules & Policies | Crooked River Ranch RV Park';
 const description = 'Review arrival times, quiet hours, propane-fire rules, pets, cancellations, vehicles, the dump station, and other Crooked River Ranch RV Park policies.';
@@ -23,9 +24,9 @@ const schemas = [{
   <main id="main-content">
     <PageHero
       eyebrow="Park policies"
-      headline="Clear rules make"
-      accent="an easier stay."
-      body="Find arrival, fire, pet, quiet-hour, cancellation, and site-use policies without searching through a wall of text."
+      headline="Park rules for"
+      accent="a smoother stay."
+      body="Arrival times, quiet hours, fires, pets, cancellations, and site use — the details that keep the park workable for everyone."
       image="/images/firepit_evening.webp"
       imageMobile="/images/firepit_evening-mobile.webp"
       imageJpg="/images/firepit_evening.jpg"
@@ -53,6 +54,6 @@ const schemas = [{
         </div>
       </div>
     </section>
-    <FinalCta headline="A policy question is worth resolving before arrival." body="Call the office for clarification, or continue directly to Firefly when everything is clear." image="/images/canyon_day.webp" />
+    <FinalCta headline="Unsure about a rule?" body="Call 541-923-1441 before you arrive, or book online when you’re clear." image="/images/canyon_day.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
   </main>
 </Base>

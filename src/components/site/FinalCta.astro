@@ -13,14 +13,14 @@ export interface Props {
 }
 
 const {
-  eyebrow = 'Ready when you are',
+  eyebrow = 'Ready to book?',
   headline,
   body,
   image = '/images/canyon_sunset.webp',
   primaryHref = FIREFLY_RESERVATION_URL,
-  primaryLabel = 'Book on Firefly',
+  primaryLabel = 'Book your site',
   secondaryHref = '/availability',
-  secondaryLabel = 'Try the live map beta',
+  secondaryLabel = 'Live map (beta)',
 } = Astro.props;
 ---
 <section class="v2-ready crr-final-cta">

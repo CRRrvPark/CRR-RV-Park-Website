@@ -2,10 +2,12 @@
  * Crawl every public sitemap route and enforce the reservation-path contract:
  *
  *   - ordinary booking controls go directly to Firefly;
- *   - the developing availability map is entered only through copy that
- *     explicitly says beta, map, or preview;
- *   - the reusable date/rig quick-search instrument stays dormant while the
- *     live map is experimental;
+ *   - the Rimrock live-map beta (/availability) is entered only through copy
+ *     that explicitly says beta, map, or preview;
+ *   - Stay mega must not list the beta (banner is the opt-in);
+ *   - /availability embeds Rimrock (not Supabase AvailabilityMap) and must not
+ *     offer a Firefly handoff from the beta map surface;
+ *   - the reusable date/rig quick-search instrument stays dormant on ordinary pages;
  *   - every public page retains persistent desktop, mobile, and footer
  *     booking access.
  *
@@ -65,6 +67,17 @@ for (const path of paths) {
   if ($('[data-site-search]').length > 0) {
     failures.push(`${path}: experimental date/rig quick-search instrument is publicly rendered`);
   }
+  if ($('[data-beta-banner]').length === 0) {
+    failures.push(`${path}: sitewide live-map beta banner is missing`);
+  }
+
+  // Stay mega: park map only — beta must not appear under Stay.
+  $('[data-mega="stay"] a').each((_, el) => {
+    const href = $(el).attr('href') || '';
+    if (href.startsWith('/availability')) {
+      failures.push(`${path}: Stay mega still links to live-map beta ("${$(el).text().replace(/\s+/g, ' ').trim()}")`);
+    }
+  });
 
   for (const link of links) {
     const href = $(link).attr('href') || '';
@@ -81,6 +94,36 @@ for (const path of paths) {
       failures.push(`${path}: beta-map form is not explicitly identified as beta/map/preview`);
     }
   });
+
+  if (path === '/availability') {
+    if ($('iframe[src*="crr.stratapms.com"]').length === 0) {
+      failures.push(`${path}: Rimrock live-map iframe embed is missing`);
+    }
+    if ($('iframe[src*="pilot=1"]').length > 0) {
+      failures.push(`${path}: beta embed must not use pilot=1 charge mode`);
+    }
+    if ($('#av-map, .av-map, [data-availability-map]').length > 0) {
+      failures.push(`${path}: retired Supabase AvailabilityMap is still rendered on beta`);
+    }
+    const pageText = $('main').text();
+    if (!/not.*confirmed reservation|not a confirmed/i.test(pageText)) {
+      failures.push(`${path}: missing “not a confirmed reservation” disclaimer`);
+    }
+    if (!/541-923-1441/.test(pageText)) {
+      failures.push(`${path}: missing required call-to-confirm phone number`);
+    }
+    if ($('form[name="beta-reservation-request"]').length === 0 && !pageText.includes('Request received')) {
+      failures.push(`${path}: beta reservation request form is missing`);
+    }
+    // Beta surface must not hand guests to Firefly from the map UI.
+    const fireflyFromBetaUi = $('main a').toArray().filter((a) => {
+      const href = $(a).attr('href') || '';
+      return href.includes('fireflyreservations.com') && /reserve on firefly|finish in firefly|book on firefly/i.test($(a).text());
+    });
+    if (fireflyFromBetaUi.length) {
+      failures.push(`${path}: beta map UI still offers a Firefly reserve handoff`);
+    }
+  }
 }
 
 if (failures.length) {

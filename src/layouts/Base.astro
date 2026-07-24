@@ -13,6 +13,7 @@
 import HeadMeta from '@components/HeadMeta.astro';
 import SiteHeader from '@components/site/SiteHeader.astro';
 import SiteFooter from '@components/site/SiteFooter.astro';
+import BetaBanner from '@components/site/BetaBanner.astro';
 import JsonLd from '@components/JsonLd.astro';
 import ClarityScript from '@components/ClarityScript.astro';
 import ConversionTracker from '@components/ConversionTracker.astro';
@@ -120,6 +121,7 @@ const allSchemas = [...generatedSchemas, ...schemas];
   </script>
   <a class="v2-skip-link" href="#main-content">Skip to content</a>
   <SiteHeader />
+  <BetaBanner />
   <SeoBreadcrumbs items={breadcrumbs} />
   <slot />
   <SiteFooter />

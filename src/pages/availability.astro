@@ -4,62 +4,46 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import PageHero from '@components/site/PageHero.astro';
 import FinalCta from '@components/site/FinalCta.astro';
-import AvailabilityMap from '@components/AvailabilityMap.astro';
-import { getParkSites } from '@lib/area-guide';
-import { serverClient } from '@lib/supabase';
+import RimrockBetaMap from '@components/site/RimrockBetaMap.astro';
 import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 
-const sites = await getParkSites();
-let activeParkMap: { image_url: string; title: string; natural_width: number; natural_height: number } | null = null;
-try {
-  const { data } = await serverClient()
-    .from('park_maps')
-    .select('image_url, title, natural_width, natural_height')
-    .eq('is_active', true)
-    .order('priority', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (data) activeParkMap = data as NonNullable<typeof activeParkMap>;
-} catch {}
+const preferredType = Astro.url.searchParams.get('type') ?? '';
 
-const polygonSites = sites.filter((site) => Array.isArray(site.map_polygon) && site.map_polygon.length > 0 && site.is_published !== false);
-const title = 'Live RV Site Availability | Crooked River Ranch RV Park';
-const description = 'Enter your dates, rig length, slide configuration, and hookup preference to preview matching open sites at Crooked River Ranch RV Park.';
+const title = 'Live Map Beta — Request a Site | Crooked River Ranch RV Park';
+const description =
+  'Try the Rimrock live map beta: preview open sites, send a request to the park, then call 541-923-1441 to confirm and pay your deposit. Not a confirmed reservation.';
 const canonical = 'https://www.crookedriverranchrv.com/availability';
 ---
 <Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/aerial_wide.jpg" heroImagePreload="/images/aerial_wide.webp">
   <main id="main-content">
     <PageHero
       eyebrow="Live map · beta"
-      headline="Preview open sites"
-      accent="on the map."
-      body="Enter your dates and rig details to see matching sites. This map is a planning preview — you’ll complete payment and confirmation when you book online."
+      headline="Request a site"
+      accent="on the Rimrock map."
+      body="This is Rimrock’s live park map — a preview, not a confirmed booking. Pick a site, send your details, then call 541-923-1441 to confirm availability and pay your deposit. Staff create the stay in Firefly after that call."
       image="/images/aerial_wide.webp"
       imageMobile="/images/aerial_wide-mobile.webp"
       imageJpg="/images/aerial_wide.jpg"
       alt="Aerial view of Crooked River Ranch RV Park and the surrounding canyon"
-      caption="Live site search on the full park layout"
+      caption="Rimrock live map · request path · call required"
       primaryHref="#live-availability"
-      primaryLabel="Live map (beta)"
-      secondaryHref={FIREFLY_RESERVATION_URL}
-      secondaryLabel="Book your site"
+      primaryLabel="Open live map (beta)"
+      secondaryHref="tel:+15419231441"
+      secondaryLabel="Call 541-923-1441"
     />
     <section class="crr-section crr-section-soft" id="live-availability">
       <div class="v2-shell">
-        <div class="v2-section-heading v2-reveal">
-          <div><p class="v2-eyebrow">Your dates + your rig</p><h2>Matching sites<br />show on the map.</h2></div>
-          <p>Open a site for details, then continue online to reserve.</p>
-        </div>
-        <div class="crr-live-panel v2-reveal">
-          {activeParkMap && polygonSites.length ? (
-            <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
-          ) : (
-            <div class="crr-empty-state"><h3>Call for current availability.</h3><p>The live map is temporarily unavailable. Have your dates, exact rig length, and slides ready, then call <a href="tel:+15419231441">541-923-1441</a>.</p></div>
-          )}
-        </div>
+        <RimrockBetaMap preferredType={preferredType} />
       </div>
     </section>
-    <FinalCta headline="Ready to reserve?" body="Book online for current availability and confirmation, or call 541-923-1441 if you’re unsure about fit." image="/images/canyon_sunset.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
+    <FinalCta
+      headline="Prefer to book and pay online now?"
+      body="Use the normal reservation path for live availability, payment, and confirmation — or call 541-923-1441."
+      image="/images/canyon_sunset.webp"
+      primaryHref={FIREFLY_RESERVATION_URL}
+      primaryLabel="Book your site"
+      secondaryHref="tel:+15419231441"
+      secondaryLabel="Call 541-923-1441"
+    />
   </main>
 </Base>

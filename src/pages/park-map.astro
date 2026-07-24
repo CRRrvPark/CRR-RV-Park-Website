@@ -59,14 +59,14 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
       caption="Sites, loops, and park features"
       primaryHref="#interactive-map"
       primaryLabel="Open the map"
-      secondaryHref="/availability"
-      secondaryLabel="Live map (beta)"
+      secondaryHref={FIREFLY_RESERVATION_URL}
+      secondaryLabel="Book your site"
     />
     <section class="crr-section crr-section-soft" id="interactive-map">
       <div class="v2-shell">
         <div class="v2-section-heading v2-reveal">
           <div><p class="v2-eyebrow">The full layout</p><h2>Location first.<br />Dates when you need them.</h2></div>
-          <p>Use this map to understand the layout. Use the live map beta when dates and rig filters matter.</p>
+          <p>Use this map to understand loops and amenities. Book online when you’re ready — or use the sitewide live-map beta banner if you want a date-aware request path.</p>
         </div>
         <div class="crr-map-panel v2-reveal">
           {!sites.length ? (
@@ -79,6 +79,6 @@ const canonical = 'https://www.crookedriverranchrv.com/park-map';
         </div>
       </div>
     </section>
-    <FinalCta headline="Ready to book?" body="Reserve online, or try the live map beta if you want to preview dates and fit first." image="/images/aerial_canyon_rim.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="/availability" secondaryLabel="Live map (beta)" />
+    <FinalCta headline="Ready to book?" body="Reserve online for payment and confirmation, or call 541-923-1441 if you want help choosing a site." image="/images/aerial_canyon_rim.webp" primaryHref={FIREFLY_RESERVATION_URL} primaryLabel="Book your site" secondaryHref="tel:+15419231441" secondaryLabel="Call 541-923-1441" />
   </main>
 </Base>

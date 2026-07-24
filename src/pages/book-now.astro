@@ -2,37 +2,9 @@
 export const prerender = false;
 
 import Base from '@layouts/Base.astro';
-import AvailabilityMap from '@components/AvailabilityMap.astro';
 import PageHero from '@components/site/PageHero.astro';
-import { getParkSites } from '@lib/area-guide';
-import { serverClient } from '@lib/supabase';
 import { FIREFLY_RESERVATION_URL } from '@lib/booking';
 import FinalCta from '@components/site/FinalCta.astro';
-
-const sites = await getParkSites();
-let activeParkMap:
-  | { image_url: string; title: string; natural_width: number; natural_height: number }
-  | null = null;
-
-try {
-  const sb = serverClient();
-  const { data } = await sb
-    .from('park_maps')
-    .select('image_url, title, natural_width, natural_height')
-    .eq('is_active', true)
-    .order('priority', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (data) activeParkMap = data as unknown as typeof activeParkMap;
-} catch {
-  // The Firefly and phone paths below remain available when the map cannot load.
-}
-
-const polygonSites = sites.filter(
-  (site) => Array.isArray(site.map_polygon) && (site.map_polygon as unknown[]).length > 0 && site.is_published !== false,
-);
-const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
 
 const title = 'Rates, Arrival & Reservations | Crooked River Ranch RV Park';
 const description = 'Current starting rates, check-in times, and how to reserve an RV site at Crooked River Ranch near Smith Rock. Book online or call the office.';
@@ -41,7 +13,7 @@ const canonical = 'https://www.crookedriverranchrv.com/book-now';
 const bookingFaqs = [
   {
     question: 'Do I book on this website?',
-    answer: 'You’ll start here and finish in our reservation system (Firefly) for payment and confirmation.',
+    answer: 'You’ll start here and finish in our reservation system (Firefly) for payment and confirmation. The live map beta is a separate request path — call required; it does not take payment.',
   },
   {
     question: 'Is there a reservation fee?',
@@ -76,7 +48,7 @@ const faqSchema = {
       eyebrow="Plan your visit"
       headline="Rates, arrival details,"
       accent="and how to book."
-      body="Reserve online for live availability, payment, and confirmation. Optional: preview sites on the live map first. Or call 541-923-1441."
+      body="Reserve online for live availability, payment, and confirmation. Or call 541-923-1441. Optional: try the live map beta from the sitewide banner if you want a request path first."
       image="/images/winter_sunset.webp"
       imageMobile="/images/winter_sunset-mobile.webp"
       imageJpg="/images/winter_sunset.jpg"
@@ -84,36 +56,9 @@ const faqSchema = {
       caption="Open year-round · Seasonal amenities vary"
       primaryHref={FIREFLY_RESERVATION_URL}
       primaryLabel="Book your site"
-      secondaryHref="#live-availability"
-      secondaryLabel="Live map (beta)"
+      secondaryHref="tel:+15419231441"
+      secondaryLabel="Call 541-923-1441"
     />
-
-    <section class="v2-live-section" id="live-availability">
-      <div class="v2-shell">
-        <div class="v2-live-heading v2-reveal">
-          <div>
-            <p class="v2-eyebrow">Optional planning preview</p>
-            <h2>Optional: preview<br />on the live map</h2>
-          </div>
-          <p>Enter dates and rig details to look around. When you’re ready to pay and confirm, book online.</p>
-        </div>
-        <div class="v2-live-map v2-reveal">
-          {canRenderMap && activeParkMap ? (
-            <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
-          ) : (
-            <div class="v2-live-fallback">
-              <p class="v2-eyebrow">We can still help</p>
-              <h3>Call for current availability.</h3>
-              <p>Have your dates, rig type, exact length, and slide configuration ready.</p>
-              <div>
-                <a class="v2-button v2-button-blue" href="tel:+15419231441">Call 541-923-1441 <span aria-hidden="true">→</span></a>
-                <a class="v2-inline-link" href={FIREFLY_RESERVATION_URL} target="_blank" rel="noreferrer">Book online <span aria-hidden="true">↗</span></a>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
 
     <section class="v2-booking-sequence">
       <div class="v2-shell">
@@ -228,8 +173,8 @@ const faqSchema = {
       body="Check dates, pay, and get confirmation online."
       primaryHref={FIREFLY_RESERVATION_URL}
       primaryLabel="Book your site"
-      secondaryHref="#live-availability"
-      secondaryLabel="Live map (beta)"
+      secondaryHref="/park-map"
+      secondaryLabel="Open the park map"
     />
   </main>
 </Base>

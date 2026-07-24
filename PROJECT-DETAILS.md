@@ -4,8 +4,8 @@
 
 The project is a conversion-focused guest website plus a narrow operational
 admin. The public experience helps guests understand the park, find a fitting
-site, see live availability, and continue to Firefly Reservations with minimal
-uncertainty.
+site, and continue to Firefly Reservations (paid self-checkout) with minimal
+uncertainty. An optional Rimrock live-map beta offers a separate request path.
 
 The approved V3 design system uses layered photography, restrained
 glass-gradient surfaces, clear hierarchy, calm motion, direct decisions, and
@@ -18,33 +18,48 @@ fold, park-host body) — affirmative and factual rather than comparative. See
 Primary decision paths:
 
 - Home: orientation, image stack, site choices, park/area reasons, reviews,
-  and direct Firefly booking. Site-type cards intentionally open the live-map
-  beta with the guest's selection preserved and the default-date search
-  already running.
-- Sites: availability, site types, photos, specifications, map, reviews.
-- Park + Area: amenities, live regional map, relaxation and active itineraries.
-- Plan: direct Firefly booking first, optional live-map beta, rates, arrival,
-  and policies.
+  and direct Firefly booking. Mid-page site-type cards may open the live-map
+  beta (`/availability?type=…`) as an optional request path — labeled beta.
+- Sites: site types, photos, specifications, park map, reviews; type CTAs may
+  enter the beta request path.
+- Park + Area: amenities, regional map, relaxation and active itineraries.
+- Plan: direct Firefly booking first (rates, arrival, policies). Live-map beta
+  is reached from the sitewide banner, not from Stay mega or default FinalCta.
 
 ## Reservation-path invariant
 
-Firefly is the authoritative and default reservation path. Persistent desktop
-and mobile header controls, the sticky mobile control, the footer, and the
-default closing conversion section link directly to Firefly on every public
-page. `/availability` is a developing planning preview, never a required
-gateway to a reservation, and every link into it is explicitly labeled as a
-map, preview, or beta.
+**Two public paths — never conflate them:**
+
+1. **Firefly (normal paid self-checkout).** Persistent desktop and mobile
+   header controls, the sticky mobile control, the footer, and the default
+   closing conversion section link directly to Firefly on every public page.
+   This is the authoritative path for payment and confirmation.
+2. **Rimrock live-map beta (request only).** `/availability` embeds the live
+   Rimrock guest map (`https://crr.stratapms.com/?embed=1&request=1`) — not
+   the website Supabase `AvailabilityMap`. Guests pick a site, submit a
+   Netlify form (`beta-reservation-request`) that emails the park, then
+   **must call** 541-923-1441 to confirm availability and pay the deposit.
+   Staff create the stay in Firefly. Submit is not a reservation and takes
+   no payment. Preview may be imperfect.
+
+Beta discovery is isolated: a sitewide clickable banner; Stay mega keeps only
+**Interactive park map** (`/park-map`); default FinalCta secondary is the park
+map (or phone), not beta. Every link into `/availability` is explicitly
+labeled map / preview / beta. `/park-map` remains the Supabase layout map.
+`/new-reservations-pilot` stays a separate gated pilot (`?embed=1&pilot=1`)
+and must not be conflated with the public beta request path.
 
 Public marketing pages must not render the date/rig `SiteSearch` instrument
-while the live map remains experimental. The component stays available in
-source for a future controlled launch, but guests should encounter test inputs
-only inside the dedicated beta-map flow.
+on ordinary pages. Mid-page “book this type” CTAs may route to
+`/availability?type=…` when labeled as the beta request path.
+`scripts/verify-booking-paths.mjs` crawls every sitemap route and enforces
+Firefly persistence + labeled beta entry.
 
-Site-type preview links retain the chosen type in the query string, preselect
-it on `/availability`, and automatically run the default-date search. The map
-mutes other site types separately from matching sites that are unavailable.
-`scripts/verify-booking-paths.mjs` crawls every sitemap route and enforces this
-contract.
+**Ops:** after deploy, set Netlify Forms notification for
+`beta-reservation-request` to `rvpark@crookedriverranch.com`. Rimrock guest
+`?request=1` (postMessage on site pick) must be deployed to
+`crr.stratapms.com` for map→form prefills to work; until then guests can still
+type site/dates into the form.
 
 Supporting routes:
 
@@ -74,8 +89,12 @@ production navigation.
   sites, map data, authentication, and audit.
 - Zoho WorkDrive and Calendar synchronize photos and events.
 - Google Maps and Places provide geographic interfaces and current place data.
-- Rimrock provides a read-only availability snapshot.
-- Firefly owns reservations, payments, booking confirmations, and guest access.
+- Rimrock powers the live-map beta embed (exact guest map UI) and may also
+  supply read-only availability APIs for other tools; beta booking is request
+  + call, not Rimrock checkout payment.
+- Firefly owns confirmed reservations, payments, booking confirmations, and
+  guest portal access for the normal path (and for stays staff create after a
+  beta request call).
 - Netlify hosts the site, runs functions/schedules, builds previews, and
   provides the AI Agent Runner change surface.
 

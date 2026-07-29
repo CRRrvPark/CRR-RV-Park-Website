@@ -44,7 +44,15 @@ Primary decision paths:
    payment. Guest **must call** 541-923-1441 to confirm and pay the deposit;
    staff create the stay in Firefly. Preview may be imperfect.
 
-Beta discovery is isolated: a sitewide clickable banner; Stay mega keeps only
+   **RR gate (pilot_portal):** The beta banner, `/availability` embed, and
+   beta-site-request API are gated by Rimrock’s **Online booking (pilot gate)**
+   setting — same toggle as `/new-reservations-pilot`. Fail closed: closed by
+   default; open only when `/api/pilot-status` returns `ok && open`. Owner
+   flips it in Rimrock Admin → Settings → Guest portal (optional Mon–Sat
+   window). The static **park map** (`/park-map`) stays always public.
+
+Beta discovery is isolated: a sitewide clickable banner (only when the RR
+gate is open); Stay mega keeps only
 **Interactive park map** (`/park-map`); default FinalCta secondary is the park
 map (or phone), not beta. Every link into `/availability` is explicitly
 labeled map / preview / beta. `/park-map` remains the Supabase layout map.

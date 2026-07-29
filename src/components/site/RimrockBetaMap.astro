@@ -5,13 +5,19 @@
  * Guests use the normal Rimrock booking screens inside the iframe; RR emails
  * the park invisibly on submit. No website form on this page.
  * Optional: postMessage also lets this page silently POST to Netlify Forms.
+ *
+ * When deferLoad is true (gated /availability), the iframe src is held in
+ * data-src until the parent page reveals the open panel and assigns src —
+ * so a closed gate never fetches the Rimrock guest app.
  */
 
 export interface Props {
   preferredType?: string;
+  /** Hold iframe src in data-src until the parent gate reveals this block. */
+  deferLoad?: boolean;
 }
 
-const { preferredType = '' } = Astro.props;
+const { preferredType = '', deferLoad = false } = Astro.props;
 
 const params = new URLSearchParams({ embed: '1', request: '1' });
 if (preferredType) params.set('type', preferredType);
@@ -35,9 +41,9 @@ const RR_EMBED_URL = `https://crr.stratapms.com/?${params.toString()}`;
   <div class="crr-live-panel crr-rr-embed-wrap v2-reveal">
     <iframe
       class="crr-rr-embed"
-      src={RR_EMBED_URL}
+      {...(deferLoad ? { 'data-src': RR_EMBED_URL } : { src: RR_EMBED_URL })}
       title="Crooked River Ranch — live Rimrock map (beta)"
-      loading="eager"
+      loading={deferLoad ? 'lazy' : 'eager'}
       referrerpolicy="strict-origin-when-cross-origin"
       allow="fullscreen"
     ></iframe>

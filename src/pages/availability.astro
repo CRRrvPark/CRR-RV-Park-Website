@@ -1,4 +1,12 @@
 ---
+/**
+ * /availability — Rimrock live-map beta (request path).
+ *
+ * THE GATE IS RIMROCK'S: same pilot_portal toggle as /new-reservations-pilot.
+ * Fail-closed — closed notice is the server-rendered default; only an explicit
+ * ok && open from /api/pilot-status reveals the Rimrock embed.
+ * The static /park-map route is unrelated and stays always public.
+ */
 export const prerender = false;
 
 import Base from '@layouts/Base.astro';
@@ -31,11 +39,41 @@ const canonical = 'https://www.crookedriverranchrv.com/availability';
       secondaryHref="tel:+15419231441"
       secondaryLabel="Call 541-923-1441"
     />
+
     <section class="crr-section crr-section-soft" id="live-availability">
       <div class="v2-shell">
-        <RimrockBetaMap preferredType={preferredType} />
+        <!-- CLOSED is the DEFAULT (fail-closed): shown until Rimrock's gate says open -->
+        <div id="beta-closed">
+          <div class="v2-section-heading v2-reveal">
+            <div>
+              <p class="v2-eyebrow">Live map beta</p>
+              <h2>The live map beta is<br />currently closed.</h2>
+            </div>
+            <p>
+              We open the interactive Rimrock map for guest testing during office hours
+              so our staff can follow up with you personally.
+            </p>
+          </div>
+          <div class="crr-live-panel v2-reveal">
+            <div class="crr-empty-state">
+              <h3>Check back <span id="beta-schedule">Monday–Saturday, 10:00 AM–3:00 PM Pacific</span>.</h3>
+              <p>
+                Or call the office at <a href="tel:+15419231441">541-923-1441</a> —
+                we'll be happy to help with your reservation right now. You can always
+                browse the <a href="/park-map">park map</a> or
+                <a href={FIREFLY_RESERVATION_URL}>book through our normal reservation path</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPEN content: revealed ONLY when Rimrock's gate answers ok && open -->
+        <div id="beta-open" hidden>
+          <RimrockBetaMap preferredType={preferredType} deferLoad={true} />
+        </div>
       </div>
     </section>
+
     <FinalCta
       headline="Prefer to book and pay online now?"
       body="Use the normal reservation path for live availability, payment, and confirmation — or call 541-923-1441."
@@ -46,4 +84,47 @@ const canonical = 'https://www.crookedriverranchrv.com/availability';
       secondaryLabel="Call 541-923-1441"
     />
   </main>
+
+  <script is:inline>
+    (function () {
+      var DAY_LABELS = {
+        'mon-sat': 'Monday–Saturday',
+        'mon-fri': 'Monday–Friday',
+        'mon-sun': 'every day',
+      };
+      function fmtTime(t) {
+        var m = /^(\d{1,2}):(\d{2})$/.exec(t || '');
+        if (!m) return t || '';
+        var h = parseInt(m[1], 10);
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        var h12 = h % 12 === 0 ? 12 : h % 12;
+        return h12 + ':' + m[2] + ' ' + ampm;
+      }
+      fetch('/api/pilot-status', { headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          if (s && s.ok === true && s.open === true) {
+            var closed = document.getElementById('beta-closed');
+            var open = document.getElementById('beta-open');
+            if (closed) closed.hidden = true;
+            if (open) open.hidden = false;
+            // Load the Rimrock iframe only after the gate opens (src held in data-src).
+            var frame = open && open.querySelector('iframe.crr-rr-embed');
+            if (frame && !frame.getAttribute('src')) {
+              var ds = frame.getAttribute('data-src');
+              if (ds) frame.setAttribute('src', ds);
+            }
+            return;
+          }
+          var sched = s && s.schedule;
+          var el = document.getElementById('beta-schedule');
+          if (el && sched && sched.start && sched.end) {
+            var days = DAY_LABELS[sched.days] || sched.days || '';
+            el.textContent =
+              days + ', ' + fmtTime(sched.start) + '–' + fmtTime(sched.end) + ' Pacific';
+          }
+        })
+        .catch(function () { /* closed notice stands — fail closed */ });
+    })();
+  </script>
 </Base>

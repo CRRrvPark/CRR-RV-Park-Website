@@ -18,10 +18,11 @@
  *             own astroturf mat. Mature trees frame each site; the
  *             canyon-rim gazebo sits across the green.
  *
- *   B-loop  — 50-amp full-hookup pull-through sites. Smooth asphalt
- *             pad up to 60 ft, dedicated power/water pedestal, picnic
- *             table on adjoining grass. Sage + juniper screens between
- *             sites; sunset framing to the west. Big-rig friendly.
+ *   B-loop  — 50-amp full-hookup pull-through sites up to 60 ft,
+ *             dedicated power/water pedestal, picnic table on
+ *             adjoining grass. Sage + juniper screens between sites;
+ *             sunset framing to the west. Big-rig friendly.
+ *             Only B1 is paved (ADA); other B pads are not asphalt.
  *
  *   MAGIC   — Special tent site under mature deciduous shade on the
  *             corner of the T loop, named by our regular campers.
@@ -84,9 +85,17 @@ function describeA(site) {
 }
 
 function describeB(site) {
+  if (site.site_number === 'B1') {
+    return (
+      "50-amp full-hookup paved pull-through — our ADA site. Dedicated power " +
+      "and water pedestal at the entry edge; picnic table on the adjoining grass " +
+      "strip. Sage and juniper screen between sites give a sense of privacy, and " +
+      "the canyon bluff and sunset frame to the west. Big-rig friendly to 60 ft, " +
+      "both slides."
+    );
+  }
   return (
-    "50-amp full-hookup pull-through site with a smooth asphalt pad — easy to " +
-    "level, easy to back into, easy to leave. Dedicated power and water pedestal " +
+    "50-amp full-hookup pull-through site. Dedicated power and water pedestal " +
     "at the entry edge; picnic table on the adjoining grass strip. Sage and " +
     "juniper screen between sites give a sense of privacy, and the canyon bluff " +
     "and sunset frame to the west. Big-rig friendly to 60 ft, both slides."

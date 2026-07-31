@@ -186,3 +186,17 @@
   to = "/events"
   status = 301
   force = true
+
+# Retired guest "Check Availability" map — stale availability creates booking
+# friction. Send leftover links straight to Firefly (live reservation SoT).
+[[redirects]]
+  from = "/availability"
+  to = "https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/availability/*"
+  to = "https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK"
+  status = 302
+  force = true

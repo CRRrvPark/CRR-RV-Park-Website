@@ -14,6 +14,7 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getTrails, DIFFICULTY_LABELS, formatDistance, formatElevation } from '@lib/area-guide';
+import { resolvePlacePhotoSrc } from '@lib/place-photo';
 import { isRouteHidden } from '@lib/site-visibility';
 
 if (await isRouteHidden(Astro.url.pathname)) {
@@ -91,8 +92,8 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
           {onProperty.map((t) => (
             <a class="ex-card ex-link" href={`/trails/${t.slug}`}>
               <div class="ex-vis" style="min-height:240px;background:linear-gradient(135deg,#8B5A2B 0%,#2c1810 100%);">
-                {t.hero_image_url && (
-                  <img src={t.hero_image_url} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+                {resolvePlacePhotoSrc(t.hero_image_url, 800) && (
+                  <img src={resolvePlacePhotoSrc(t.hero_image_url, 800)!} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
                 )}
                 {t.drive_time_from_park && <div class="ex-dist">{t.drive_time_from_park}</div>}
               </div>
@@ -125,8 +126,8 @@ const canonical = 'https://www.crookedriverranchrv.com/trails';
           {nearby.map((t) => (
             <a class="ex-card ex-link" href={`/trails/${t.slug}`}>
               <div class="ex-vis" style="min-height:240px;background:linear-gradient(135deg,#5A7F2B 0%,#2c2810 100%);">
-                {t.hero_image_url && (
-                  <img src={t.hero_image_url} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+                {resolvePlacePhotoSrc(t.hero_image_url, 800) && (
+                  <img src={resolvePlacePhotoSrc(t.hero_image_url, 800)!} alt={t.name} loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
                 )}
                 {t.drive_time_from_park && <div class="ex-dist">{t.drive_time_from_park}</div>}
               </div>

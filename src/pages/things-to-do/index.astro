@@ -13,6 +13,7 @@ export const prerender = false;
 
 import Base from '@layouts/Base.astro';
 import { getThingsToDo, CATEGORY_LABELS, type ThingCategory } from '@lib/area-guide';
+import { resolvePlacePhotoSrc } from '@lib/place-photo';
 import { isRouteHidden } from '@lib/site-visibility';
 
 if (await isRouteHidden(Astro.url.pathname)) {
@@ -72,7 +73,9 @@ const canonical = 'https://www.crookedriverranchrv.com/things-to-do';
         </div>
       ) : (
         <div class="things-grid">
-          {things.map((t) => (
+          {things.map((t) => {
+            const img = resolvePlacePhotoSrc(t.hero_image_url, 800);
+            return (
             <a
               class="thing-card"
               href={`/things-to-do/${t.slug}`}
@@ -80,8 +83,8 @@ const canonical = 'https://www.crookedriverranchrv.com/things-to-do';
               data-personas={t.personas.join(',')}
             >
               <div class="thing-card-visual">
-                {t.hero_image_url ? (
-                  <img src={t.hero_image_url} alt={t.title} loading="lazy" />
+                {img ? (
+                  <img src={img} alt={t.title} loading="lazy" />
                 ) : (
                   <span class="thing-card-emoji">{t.icon || '✨'}</span>
                 )}
@@ -95,7 +98,8 @@ const canonical = 'https://www.crookedriverranchrv.com/things-to-do';
                 </div>
               </div>
             </a>
-          ))}
+            );
+          })}
           <div id="things-empty-state" style="display:none;grid-column:1/-1;padding:3rem;background:var(--sand);border-radius:4px;text-align:center;color:var(--muted);">
             No activities in this category yet. Try another filter.
           </div>

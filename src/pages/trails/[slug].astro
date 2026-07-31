@@ -18,6 +18,7 @@ import {
   formatElevation,
   formatHazard,
 } from '@lib/area-guide';
+import { resolvePlacePhotoSrc } from '@lib/place-photo';
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/trails', 302);
@@ -28,6 +29,8 @@ if (!trail) {
   // also work but this is simpler and keeps users on /trails.
   return Astro.redirect('/trails?not-found=1', 302);
 }
+
+const heroSrc = resolvePlacePhotoSrc(trail.hero_image_url, 1400);
 
 const difficultyColor = {
   easy: '#4A7C59',
@@ -51,11 +54,11 @@ const title = `${trail.name} — Trail Guide | Crooked River Ranch RV Park`;
 const description = trail.summary ?? `Trail guide for ${trail.name}.`;
 const canonical = `https://www.crookedriverranchrv.com/trails/${trail.slug}`;
 ---
-<Base title={title} description={description} canonical={canonical} ogImage={trail.hero_image_url ?? undefined}>
+<Base title={title} description={description} canonical={canonical} ogImage={heroSrc ?? undefined}>
   <section class="page-hero" style="min-height:50vh;">
     <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);">
-      {trail.hero_image_url && (
-        <img src={trail.hero_image_url} alt={trail.name} style="width:100%;height:100%;object-fit:cover;" />
+      {heroSrc && (
+        <img src={heroSrc} alt={trail.name} style="width:100%;height:100%;object-fit:cover;" />
       )}
     </div>
     <div class="hero-overlay"></div>

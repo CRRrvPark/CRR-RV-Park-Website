@@ -11,12 +11,15 @@ export const prerender = false;
 import Base from '@layouts/Base.astro';
 import GoogleMap, { type Pin } from '@components/GoogleMap.astro';
 import { getThingBySlug, CATEGORY_LABELS } from '@lib/area-guide';
+import { resolvePlacePhotoSrc } from '@lib/place-photo';
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/things-to-do', 302);
 
 const thing = await getThingBySlug(slug);
 if (!thing) return Astro.redirect('/things-to-do?not-found=1', 302);
+
+const heroSrc = resolvePlacePhotoSrc(thing.hero_image_url, 1400);
 
 const pins: Pin[] =
   thing.lat !== null && thing.lng !== null
@@ -33,11 +36,11 @@ const title = `${thing.title} | Things to Do near Crooked River Ranch RV Park`;
 const description = thing.summary ?? `${thing.title} in Central Oregon, near Crooked River Ranch RV Park.`;
 const canonical = `https://www.crookedriverranchrv.com/things-to-do/${thing.slug}`;
 ---
-<Base title={title} description={description} canonical={canonical} ogImage={thing.hero_image_url ?? undefined}>
+<Base title={title} description={description} canonical={canonical} ogImage={heroSrc ?? undefined}>
   <section class="page-hero" style="min-height:40vh;">
     <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#5A3D25 100%);">
-      {thing.hero_image_url && (
-        <img src={thing.hero_image_url} alt={thing.title} style="width:100%;height:100%;object-fit:cover;" />
+      {heroSrc && (
+        <img src={heroSrc} alt={thing.title} style="width:100%;height:100%;object-fit:cover;" />
       )}
     </div>
     <div class="hero-overlay"></div>

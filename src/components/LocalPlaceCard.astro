@@ -10,6 +10,7 @@
  * the rendered HTML — a leaked-secret + restriction-mismatch bug).
  */
 import type { LocalPlace } from '@lib/area-guide';
+import { googlePlacePhotoUrl, isUsableGooglePlaceId } from '@lib/place-photo';
 
 export interface Props {
   place: LocalPlace;
@@ -18,12 +19,15 @@ export interface Props {
 const { place } = Astro.props;
 const g = place.cached_data ?? {};
 
-// Google's photo reference is `photos[].name` (e.g. "places/<id>/photos/<ref>").
-// /api/place-photo redirects to the signed Google CDN URL with our server key.
+// Prefer the stable Place ID so /api/place-photo can refresh the current Google
+// photo (temporary photos[].name values expire). Fall back to a cached name
+// only when no usable Place ID is stored.
 const photo = g.photos?.[0];
-const photoUrl = photo?.name
-  ? `/api/place-photo?name=${encodeURIComponent(photo.name)}&w=600`
-  : null;
+const photoUrl = isUsableGooglePlaceId(place.google_place_id)
+  ? googlePlacePhotoUrl(place.google_place_id, 600)
+  : photo?.name
+    ? `/api/place-photo?name=${encodeURIComponent(photo.name)}&w=600`
+    : null;
 
 const displayName = g.displayName?.text ?? place.name_override ?? '(Unnamed place)';
 const mapsHref = g.googleMapsUri ?? place.cached_data?.googleMapsUri ?? null;

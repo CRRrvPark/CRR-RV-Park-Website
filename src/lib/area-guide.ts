@@ -13,6 +13,7 @@
 
 import { serverClient } from './supabase';
 import { getHiddenPageSlugs } from './site-visibility';
+import { googlePlacePhotoUrl, isUsableGooglePlaceId, resolvePlacePhotoSrc } from './place-photo';
 
 const SUPABASE_CONFIGURED = Boolean(
   import.meta.env.PUBLIC_SUPABASE_URL ??
@@ -505,7 +506,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       href: trailsHidden ? undefined : `/trails/${t.slug}`,
       iconEmoji: '🥾',
       description: t.summary ?? undefined,
-      thumbnailUrl: t.hero_image_url ?? undefined,
+      thumbnailUrl: resolvePlacePhotoSrc(t.hero_image_url, 480) ?? undefined,
     });
   }
 
@@ -521,7 +522,7 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
       href: thingsHidden ? undefined : `/things-to-do/${thing.slug}`,
       iconEmoji: thingEmoji(thing),
       description: thing.summary ?? undefined,
-      thumbnailUrl: thing.hero_image_url ?? undefined,
+      thumbnailUrl: resolvePlacePhotoSrc(thing.hero_image_url, 480) ?? undefined,
     });
   }
 
@@ -530,10 +531,13 @@ export async function getRegionMapPins(seed = 0): Promise<RegionPin[]> {
     if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') continue;
     const placeCategory = mapPlaceCategory(p.category);
     if (!isPinInScope(placeCategory, loc.latitude, loc.longitude, p.slug)) continue;
-    // Synthesize a thumbnail URL from the first cached Place photo (proxy
-    // hides the API key — same approach LocalPlaceCard uses).
+    // Stable Place ID → current Google photo (temporary photos[].name expires).
     const photoName = p.cached_data?.photos?.[0]?.name;
-    const thumbnailUrl = photoName ? `/api/place-photo?name=${encodeURIComponent(photoName)}&w=480` : undefined;
+    const thumbnailUrl = isUsableGooglePlaceId(p.google_place_id)
+      ? googlePlacePhotoUrl(p.google_place_id, 480)
+      : photoName
+        ? `/api/place-photo?name=${encodeURIComponent(photoName)}&w=480`
+        : undefined;
     pins.push({
       id: `place:${p.id}`,
       lat: loc.latitude,

@@ -1,224 +1,238 @@
-# CRR RV Park Website — Operations Runbook
+# CRR RV Park — Operations Runbook
 
-This is the day-to-day guide for park staff and future maintainers. The live
-site is [crookedriverranchrv.com](https://www.crookedriverranchrv.com).
+> **Audience:** any HOA board member, office staff member, or developer who needs to understand, operate, recover, or hand off this system.
+>
+> **Why this document exists:** the website is owned by the Crooked River Ranch HOA, not by any individual. This runbook ensures the system can be operated by anyone with appropriate access, even if the original developer is unavailable.
+>
+> **Print this annually.** Hand the printed copy to the HOA board. If electronic access is ever compromised, the paper version still works.
 
-## What each system owns
+---
 
-| System | Responsibility |
+## TABLE OF CONTENTS
+
+1. [System overview](#1-system-overview)
+2. [Account inventory](#2-account-inventory)
+3. [Access management](#3-access-management)
+4. [How to do common tasks](#4-how-to-do-common-tasks)
+5. [Recovery procedures](#5-recovery-procedures)
+6. [Billing](#6-billing)
+7. [Hiring a new developer](#7-hiring-a-new-developer)
+8. [Glossary](#8-glossary)
+
+---
+
+## 1. SYSTEM OVERVIEW
+
+The Crooked River Ranch RV Park website lives at **https://www.crookedriverranchrv.com**.
+
+It is built from three connected services:
+
+| Service | What it does | Where to log in |
+|---|---|---|
+| **Netlify** | Hosts the public website; runs the admin behind the scenes | https://app.netlify.com |
+| **Supabase** | Database holding all editable content + admin user accounts | https://app.supabase.com |
+| **Zoho One** | Source of media (WorkDrive folder) + events calendar | https://www.zoho.com |
+
+The website is split into two parts:
+
+- **Public site** — the pages every visitor sees (home, book now, amenities, etc.)
+- **Admin** — at `/admin`, only accessible after sign-in. This is where all editing happens.
+
+**Booking is NOT done through this website.** Reservations go through Firefly Reservations, an external service. The "Reservations" button on the site links there. We do not handle payments, customer accounts, or booking data — Firefly does.
+
+---
+
+## 2. ACCOUNT INVENTORY
+
+Every account below is registered to **`rvpark@crookedriverranch.com`** (the HOA-owned address in Zoho Mail). If you can sign into that mailbox, you can recover access to every other account via "forgot password" emails.
+
+| Account | Login URL | Email | What it controls | Renewal cost |
+|---|---|---|---|---|
+| Domain registrar (TBD — confirm) | (registrar URL) | rvpark@crookedriverranch.com | The `crookedriverranchrv.com` domain itself | ~$15/year |
+| Netlify | https://app.netlify.com | rvpark@crookedriverranch.com | Website hosting + admin functions | $0 free tier; ~$19/mo if exceeded |
+| Supabase | https://app.supabase.com | rvpark@crookedriverranch.com | Content database + user logins | $0 free tier; $25/mo if exceeded |
+| Zoho One | https://accounts.zoho.com | rvpark@crookedriverranch.com | Drive (media), Calendar (events), Mail | already paid via existing Zoho One subscription |
+| Microsoft Clarity | https://clarity.microsoft.com | rvpark@crookedriverranch.com | Visitor analytics (heatmaps, recordings) | Free |
+| Firefly Reservations | (their dashboard URL) | (separate account) | Booking system (independent of website) | (separate billing) |
+
+**Critical:** the email account `rvpark@crookedriverranch.com` itself is the master key. Make sure at least 2 HOA people have access to that mailbox at all times.
+
+---
+
+## 3. ACCESS MANAGEMENT
+
+### Who can log into the admin
+
+There are 4 role tiers, set per user in the admin's "Users" page:
+
+| Role | Can do |
 |---|---|
-| Netlify | Hosting, functions, deploys, Deploy Previews, Agent Runners |
-| GitHub | Source history, pull requests, approvals, rollback history |
-| Supabase | Admin sign-in, media metadata, events, area-guide and map data |
-| Zoho WorkDrive | Upstream park-photo library |
-| Zoho Calendar | Upstream public-event calendar |
-| Rimrock | Live availability snapshot |
-| Firefly Reservations | Reservations, payments, confirmations, guest portal |
-| Google Maps / Places | Maps, directions, current place details, and live guest reviews |
+| **Owner** | Everything — code editing, user management, billing, restore from snapshots. **Always have at least 2 active owners.** |
+| **Editor** | Edit any content + publish to the live site. Approve drafts from Contributors. Cannot edit code or manage users. |
+| **Contributor** | Draft content edits — they are held until an Editor or Owner approves them. Cannot publish directly. |
+| **Viewer** | Read-only access. Useful for board members who want to see what's happening without edit risk. |
 
-## Change the public website
+### How to add a new admin user
 
-Public pages are not edited in `/admin`. Use the Netlify Agent Runner workflow:
+1. Sign into `https://www.crookedriverranchrv.com/admin` as an Owner
+2. Click "Users" → "Invite User"
+3. Enter email, display name, role
+4. They receive an email with a sign-in link
+5. They set their own password on first sign-in
 
-1. Sign in to Netlify and open the Crooked River Ranch RV Park project.
-2. Open Agent Runners and choose Claude Code or OpenAI Codex.
-3. Describe the exact page, factual change, desired outcome, and anything that
-   must remain unchanged.
-4. Review the changed files and the generated Deploy Preview.
-5. Create the GitHub pull request.
-6. Merge only after the preview is correct on desktop and mobile.
+### How to remove an admin user
 
-The agent works on an isolated branch. The live site changes only when the pull
-request is merged into `main`. See [NETLIFY-AI-EDITING.md](NETLIFY-AI-EDITING.md)
-for prompt templates and guardrails.
+1. Sign in as Owner
+2. Click "Users" → find them → "Deactivate" or "Remove"
+3. The system blocks you from removing the last Owner — promote someone else first
 
-## Use the operational admin
+---
 
-Sign in at `/admin`. The retained tools are:
+## 4. HOW TO DO COMMON TASKS
 
-- Media Library: upload and manage park imagery.
-- Events: manage event visibility and records.
-- Area Guide: maintain trails, activities, dining, and park-site records.
-- Park Map: maintain map image, polygons, and site placement.
-- Users: invite staff and assign operational access.
-- Change Log: review operational actions.
-- Settings: inspect and run Zoho synchronization.
-- Runbook: read or update the operational reference.
+### Edit text on the home page (or any page)
 
-The role labels now apply to the operational console:
+1. Sign into `/admin`
+2. Click "Edit Pages" in the left sidebar
+3. Click the page you want to edit
+4. Click any text or image directly to edit it
+5. Click "Publish Now" in the top right to push the change live
+   - Or "Save Draft" if you want an Editor to review first
 
-| Role | Access |
-|---|---|
-| Owner | All operational tools, users, integrations, and runbook |
-| Editor | Operational content, media, events, area guide, and map |
-| Contributor | Media upload and permitted operational records |
-| Viewer | Read-only operational access |
+### Replace an image
 
-Keep at least two active owners.
+1. Add the new image to your designated Zoho WorkDrive folder
+2. Wait up to 15 minutes for the sync (or click "Sync Now" on the Media page)
+3. Edit the page where the image appears, click the image, choose the new one from the library
+4. Publish
 
-## Common tasks
+### Add an upcoming event
 
-### Add or replace a photo
+1. Add the event to your designated Zoho "CRR Public Events" calendar
+2. Within an hour, it appears at `/events` on the public site automatically
+3. To hide a synced event from the public site, go to admin → Events → toggle it off
 
-1. Add the source image to the designated Zoho WorkDrive folder, or upload it
-   in Media Library.
-2. If using WorkDrive, allow up to 15 minutes or run Sync now in Settings.
-3. For a public-page placement change, use a Netlify Agent Runner and specify
-   the desired photo and page.
-4. Review the Deploy Preview before merging.
+### Publish changes
 
-### Add an event
+The "Publish Now" button on the dashboard:
+- Captures a snapshot of current content (so you can undo)
+- Triggers Netlify to rebuild the site
+- Takes 1–2 minutes; you'll see a status indicator
 
-Add it to the designated Zoho public-events calendar. The hourly sync publishes
-it to the site. Staff may also manage visibility from Admin → Events.
+### Restore a previous version
 
-### Update trails, attractions, dining, or site details
+1. Admin → Versions / Restore
+2. Find the version you want (each is timestamped + labeled with what triggered it)
+3. Click "Preview" to see what it looked like
+4. Click "Restore" to make it live
+5. The system snapshots the current state first, so restoring is itself reversible
 
-Use Admin → Area Guide. Existing records may be corrected or enriched. Do not
-auto-create new curated places merely because an API search returns them.
+---
 
-### Check availability or booking issues
+## 5. RECOVERY PROCEDURES
 
-- Availability display issue: inspect the Rimrock availability endpoint and
-  `/api/availability`.
-- Reservation, payment, confirmation, or guest-login issue: use Firefly.
-- The website does not own or alter reservation records.
-- Conversion invariant: global Book/Reserve controls must link directly to
-  `https://app.fireflyreservations.com/reserve/property/CROOKEDRIVERRANCHRVPARK`.
-  `/availability` is an optional beta-map preview and must be labeled as such,
-  never used as the default booking gateway.
-- While the map is experimental, do not render the reusable `SiteSearch.astro`
-  date/rig quick-search instrument on any public page. Preserve the component
-  for future activation; keep test inputs inside the dedicated beta-map flow.
-- Run `BOOKING_CHECK_BASE=https://crookedriverranchrv.com npm run booking:check`
-  after a production deploy. It crawls every public sitemap route and verifies
-  the shared desktop/mobile/footer Firefly controls plus explicit beta-map copy.
+### "The site is down"
 
-### Check the Google review feed
+1. Visit `https://www.crookedriverranchrv.com` in an incognito window — confirm the site is actually down vs. a local browser issue
+2. Visit `https://app.netlify.com` and check the deploy status
+3. If the latest deploy failed, click "Restore" on the previous successful deploy (Netlify provides one-click rollback)
+4. If Netlify itself is down, check https://www.netlifystatus.com
 
-- Public review text comes only from the live Google Places API (New) response
-  at `/api/google-reviews`; it is not stored in Supabase or source files.
-- Set `GOOGLE_MAPS_SERVER_KEY` in Netlify with Places API (New) access. The
-  public park Place ID is stored in source to avoid a billed Text Search on
-  every cold start; `GOOGLE_RV_PARK_PLACE_ID` is an optional override.
-- Put a quota cap and billing alert on the server-side Google key.
-- If Google or the key is unavailable, the site intentionally shows a direct
-  Google Maps link and no quotes or rating. This is the correct fail-soft state.
-- Preserve the Google Maps attribution, author links, original-review links,
-  relevance-order disclosure, and `no-store` response when changing this
-  component.
+### "I can't sign into the admin"
 
-### Check Things to Do photos
+1. Use the "Forgot password" link on the login page — Supabase emails a reset link
+2. If you can't access the email account, ask another Owner to reset your role
+3. If there are no other Owners, this is the worst-case scenario — you need a Supabase admin to manually fix the database. See "Hiring a new developer" below.
 
-- Google-backed activity rows may retain their stable Google Place ID, but
-  Google photo resource names are temporary. `/api/place-photo` refreshes the
-  current photo through Place Details before it returns the media URL.
-- Activity cards load Google photos progressively and preserve the current
-  author attribution. A failed provider request leaves a compact branded
-  placeholder; it must never expose a browser broken-image icon or expand the
-  card layout.
-- `images.unsplash.com` is intentionally permitted by the production image CSP
-  for the curated thematic rows that are not tied to a specific Google Place.
-- Run `THINGS_IMAGE_CHECK_BASE=https://crookedriverranchrv.com npm run images:check`
-  after deployment. It verifies every Google Place ID and every direct/local
-  Things to Do image without inserting or expanding the curated activity list.
-  A `404` on a curated `images.unsplash.com` row means that stock photo was
-  removed upstream — refresh that single row's `hero_image_url`; the card
-  already fails soft to its placeholder in the meantime.
-- The same progressive loader + attribution now backs the **dining/area place
-  cards** (`LocalPlaceCard`, from each row's stable `google_place_id`) and any
-  future Google-photo **trail hero** (trail heroes are currently Static Maps of
-  the trailhead via `/api/static-map`, which carry no Place ID). One loader in
-  `production-v3.js` drives all three surfaces.
-- `/api/place-photo` keeps a short-lived (45-min) in-memory resolve cache keyed
-  by `placeId:index:width`, so a grid of N cards costs one Place Details + Photo
-  resolve per distinct card instead of `2N` billed Google calls per visitor. It
-  is per-warm-instance (Netlify Functions reset on cold start) and never changes
-  the `no-store` browser response — it only lowers our upstream Google spend.
+### "Content I edited disappeared"
 
-### Search visibility and technical SEO
+1. Check the change log (admin → Change Log) — search for your name and the date
+2. If the edit shows there but isn't on the live site, you forgot to publish. Click "Publish Now"
+3. If the edit doesn't show in the change log either, it didn't save. Try again
 
-The canonical public origin is `https://crookedriverranchrv.com` (no `www`).
-The `www` host permanently redirects to it. Do not mix hosts in canonicals,
-structured data, sitemap URLs, or Search Console inspection.
+### "Zoho sync is broken"
 
-- `/robots.txt` points crawlers to `/sitemap.xml`.
-- `/sitemap.xml` is generated live. It includes every public static route plus
-  published site, trail, and activity detail routes from Supabase, with
-  available page images and honest `lastmod` values.
-- Every indexable page emits a unique title/description, self-referencing
-  canonical, full image/snippet preview directives, Open Graph/Twitter data,
-  WebPage JSON-LD, and visible + JSON-LD breadcrumbs.
-- The home page also emits `Campground` and `WebSite` identity data for local
-  business and site-name understanding.
-- Privacy policy, website terms, and the XML sitemap are linked from the
-  footer. Admin, API, and concept surfaces remain `noindex`.
-- `PUBLIC_GOOGLE_SITE_VERIFICATION` is optional for Search Console's HTML-tag
-  verification method. Prefer a Domain property with DNS verification when
-  account access allows it.
-- The official logo property is intentionally absent from Organization data
-  until the exact park logo artwork is available. Never substitute a hero
-  photo, generated logo, or unrelated HOA mark.
-- Do not add `AggregateRating` to the park's own LocalBusiness/Campground
-  schema. Google treats self-serving local-business review markup separately;
-  the on-page live review feed already provides the truthful guest proof.
+1. Admin → Settings → Zoho Integration — check status
+2. If it shows disconnected, click "Reconnect Zoho" and complete the OAuth flow again
+3. The most common cause: the Zoho token expired or was revoked. Reconnecting fixes it
 
-Before deployment:
+### "I made a code change and the site broke"
 
-```bash
-npm run check
-npm run build
-npm run seo:check
-npm run seo:check:live -- http://127.0.0.1:4321
-```
+The system is designed to prevent this:
+- Code edits require a successful preview build before publishing
+- If a production build fails, the site automatically rolls back to the previous version
 
-After deployment, run the live crawl against production, submit
-`https://crookedriverranchrv.com/sitemap.xml` in Google Search Console, and
-inspect representative home, availability, sites, trail, and privacy URLs.
-Technical completeness makes pages eligible and understandable; Google does
-not guarantee indexing or a particular position.
+But if it happens anyway:
+1. Admin → Versions / Restore → click "Restore" on the last known good snapshot
+2. Then either fix the code or contact the developer
 
-## Recovery
+---
 
-### A deploy failed
+## 6. BILLING
 
-The previous successful Netlify deploy remains live. Open the deploy log, fix
-the branch, and let the preview rebuild. Do not merge a failing preview.
+All charges go to the payment method on file under `rvpark@crookedriverranch.com`.
 
-### A merged website change was wrong
+| Service | Approximate cost | When billed |
+|---|---|---|
+| Domain renewal | ~$15/year | Anniversary of registration |
+| Netlify | $0 (free tier) — could reach $19/mo if traffic spikes | Monthly |
+| Supabase | $0 (free tier) — could reach $25/mo if database grows past free limits | Monthly |
+| Zoho One | (already paid) | Existing subscription |
+| **Total expected** | **$0–$45/month** | |
 
-Revert the pull request in GitHub, review the revert through a Deploy Preview,
-then merge the revert.
+### To check current bills
 
-### Restore the complete pre-V3 site
+- Netlify: https://app.netlify.com → Billing
+- Supabase: https://app.supabase.com → Project Settings → Billing
 
-Follow [RESTORE-PRE-V3.md](RESTORE-PRE-V3.md). The protected recovery points
-are:
+### If a bill spikes unexpectedly
 
-- Git tag `pre-v3-remodel-2026-07-19`
-- Git branch `backup/pre-v3-remodel-2026-07-19`
-- Supabase snapshot `d8aab870-70c3-4e5b-a54a-31f222df56f7`
-- Local database export under
-  `scripts/_backups/pre-v3-remodel-2026-07-19/`
+1. Check what changed (new traffic spike? large image uploads? lots of database queries?)
+2. Both Netlify and Supabase let you set spending caps — go to Billing → Limits
+3. Contact your developer if you're unsure
 
-Never use `git reset --hard` for this recovery.
+---
 
-## Service health
+## 7. HIRING A NEW DEVELOPER
 
-For an outage:
+Any reasonable web developer can take over this system. Send them this runbook + the [README.md](README.md) in the repository.
 
-1. Confirm the public URL in a private browser window.
-2. Check Netlify deploy and function logs.
-3. Check Supabase project health and auth logs.
-4. Check Rimrock only if the availability surface is affected.
-5. Check Zoho only if media or event synchronization is affected.
-6. Check [Netlify status](https://www.netlifystatus.com) for a platform event.
+### Onboarding checklist
 
-## Account succession
+1. Add them to Netlify as a "Collaborator" (Site settings → Members)
+2. Add them to Supabase as a "Member" with appropriate access (Project Settings → Members)
+3. Create them an Owner-role admin account (Admin → Users → Invite)
+4. Give them access to the project source code (the `crr-rv-park-platform` directory)
+5. Walk them through the project structure (or send them [SPEC-PHASE-1.md](SPEC-PHASE-1.md))
 
-The HOA-controlled mailbox `rvpark@crookedriverranch.com` is the recovery
-identity for the project accounts. At least two authorized HOA people should
-retain access. Remove departing maintainers from Netlify, GitHub, Supabase,
-Zoho, and the admin user list, then rotate credentials when warranted.
+### Removing a former developer
 
-Document version: 1.0. Updated 2026-07-19 PT for the V3 production remodel.
+1. Remove their Netlify Collaborator access
+2. Remove their Supabase Member access
+3. Deactivate their admin account (Admin → Users → Deactivate)
+4. (Optional) Rotate the `SUPABASE_SERVICE_ROLE_KEY` and `NETLIFY_AUTH_TOKEN` env vars on Netlify
+
+### What to look for in a developer
+
+The system uses: **Astro**, **TypeScript**, **React**, **Supabase** (Postgres + Auth + Storage), **Netlify Functions**, **Tiptap**, **Monaco**. Any developer comfortable with modern JavaScript/TypeScript and a Postgres database can work on it. Estimated handoff time: **half a day** for someone competent.
+
+---
+
+## 8. GLOSSARY
+
+- **Astro** — the framework that builds the public website pages
+- **Build** — the process of generating the live website from the latest content (takes 1–2 minutes)
+- **Content block** — the smallest editable unit of the site (a paragraph, an image, a price)
+- **Deploy** — the act of putting a built website on the live server
+- **Netlify** — the company that hosts the website
+- **OAuth** — a way for one service (us) to read data from another (Zoho) without sharing passwords
+- **Publish** — taking edits in the admin and pushing them to the live site
+- **Roll back / Restore** — reverting the live site to a previous version
+- **Snapshot** — a saved copy of all content at a point in time
+- **Supabase** — the database that stores all editable content + user accounts
+- **Tiptap** — the in-page text editor visitors to the admin use to edit content
+- **Zoho One** — the suite that includes WorkDrive (file storage) + Calendar + Mail
+
+---
+
+*Document version: 0.1 (initial scaffold). Last updated: April 2026.*

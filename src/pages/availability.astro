@@ -1,130 +1,97 @@
 ---
 /**
- * /availability — Rimrock live-map beta (request path).
+ * /availability — guest-facing "Check Availability" map.
  *
- * THE GATE IS RIMROCK'S: same pilot_portal toggle as /new-reservations-pilot.
- * Fail-closed — closed notice is the server-rendered default; only an explicit
- * ok && open from /api/pilot-status reveals the Rimrock embed.
- * The static /park-map route is unrelated and stays always public.
+ * A search form (dates + rig length + slides + site type) over a polygon
+ * map that paints each site available / unavailable for the chosen dates.
+ * Clicking an available site deep-links to Firefly to reserve. NO pricing.
+ *
+ * Data model (reuses /park-map's approach exactly):
+ *   • base image + polygons come from Supabase (park_maps active row +
+ *     park_sites.map_polygon) — so the page ALWAYS renders, even when the
+ *     Rimrock availability API is down.
+ *   • availability is layered on client-side via /api/availability (a
+ *     same-origin proxy to Rimrock) — see AvailabilityMap.astro.
+ *
+ * SSR (prerender=false) so newly-published sites / a swapped base map show
+ * up without a rebuild, matching /park-map and /sites/[code].
  */
 export const prerender = false;
 
 import Base from '@layouts/Base.astro';
-import PageHero from '@components/site/PageHero.astro';
-import FinalCta from '@components/site/FinalCta.astro';
-import RimrockBetaMap from '@components/site/RimrockBetaMap.astro';
-import { FIREFLY_RESERVATION_URL } from '@lib/booking';
+import { getParkSites } from '@lib/area-guide';
+import AvailabilityMap from '@components/AvailabilityMap.astro';
+import { serverClient } from '@lib/supabase';
+import { isRouteHidden } from '@lib/site-visibility';
 
-const preferredType = Astro.url.searchParams.get('type') ?? '';
+if (await isRouteHidden(Astro.url.pathname)) {
+  return new Response('Not Found', { status: 404 });
+}
 
-const title = 'Live Map Beta — Request a Site | Crooked River Ranch RV Park';
-const description =
-  'Try the Rimrock live map beta: search dates, pick a site, and send a request. Then call 541-923-1441 to confirm and pay your deposit. Not a confirmed reservation.';
+const sites = await getParkSites();
+
+// Active base map (same query /park-map uses). Fail-soft to null.
+let activeParkMap:
+  | { image_url: string; title: string; natural_width: number; natural_height: number }
+  | null = null;
+try {
+  const sb = serverClient();
+  const { data } = await sb
+    .from('park_maps')
+    .select('image_url, title, natural_width, natural_height')
+    .eq('is_active', true)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (data) activeParkMap = data as unknown as typeof activeParkMap;
+} catch { /* fall through to the no-map notice */ }
+
+const polygonSites = sites.filter(
+  (s) => Array.isArray(s.map_polygon) && (s.map_polygon as unknown[]).length > 0 && s.is_published !== false,
+);
+const canRenderMap = Boolean(activeParkMap) && polygonSites.length > 0;
+
+const title = 'Check Availability | Crooked River Ranch RV Park';
+const description = 'See which RV sites are open for your dates at Crooked River Ranch RV Park. Filter by rig length, slides, and hookups, then reserve your site instantly.';
 const canonical = 'https://www.crookedriverranchrv.com/availability';
 ---
-<Base title={title} description={description} canonical={canonical} ogImage="https://www.crookedriverranchrv.com/images/aerial_wide.jpg" heroImagePreload="/images/aerial_wide.webp">
-  <main id="main-content">
-    <PageHero
-      eyebrow="Live map · beta"
-      headline="Try the live map."
-      accent="Then call to confirm."
-      body="Search dates and pick a site in Rimrock just like a normal booking. Your request is sent to the office — it is not a confirmed reservation and does not take payment. Call 541-923-1441 to confirm availability and pay your deposit."
-      image="/images/aerial_wide.webp"
-      imageMobile="/images/aerial_wide-mobile.webp"
-      imageJpg="/images/aerial_wide.jpg"
-      alt="Aerial view of Crooked River Ranch RV Park and the surrounding canyon"
-      caption="Rimrock live map · request path · call required"
-      primaryHref="#live-availability"
-      primaryLabel="Open the live map"
-      secondaryHref="tel:+15419231441"
-      secondaryLabel="Call 541-923-1441"
-    />
+<Base title={title} description={description} canonical={canonical}>
+  <section class="page-hero" style="min-height:36vh;">
+    <div class="hero-bg" style="background:linear-gradient(135deg,#2c1810 0%,#4a2e1a 100%);"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="text-align:center;">
+      <div class="hero-eyebrow" style="justify-content:center;">Live availability</div>
+      <h1 class="hero-hl">What's <em>open</em> for your dates.</h1>
+      <p class="hero-sub" style="margin-left:auto;margin-right:auto;">
+        Pick your dates and rig, and we'll light up every site that's free. Tap a green site to reserve it.
+      </p>
+    </div>
+  </section>
 
-    <section class="crr-section crr-section-soft" id="live-availability">
-      <div class="v2-shell">
-        <!-- CLOSED is the DEFAULT (fail-closed): shown until Rimrock's gate says open -->
-        <div id="beta-closed">
-          <div class="v2-section-heading v2-reveal">
-            <div>
-              <p class="v2-eyebrow">Live map beta</p>
-              <h2>The live map beta is<br />currently closed.</h2>
-            </div>
-            <p>
-              We open the interactive Rimrock map for guest testing during office hours
-              so our staff can follow up with you personally.
-            </p>
-          </div>
-          <div class="crr-live-panel v2-reveal">
-            <div class="crr-empty-state">
-              <h3>Check back <span id="beta-schedule">Monday–Saturday, 10:00 AM–3:00 PM Pacific</span>.</h3>
-              <p>
-                Or call the office at <a href="tel:+15419231441">541-923-1441</a> —
-                we'll be happy to help with your reservation right now. You can always
-                browse the <a href="/park-map">park map</a> or
-                <a href={FIREFLY_RESERVATION_URL}>book through our normal reservation path</a>.
-              </p>
-            </div>
-          </div>
+  <section style="padding:3rem 3rem 4rem;">
+    <div class="container">
+      {canRenderMap && activeParkMap ? (
+        <AvailabilityMap parkMap={activeParkMap} sites={polygonSites as any} />
+      ) : (
+        <div style="padding:3rem;background:var(--sand);border:1px dashed var(--rust);border-radius:4px;text-align:center;color:var(--muted);">
+          The availability map isn't set up yet. Please
+          <a href="/book-now.html" style="color:var(--rust);"> start a reservation</a>
+          or call us at <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+          and we'll check availability for you.
         </div>
+      )}
+    </div>
+  </section>
 
-        <!-- OPEN content: revealed ONLY when Rimrock's gate answers ok && open -->
-        <div id="beta-open" hidden>
-          <RimrockBetaMap preferredType={preferredType} deferLoad={true} />
-        </div>
-      </div>
-    </section>
-
-    <FinalCta
-      headline="Prefer to book and pay online now?"
-      body="Use the normal reservation path for live availability, payment, and confirmation — or call 541-923-1441."
-      image="/images/canyon_sunset.webp"
-      primaryHref={FIREFLY_RESERVATION_URL}
-      primaryLabel="Book your site"
-      secondaryHref="tel:+15419231441"
-      secondaryLabel="Call 541-923-1441"
-    />
-  </main>
-
-  <script is:inline>
-    (function () {
-      var DAY_LABELS = {
-        'mon-sat': 'Monday–Saturday',
-        'mon-fri': 'Monday–Friday',
-        'mon-sun': 'every day',
-      };
-      function fmtTime(t) {
-        var m = /^(\d{1,2}):(\d{2})$/.exec(t || '');
-        if (!m) return t || '';
-        var h = parseInt(m[1], 10);
-        var ampm = h >= 12 ? 'PM' : 'AM';
-        var h12 = h % 12 === 0 ? 12 : h % 12;
-        return h12 + ':' + m[2] + ' ' + ampm;
-      }
-      fetch('/api/pilot-status', { headers: { Accept: 'application/json' } })
-        .then(function (r) { return r.json(); })
-        .then(function (s) {
-          if (s && s.ok === true && s.open === true) {
-            var closed = document.getElementById('beta-closed');
-            var open = document.getElementById('beta-open');
-            if (closed) closed.hidden = true;
-            if (open) open.hidden = false;
-            // Load the Rimrock iframe only after the gate opens (src held in data-src).
-            var frame = open && open.querySelector('iframe.crr-rr-embed');
-            if (frame && !frame.getAttribute('src')) {
-              var ds = frame.getAttribute('data-src');
-              if (ds) frame.setAttribute('src', ds);
-            }
-            return;
-          }
-          var sched = s && s.schedule;
-          var el = document.getElementById('beta-schedule');
-          if (el && sched && sched.start && sched.end) {
-            var days = DAY_LABELS[sched.days] || sched.days || '';
-            el.textContent =
-              days + ', ' + fmtTime(sched.start) + '–' + fmtTime(sched.end) + ' Pacific';
-          }
-        })
-        .catch(function () { /* closed notice stands — fail closed */ });
-    })();
-  </script>
+  <section style="padding:3rem;background:var(--sand);text-align:center;">
+    <div class="container" style="max-width:720px;">
+      <h2 class="st">Prefer to browse first?</h2>
+      <p class="section-body" style="margin:1rem auto 2rem;">
+        See every site's specs on the <a href="/park-map" style="color:var(--rust);">full park map</a>,
+        or call <a href="tel:+15419231441" style="color:var(--rust);">541-923-1441</a>
+        and we'll help you pick the right one.
+      </p>
+    </div>
+  </section>
 </Base>

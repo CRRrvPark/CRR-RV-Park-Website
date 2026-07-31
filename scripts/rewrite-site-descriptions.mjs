@@ -22,9 +22,8 @@
  *           canyon-rim sunsets, walks to gazebo and pool.
  *   A-loop  Smaller-rig back-in, easy walk to golf + pool, kids
  *           and dogs in the grass, stress fades with the light.
- *   B-loop  Big-rig pull-through, sage-and-juniper privacy,
- *           sunset framing west, room to stretch out.
- *           (Only B1 is paved — ADA; do not call other pads asphalt.)
+ *   B-loop  Big-rig pull-through, smooth pad, sage-and-juniper
+ *           privacy, sunset framing west, room to stretch out.
  *   MAGIC   Special tent spot under the deepest deciduous shade.
  *
  * Each description ends with a small italic spec line so the
@@ -98,17 +97,10 @@ function describeA(site) {
 }
 
 // Big-rig 50-amp full-hookup pull-throughs.
-// Surface note: only B1 is paved (ADA). Other B pads are not asphalt —
-// never claim smooth/level/asphalt pads in generated copy.
 function describeB(site) {
-  const isAdaPaved = site.site_number === 'B1';
-  const lengthBit = isAdaPaved
-    ? (site.length_feet
-      ? `${site.length_feet} feet of paved pull-through (ADA) `
-      : "A paved ADA pull-through ")
-    : (site.length_feet
-      ? `${site.length_feet} feet of pull-through `
-      : "A pull-through ");
+  const lengthBit = site.length_feet
+    ? `${site.length_feet} feet of smooth asphalt pull-through `
+    : "A smooth asphalt pull-through ";
   return (
     lengthBit +
     "— long enough for big rigs, easy enough you'll be set up and unwinding " +
@@ -116,7 +108,7 @@ function describeB(site) {
     "the sites give you privacy; mature trees frame the view; the canyon bluff " +
     "and the sunset settle in to the west. Step outside the rig and the pool, " +
     "the courts, the dog run, the gazebo, and the bathhouses are all an easy " +
-    "walk; the golf course is right there too. Hook up, settle in, breathe in " +
+    "walk; the golf course is right there too. Hook up, level once, breathe in " +
     "the high-desert air — this is the kind of site that makes a long trip " +
     "feel restful."
   );

@@ -6,6 +6,8 @@
  * and the same Tiptap-unwrap logic used in page-content.ts.
  */
 
+import { fixPublicCopy, fixPublicCopyDeep } from './public-copy-fixes';
+
 export interface SectionBlock {
   key: string;
   block_type: string;
@@ -23,24 +25,24 @@ export interface SectionBlock {
 export type BlockMap = Record<string, SectionBlock>;
 
 export function blockText(blocks: BlockMap, key: string, fallback = ''): string {
-  return blocks[key]?.value_text ?? fallback;
+  return fixPublicCopy(blocks[key]?.value_text ?? fallback);
 }
 
 export function blockHtml(blocks: BlockMap, key: string, fallback = ''): string {
   const raw = blocks[key]?.value_html ?? blocks[key]?.value_text ?? fallback;
   // Strip Tiptap's wrapping <p> when single-paragraph (matches page-content.ts logic)
   const m = raw.match(/^\s*<p>([\s\S]*?)<\/p>\s*$/);
-  if (m && !/<p\b/i.test(m[1])) return m[1];
-  return raw;
+  if (m && !/<p\b/i.test(m[1])) return fixPublicCopy(m[1]);
+  return fixPublicCopy(raw);
 }
 
 export function blockMultiHtml(blocks: BlockMap, key: string, fallback = ''): string {
   // For places that DO want <p>...</p> preserved (long-form prose).
-  return blocks[key]?.value_html ?? blocks[key]?.value_text ?? fallback;
+  return fixPublicCopy(blocks[key]?.value_html ?? blocks[key]?.value_text ?? fallback);
 }
 
 export function blockJson<T = unknown>(blocks: BlockMap, key: string, fallback: T): T {
-  return (blocks[key]?.value_json as T) ?? fallback;
+  return fixPublicCopyDeep((blocks[key]?.value_json as T) ?? fallback);
 }
 
 export function blockNumber(blocks: BlockMap, key: string, fallback = 0): number {

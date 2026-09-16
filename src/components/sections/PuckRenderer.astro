@@ -17,6 +17,7 @@
 import { serverClient } from '@lib/supabase';
 import { pushStyleProps, renderChildBlock, renderAtom, type PuckItem as _PuckItem } from '@lib/puck-render-helpers';
 import { migratePuckData } from '@lib/puck-data-migrate';
+import { fixPublicCopyDeep } from '@lib/public-copy-fixes';
 import { getRegionMapPins, REGION_PIN_CATEGORIES, type RegionPin } from '@lib/area-guide';
 import RegionMap from '@components/RegionMap.astro';
 
@@ -85,7 +86,7 @@ if (pageBuilderData) {
 // so this never changes the output for already-migrated data; it only
 // fixes the output for data that hasn't been migrated yet.
 if (puckData) {
-  puckData = migratePuckData(puckData);
+  puckData = fixPublicCopyDeep(migratePuckData(puckData));
 }
 
 /* ── Events data (fetched when EventsWidgetSection is used) ── */

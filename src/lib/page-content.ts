@@ -19,6 +19,7 @@
  */
 
 import { serverClient } from './supabase';
+import { fixPublicCopy, fixPublicCopyDeep } from './public-copy-fixes';
 
 export interface BlockMap {
   // Flat map keyed by "section_key.block_key" — e.g. "hero.eyebrow"
@@ -84,13 +85,13 @@ export async function getBlocks(pageSlug: string): Promise<BlockMap> {
 
 export function pickText(blocks: BlockMap, sectionKey: string, blockKey: string, fallback: string): string {
   const b = blocks[`${sectionKey}.${blockKey}`];
-  return b?.value_text ?? fallback;
+  return fixPublicCopy(b?.value_text ?? fallback);
 }
 
 export function pickHtml(blocks: BlockMap, sectionKey: string, blockKey: string, fallback: string): string {
   const b = blocks[`${sectionKey}.${blockKey}`];
   const raw = b?.value_html ?? b?.value_text ?? fallback;
-  return unwrapSingleParagraph(raw);
+  return unwrapSingleParagraph(fixPublicCopy(raw));
 }
 
 /**
@@ -125,7 +126,7 @@ export function pickImage(
 
 export function pickJson<T = unknown>(blocks: BlockMap, sectionKey: string, blockKey: string, fallback: T): T {
   const b = blocks[`${sectionKey}.${blockKey}`];
-  return (b?.value_json as T) ?? fallback;
+  return fixPublicCopyDeep((b?.value_json as T) ?? fallback);
 }
 
 export function pickNumber(blocks: BlockMap, sectionKey: string, blockKey: string, fallback: number): number {

@@ -914,7 +914,7 @@ export default [
           id: 'book-now-rates-note',
           props: {
             code: `<div class="rate-note-box" style="max-width:900px;margin:0 auto;">
-  <p><strong>Monthly rates available October 1 – April 30.</strong> All rates exclude tax. $6 reservation fee per booking. Good Sam, military/first responder, and Harvest Hosts members each receive 10% off nightly rates. Contact the office at <a href="tel:5419231441">541-923-1441</a> to discuss extended stays and property owner rates.</p>
+  <p><strong>Monthly rates available now through April 30. 5 sites open today; 13 more October 1.</strong> All rates exclude tax. $6 reservation fee per booking. Good Sam, military/first responder, and Harvest Hosts members each receive 10% off nightly rates. Contact the office at <a href="tel:5419231441">541-923-1441</a> to discuss extended stays and property owner rates.</p>
   <p style="margin-top:1rem;text-align:center;"><a href="${FIREFLY_URL}" class="btn-p">Check Availability →</a></p>
 </div>`,
           },

@@ -6,6 +6,7 @@
  *   - src/pages/extended-stays.astro  (the page itself)
  *   - src/components/AvailabilityBanner.astro  (site-wide announcement bar)
  *   - src/components/Nav.astro + Footer.astro  ("Available Now" flag)
+ *   - src/lib/public-copy-fixes.ts (book-now + homepage strings still stored in CMS)
  *
  * To update availability, edit this file and redeploy. Nothing else needs
  * touching, and no dashboard/DB edit is involved — this content is owned by

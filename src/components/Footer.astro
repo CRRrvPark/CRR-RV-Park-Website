@@ -8,6 +8,8 @@
  *   - Copyright year is dynamic
  */
 
+import { EXTENDED_STAYS } from '@lib/availability';
+
 const currentYear = new Date().getFullYear();
 ---
 <footer>
@@ -24,7 +26,9 @@ const currentYear = new Date().getFullYear();
         <a href="/golf-course.html">Golf Course</a>
         <a href="/park-map">Park Map</a>
         <a href="/group-sites.html">Group Sites</a>
-        <a href="/extended-stays.html">Extended Stays</a>
+        <a href="/extended-stays">Extended Stays{EXTENDED_STAYS.applicationsOpen && (
+          <span class="link-flag">{EXTENDED_STAYS.flagLabel}</span>
+        )}</a>
         <a href="/amenities.html">Amenities</a>
         <a href="/book-now.html">Reserve Your Site</a>
       </div>

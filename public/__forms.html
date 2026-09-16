@@ -72,5 +72,82 @@
   <input type="text" name="bot-field" />
 </form>
 
+<!-- Monthly extended-stay application (/extended-stays) -->
+<!-- Every field on the live application must appear here or Netlify silently
+     drops it from the submission. The page POSTs to /__forms.html via fetch. -->
+<form name="monthly-application" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="text" name="subject" />
+  <input type="text" name="first_name" />
+  <input type="text" name="last_name" />
+  <input type="email" name="email" />
+  <input type="tel" name="phone" />
+  <input type="text" name="mailing_address" />
+  <input type="text" name="date_of_birth" />
+  <input type="text" name="returning_guest" />
+
+  <input type="text" name="move_in_date" />
+  <input type="text" name="move_out_date" />
+
+  <input type="text" name="rv_year" />
+  <input type="text" name="rv_make" />
+  <input type="text" name="rv_model" />
+  <input type="text" name="rv_length" />
+  <input type="text" name="rv_age" />
+  <input type="text" name="rig_type" />
+  <input type="text" name="rv_insurance" />
+
+  <input type="text" name="occupant_1" />
+  <input type="text" name="occupant_2" />
+  <input type="text" name="occupant_3" />
+
+  <input type="text" name="pet_1_name" />
+  <input type="text" name="pet_1_breed" />
+  <input type="text" name="pet_1_weight" />
+  <input type="text" name="pet_1_age" />
+  <input type="text" name="pet_1_sex" />
+  <input type="text" name="pet_1_fixed" />
+  <input type="text" name="pet_1_vaccinated" />
+
+  <input type="text" name="pet_2_name" />
+  <input type="text" name="pet_2_breed" />
+  <input type="text" name="pet_2_weight" />
+  <input type="text" name="pet_2_age" />
+  <input type="text" name="pet_2_sex" />
+  <input type="text" name="pet_2_fixed" />
+  <input type="text" name="pet_2_vaccinated" />
+
+  <input type="text" name="pet_consent" />
+
+  <input type="text" name="vehicle_1" />
+  <input type="text" name="vehicle_2" />
+
+  <input type="text" name="history_1_address" />
+  <input type="text" name="history_1_dates" />
+  <input type="text" name="history_1_type" />
+  <input type="text" name="history_1_reason" />
+  <input type="text" name="history_1_contact_name" />
+  <input type="tel" name="history_1_contact_phone" />
+  <input type="email" name="history_1_contact_email" />
+
+  <input type="text" name="history_2_address" />
+  <input type="text" name="history_2_dates" />
+  <input type="text" name="history_2_type" />
+  <input type="text" name="history_2_reason" />
+  <input type="text" name="history_2_contact_name" />
+  <input type="tel" name="history_2_contact_phone" />
+  <input type="email" name="history_2_contact_email" />
+
+  <input type="text" name="history_3_address" />
+  <input type="text" name="history_3_dates" />
+  <input type="text" name="history_3_type" />
+  <input type="text" name="history_3_reason" />
+  <input type="text" name="history_3_contact_name" />
+  <input type="tel" name="history_3_contact_phone" />
+  <input type="email" name="history_3_contact_email" />
+  <textarea name="message"></textarea>
+  <input type="text" name="consent" />
+  <input type="text" name="bot-field" />
+</form>
+
 </body>
 </html>

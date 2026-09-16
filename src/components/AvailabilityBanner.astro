@@ -1,0 +1,33 @@
+---
+/**
+ * AvailabilityBanner — thin site-wide announcement strip for extended-stay
+ * availability. Rendered from Base.astro above the nav.
+ *
+ * Geometry note: every public page's hero is full-bleed and sits *underneath*
+ * the fixed nav (that's what the nav#mainNav::before gradient compensates for),
+ * so this bar cannot live in normal document flow without shoving every hero
+ * down. Instead it's fixed at the top of the viewport and the nav is pushed
+ * down by --announce-h, which Base.astro switches on via `body.has-announce`.
+ * Hero content is bottom-anchored, so the 40px shift costs nothing visually.
+ *
+ * Content and the on/off switch both come from src/lib/availability.ts.
+ * Set applicationsOpen: false there and this disappears everywhere, with the
+ * nav returning to the top of the viewport.
+ */
+import { EXTENDED_STAYS } from '@lib/availability';
+
+const ES = EXTENDED_STAYS;
+
+const headline = `${ES.sitesAvailableNow} extended-stay sites available now`;
+const detail = ES.additionalSites > 0
+  ? ` — ${ES.additionalSites} more open ${ES.additionalSitesDate}, and they're already booking.`
+  : ` — ${ES.monthlyRate}/month through ${ES.seasonEndLabel}.`;
+---
+{ES.applicationsOpen && (
+  <div class="announce-bar">
+    <p>
+      <strong>{headline}</strong><span class="announce-more">{detail}</span>
+    </p>
+    <a href="/extended-stays#monthly-form">Apply&nbsp;&rarr;</a>
+  </div>
+)}

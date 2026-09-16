@@ -10,9 +10,33 @@
   --cream:#F5EFE6;--sand:#EDE5D8;--text:#2C1810;--muted:#665040;
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'DM Sans',-apple-system,sans-serif;
+  /* Height of the site-wide availability bar (AvailabilityBanner.astro).
+     Fixed, not fluid: nav#mainNav and the mobile menu are position:fixed and
+     offset by this exact value, so the bar must never change height. That is
+     why .announce-more is hidden on narrow screens instead of wrapping. */
+  --announce-h:40px;
 }
 html{scroll-behavior:smooth;}
 body{font-family:var(--sans);color:var(--text);background:var(--cream);overflow-x:hidden;}
+
+/* ---- AVAILABILITY BAR ---- */
+/* Rendered above the nav by Base.astro whenever EXTENDED_STAYS.applicationsOpen
+   is true (src/lib/availability.ts). body.has-announce carries the nav offset so
+   that turning the bar off is a one-line flag change with no CSS edits. */
+.announce-bar{position:fixed;top:0;left:0;right:0;z-index:101;height:var(--announce-h);display:flex;align-items:center;justify-content:center;gap:1rem;padding:0 1rem;background:var(--deep);border-bottom:1px solid rgba(212,168,83,.28);overflow:hidden;}
+.announce-bar p{font-size:.78rem;line-height:1;letter-spacing:.02em;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.announce-bar strong{color:var(--gold);font-weight:500;}
+.announce-bar a{flex:none;color:var(--gold);text-decoration:none;font-size:.75rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid rgba(212,168,83,.45);padding-bottom:1px;transition:color .2s,border-color .2s;}
+.announce-bar a:hover{color:#fff;border-color:#fff;}
+body.has-announce nav#mainNav{top:var(--announce-h);}
+@media(max-width:900px){
+  /* Drop the secondary clause rather than let it wrap — the bar's height is
+     load-bearing for the fixed nav offset above. */
+  .announce-more{display:none;}
+  .announce-bar{gap:.8rem;}
+  .announce-bar p{font-size:.72rem;}
+  .announce-bar a{font-size:.68rem;}
+}
 
 /* ---- NAV ---- */
 nav#mainNav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;transition:background .3s,box-shadow .3s;}
@@ -29,6 +53,15 @@ nav#mainNav.scrolled{background:rgba(20,12,4,.97);box-shadow:0 1px 0 rgba(255,25
 .nav-links a:hover,.nav-links a.active{color:#fff;}
 .nav-cta{background:transparent;color:var(--gold)!important;padding:.45rem 1.15rem;border-radius:3px;font-weight:500!important;border:1.5px solid var(--gold);transition:background .2s,color .2s,border-color .2s!important;letter-spacing:.06em;}
 .nav-cta:hover{background:var(--gold);color:var(--dark)!important;border-color:var(--gold);}
+/* "Available Now" flag on the Extended Stays link (Nav + Footer). Gold pill
+   modeled on .fbadge. Between 981–1150px the label is visually collapsed to a
+   dot so the single-row nav can't wrap into the Reservations CTA — the text
+   stays in the accessibility tree, it is only clipped. */
+.nav-flag,.link-flag{display:inline-block;margin-left:.4rem;background:rgba(212,168,83,.12);border:1px solid rgba(212,168,83,.4);color:var(--gold);font-size:.58rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;padding:.14rem .4rem;border-radius:2px;vertical-align:middle;white-space:nowrap;line-height:1;}
+@media(min-width:981px) and (max-width:1150px){
+  .nav-flag{width:7px;height:7px;padding:0;border-radius:50%;background:var(--gold);border-color:var(--gold);}
+  .nav-flag .nav-flag-text{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+}
 .nav-dd{position:relative;}
 .nav-dd>a::after{content:'▾';margin-left:.3rem;font-size:.65rem;opacity:.5;}
 .nav-dd-menu{display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);background:rgba(20,12,4,.97);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:.5rem 0;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:110;}
@@ -44,6 +77,7 @@ nav#mainNav.scrolled{background:rgba(20,12,4,.97);box-shadow:0 1px 0 rgba(255,25
   .nav-dd-menu{position:static;transform:none;display:block;background:none;border:none;box-shadow:none;padding:0;min-width:0;text-align:center;}
   .nav-dd>a::after{display:none;}
   .nav-dd-menu a{padding:.35rem 0;}
+  body.has-announce .nav-links{top:calc(68px + var(--announce-h));}
 }
 
 /* ---- HERO (shared pattern) ---- */
@@ -213,6 +247,14 @@ a.res-link:hover{border-color:rgba(196,98,45,.35);transform:translateY(-2px);}
 .form-notice strong{font-weight:500;color:var(--dark);}
 .form-notice ul{margin:.55rem 0 0 1.15rem;padding:0;list-style:disc;}
 .form-notice ul li{margin-bottom:.3rem;}
+
+/* ---- AJAX FORM STATUS ---- */
+/* Used by the monthly-application submit handler on /extended-stays. The
+   element is hidden until the POST resolves, then takes .is-ok or .is-err. */
+.form-status{margin-top:1rem;padding:.9rem 1.1rem;border-radius:3px;font-size:.9rem;line-height:1.6;}
+.form-status.is-ok{background:rgba(93,138,74,.1);border:1px solid rgba(93,138,74,.35);color:#3D6330;}
+.form-status.is-err{background:rgba(196,98,45,.08);border:1px solid rgba(196,98,45,.32);color:var(--rust-dark);}
+
 .form-section-label{font-family:var(--sans);font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);padding-top:1.15rem;margin-bottom:.55rem;border-top:1px solid rgba(0,0,0,.07);}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem;margin-bottom:.85rem;}
 .consent-box{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.08);border-radius:3px;padding:1.15rem 1.25rem;margin-bottom:.85rem;font-size:.82rem;line-height:1.6;color:var(--text);}

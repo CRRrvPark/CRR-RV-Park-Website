@@ -18,6 +18,8 @@ import ClarityScript from '@components/ClarityScript.astro';
 import ConversionTracker from '@components/ConversionTracker.astro';
 import GoogleTagManager from '@components/GoogleTagManager.astro';
 import Lightbox from '@components/Lightbox.astro';
+import AvailabilityBanner from '@components/AvailabilityBanner.astro';
+import { EXTENDED_STAYS } from '@lib/availability';
 
 export interface Props {
   title: string;
@@ -62,7 +64,7 @@ const {
   {!noAnalytics && <GoogleTagManager enabled={true} slot="script" />}
   {!noAnalytics && <ClarityScript />}
 </head>
-<body>
+<body class:list={[EXTENDED_STAYS.applicationsOpen && 'has-announce']}>
   {/* Google Tag Manager noscript fallback — must be the first element
      inside <body> per Google's install docs. */}
   {!noAnalytics && <GoogleTagManager enabled={true} slot="noscript" />}
@@ -88,6 +90,7 @@ const {
       } catch (e) { /* no-op */ }
     })();
   </script>
+  <AvailabilityBanner />
   <Nav />
   <slot />
   <Footer />

@@ -7,6 +7,10 @@
  *   - Golf dropdown contains only: Golf Stays, Golf Course
  *   - Park Map is a top-level link (added 2026-04-23 by owner request — was
  *     previously a #anchor on /book-now.html, now a proper page).
+ *   - Extended Stays carries an "Available Now" flag while
+ *     EXTENDED_STAYS.applicationsOpen is true (src/lib/availability.ts). It
+ *     collapses to a gold dot between 981–1150px so the single-row nav can't
+ *     wrap into the Reservations CTA.
  *   - Mobile breakpoint at 980px (hamburger menu)
  *
  * Dynamic pages with show_in_main_nav=true are inserted between the
@@ -16,6 +20,7 @@
 
 import { serverClient } from '@lib/supabase';
 import { getHiddenPageSlugs } from '@lib/site-visibility';
+import { EXTENDED_STAYS } from '@lib/availability';
 
 interface NavPage { slug: string; title: string; nav_order: number | null; }
 let dynamicPages: NavPage[] = [];
@@ -76,7 +81,9 @@ if (hasUrl && hasKey) {
       </div>
     </div>
     <a href="/group-sites.html">Group Sites</a>
-    <a href="/extended-stays.html">Extended Stays</a>
+    <a href="/extended-stays">Extended Stays{EXTENDED_STAYS.applicationsOpen && (
+      <span class="nav-flag"><span class="nav-flag-text">{EXTENDED_STAYS.flagLabel}</span></span>
+    )}</a>
     <a href="/amenities.html">Amenities</a>
     <div class="nav-dd">
       <a href="/area-guide">Area Guide</a>

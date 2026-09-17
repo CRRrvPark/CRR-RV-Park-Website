@@ -94,7 +94,7 @@ begin
       [
         {"num":"01","title":"Canyon rim views and juniper groves","body":"The Crooked River 500 feet below. Juniper air. The kind of morning that makes you stop checking the map."},
         {"num":"02","title":"Golf course next door — 200 feet from your rig","body":"Walk from your site to the first tee of a nationally recognized 18-hole course. No shuttle. No drive."},
-        {"num":"03","title":"Open every single day of the year","body":"While other parks in Central Oregon parks close in October, we don''t. Book a winter month and have the canyon nearly to yourself."}
+        {"num":"03","title":"Open every single day of the year","body":"The park stays open through winter. Book a monthly stay and have the canyon nearly to yourself."}
       ]
     $json$::jsonb, 'The 3 numbered bullet items')
     on conflict (section_id, key) do nothing;

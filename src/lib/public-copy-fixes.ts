@@ -28,8 +28,8 @@ export function fixPublicCopy(input: string): string {
     monthlyRatesReplacement()
   );
   s = s.replace(
-    /While other parks in Central Oregon parks close in October/g,
-    'While other parks in Central Oregon close in October'
+    /While other parks in Central Oregon(?: parks)? close in October,\s*we don(?:''|')t\.\s*/g,
+    'The park stays open through winter. '
   );
   return s;
 }

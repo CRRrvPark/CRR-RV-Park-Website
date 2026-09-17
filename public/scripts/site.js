@@ -49,7 +49,7 @@
   }
 
   /* ---- FORM handler (Netlify Forms via AJAX) ---- */
-  document.querySelectorAll('#contact-form, #monthly-form').forEach(function (form) {
+  document.querySelectorAll('#contact-form').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = form.querySelector('.btn-sub');
@@ -57,7 +57,7 @@
       btn.textContent = 'Sending…';
       btn.disabled = true;
 
-      fetch('/', {
+      fetch('/__forms.html', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(new FormData(form)).toString()

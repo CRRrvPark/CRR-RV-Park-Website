@@ -31,6 +31,10 @@ export function fixPublicCopy(input: string): string {
     /While other parks in Central Oregon(?: parks)? close in October,\s*we don(?:''|')t\.\s*/g,
     'The park stays open through winter. '
   );
+  s = s.replace(
+    /Through April 30, when many parks wind down, we stay open\s*[—–-]\s*/g,
+    ''
+  );
   return s;
 }
 

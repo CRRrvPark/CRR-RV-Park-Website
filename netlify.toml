@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build && npm run ensure:monthly-mail"
+  command = "npm run build"
   # Astro's Netlify adapter emits a serverless bundle into `dist/` and
   # wires up functions/edge automatically. Don't point publish elsewhere.
   publish = "dist"

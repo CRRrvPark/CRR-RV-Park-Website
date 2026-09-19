@@ -11,7 +11,7 @@
 **Continuous deployment from GitHub is the primary and only expected path.**
 
 - Every `git push` to `main` on https://github.com/CRRrvPark/CRR-RV-Park-Website triggers a Netlify build automatically.
-- Build command: `npm run build && npm run ensure:monthly-mail` (from `netlify.toml`).
+- Build command: `npm run build` (from `netlify.toml`). That script also creates the monthly-application webhook and emails stored PDFs on production deploys.
 - Publish directory: `dist`.
 - Functions directory: `.netlify/v1/functions`.
 - Auto-deploy takes roughly 3–5 minutes per push.

@@ -1,0 +1,12 @@
+---
+description: This repo is the live park website; marketing is a sibling Cursor folder, not this tree.
+alwaysApply: true
+---
+
+# CRR workspace layout
+
+This folder is the production website (`CRRrvPark/CRR-RV-Park-Website`). Netlify deploys from this repo only.
+
+Campaign work (Google Ads, copy decks, CSVs, launch notes) lives in the sibling workspace folder **Marketing** (`rv-park-marketing`). Do not add ads assets here. Do not treat that folder as a git submodule of this repo.
+
+When a task is conversion copy, landing pages, tracking, or site UX, work in this folder. When it is campaign setup or channel collateral, work in Marketing.

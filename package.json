@@ -39,6 +39,8 @@
     "@types/react-dom": "^18.3.0",
     "astro": "^5.0.0",
     "monaco-editor": "^0.52.0",
+    "nodemailer": "^10.0.10",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "rrule": "^2.8.1",
@@ -47,6 +49,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/nodemailer": "^8.0.2",
     "cheerio": "^1.0.0"
   }
 }

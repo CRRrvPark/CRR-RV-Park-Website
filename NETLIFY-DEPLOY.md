@@ -73,6 +73,8 @@ If you ever see `output: 'static'` again, the login will break because API route
 | `NETLIFY_BUILD_HOOK` | Netlify → Your site → Build & deploy → Build hooks → Add build hook | All scopes |
 | `SITE_URL` | `https://www.crookedriverranchrv.com` | All scopes |
 | `ADMIN_EMAIL_FROM` | `rvpark@crookedriverranch.com` | All scopes |
+| `APPLICATIONS_EMAIL_TO` | Inbox that should receive monthly-application PDFs (defaults to `ADMIN_EMAIL_FROM`) | All scopes |
+| `RESEND_API_KEY` | Resend API key (or set `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` instead) | All scopes |
 | `SCHEDULED_FN_SECRET` | Any random 32+ char string — same value as in your local `.env` | All scopes |
 
 **Zoho variables** (add these once Zoho is wired up; skip for now if `ZOHO_REFRESH_TOKEN` is empty):
@@ -160,3 +162,24 @@ file must stay only on machines you control.
 - [ ] Verify `/admin/login` renders the form (no blank page)
 - [ ] Verify signing in redirects to `/admin` and shows the dashboard
 - [ ] Verify at least one content edit → publish cycle works end-to-end
+- [ ] Monthly applications: Resend or SMTP configured, then form webhook on `monthly-application` pointing at `/api/forms/monthly-application` with JWS secret
+
+---
+
+## Monthly application PDF (office inbox)
+
+The public form still POSTs to Netlify Forms. Conversion tracking is unchanged. After Netlify stores a `monthly-application` submission, it should POST to:
+
+`https://www.crookedriverranchrv.com/api/forms/monthly-application`
+
+**Order matters.** Set `RESEND_API_KEY` (or SMTP vars) and `APPLICATIONS_EMAIL_TO` first. Then add the webhook. If the hook fires before mail works, Netlify disables it after repeated errors.
+
+1. Add env vars above and redeploy.
+2. Netlify → **Project configuration** → **Notifications** → **Form submission notifications** → Add.
+3. Event: **Outgoing webhook** / new form submission. Form: **monthly-application** (not all forms).
+4. URL: `https://www.crookedriverranchrv.com/api/forms/monthly-application`
+5. JWS secret token: same value as `FORM_WEBHOOK_SECRET`, or `SCHEDULED_FN_SECRET` if you did not set a separate one.
+
+Resend must verify `crookedriverranch.com` (or whatever you put in `MAIL_FROM`) or sends are rejected. SMTP via the existing Zoho/Google mailbox is the no-new-domain option.
+
+Once PDF emails are landing, turn off the raw Netlify form-dump email so you only get the formatted packet.

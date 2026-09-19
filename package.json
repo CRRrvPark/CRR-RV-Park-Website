@@ -13,7 +13,8 @@
     "check": "astro check",
     "db:migrate": "node scripts/supabase-migrate.mjs",
     "seed:legacy-pages": "node scripts/seed-legacy-pages.mjs",
-    "bootstrap:first-owner": "node scripts/bootstrap-first-owner.mjs"
+    "bootstrap:first-owner": "node scripts/bootstrap-first-owner.mjs",
+    "ensure:monthly-mail": "tsx scripts/ensure-monthly-application-mail.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

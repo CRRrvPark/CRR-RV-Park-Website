@@ -20,7 +20,7 @@ import { ensureMonthlyApplicationWebhook } from '../src/lib/monthly-application-
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function bundleScheduledDrain(): void {
-  const outDir = resolve(root, '.netlify/v1/functions');
+  const outDir = resolve(root, '.netlify/v1/functions/email-monthly-applications');
   mkdirSync(outDir, { recursive: true });
   const esbuild = resolve(root, 'node_modules/esbuild/bin/esbuild');
   const entry = resolve(root, 'netlify/functions/email-monthly-applications.ts');

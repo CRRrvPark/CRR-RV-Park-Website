@@ -62,9 +62,17 @@
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(new FormData(form)).toString()
       })
-      .then(function () {
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         btn.textContent = 'Message Sent ✓';
         btn.style.background = '#16a34a';
+        var hp = form.querySelector('[name="bot-field"]');
+        if (!(hp && hp.value) && typeof window.crrTrack === 'function') {
+          window.crrTrack('contact_form_submit', {
+            form_id: form.id || 'contact-form',
+            form_name: form.getAttribute('name') || 'contact',
+          });
+        }
         form.reset();
         setTimeout(function () {
           btn.textContent = origText;

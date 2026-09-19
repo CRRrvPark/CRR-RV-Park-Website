@@ -25,6 +25,8 @@ const ALLOWED_EVENTS = new Set([
   'email_click',
   'golf_tee_click',
   'tee_time_click',
+  'monthly_application_submit',
+  'contact_form_submit',
 ]);
 
 // Simple in-memory rate limit per IP (resets on cold-start — fine for the

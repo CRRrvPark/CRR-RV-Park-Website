@@ -366,6 +366,8 @@ const schemas = [
         })
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
+            var hp = form.querySelector('[name="bot-field"]');
+            var isBot = !!(hp && hp.value);
             form.reset();
             /* Button stays disabled so a double-click can't file twice. */
             if (btn) btn.textContent = 'Application sent';
@@ -373,6 +375,13 @@ const schemas = [
               "Application received. We'll follow up within 1–2 business days. Questions in the meantime? Call 541-923-1441.",
               true
             );
+            if (!isBot && typeof window.crrTrack === 'function') {
+              window.crrTrack('monthly_application_submit', {
+                form_id: 'monthly-form',
+                form_name: 'monthly-application',
+                lead_type: 'winter_monthly',
+              });
+            }
             if (status && status.scrollIntoView) {
               status.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }

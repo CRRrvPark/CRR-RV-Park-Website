@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run build && npx tsx scripts/ensure-monthly-application-mail.ts"
   # Astro's Netlify adapter emits a serverless bundle into `dist/` and
   # wires up functions/edge automatically. Don't point publish elsewhere.
   publish = "dist"
@@ -116,6 +116,9 @@
 
 [functions."snapshots-prune"]
   schedule = "23 3 * * *"
+
+[functions."email-monthly-applications"]
+  schedule = "*/5 * * * *"
 
 # ---------- Pretty URLs (extensionless) ----------
 # With output:'server', Astro emits pages at their slug (no .html suffix)

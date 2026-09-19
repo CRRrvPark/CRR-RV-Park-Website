@@ -11,7 +11,7 @@
 **Continuous deployment from GitHub is the primary and only expected path.**
 
 - Every `git push` to `main` on https://github.com/CRRrvPark/CRR-RV-Park-Website triggers a Netlify build automatically.
-- Build command: `npm run build` (from `netlify.toml`).
+- Build command: `npm run build && npx tsx scripts/ensure-monthly-application-mail.ts` (from `netlify.toml`).
 - Publish directory: `dist`.
 - Functions directory: `.netlify/v1/functions`.
 - Auto-deploy takes roughly 3–5 minutes per push.
@@ -162,7 +162,7 @@ file must stay only on machines you control.
 - [ ] Verify `/admin/login` renders the form (no blank page)
 - [ ] Verify signing in redirects to `/admin` and shows the dashboard
 - [ ] Verify at least one content edit → publish cycle works end-to-end
-- [ ] Monthly applications: Resend or SMTP configured, then form webhook on `monthly-application` pointing at `/api/forms/monthly-application` with JWS secret
+- [ ] Monthly applications: Resend or SMTP configured. Production builds create the `monthly-application` webhook and drain stored submissions; the 5-minute function is a backup.
 
 ---
 
@@ -172,13 +172,14 @@ The public form still POSTs to Netlify Forms. Conversion tracking is unchanged. 
 
 `https://www.crookedriverranchrv.com/api/forms/monthly-application`
 
-**Order matters.** Set `RESEND_API_KEY` (or SMTP vars) and `APPLICATIONS_EMAIL_TO` first. Then add the webhook. If the hook fires before mail works, Netlify disables it after repeated errors.
+**Order matters.** Set `RESEND_API_KEY` (or SMTP vars) and `APPLICATIONS_EMAIL_TO` first. Production builds then create the signed webhook (JWS = `FORM_WEBHOOK_SECRET`) and email any stored applications that do not yet have a PDF. If the hook fires before mail works, Netlify disables it after repeated errors — the 5-minute drain still picks those up.
 
-1. Add env vars above and redeploy.
-2. Netlify → **Project configuration** → **Notifications** → **Form submission notifications** → Add.
-3. Event: **Outgoing webhook** / new form submission. Form: **monthly-application** (not all forms).
-4. URL: `https://www.crookedriverranchrv.com/api/forms/monthly-application`
-5. JWS secret token: same value as `FORM_WEBHOOK_SECRET`, or `SCHEDULED_FN_SECRET` if you did not set a separate one.
+Manual fallback if a build cannot create the hook:
+
+1. Netlify → **Project configuration** → **Notifications** → **Form submission notifications** → Add.
+2. Event: **Outgoing webhook** / new form submission. Form: **monthly-application** (not all forms).
+3. URL: `https://www.crookedriverranchrv.com/api/forms/monthly-application`
+4. JWS secret token: same value as `FORM_WEBHOOK_SECRET`, or `SCHEDULED_FN_SECRET` if you did not set a separate one.
 
 Resend must verify `crookedriverranch.com` (or whatever you put in `MAIL_FROM`) or sends are rejected. SMTP via the existing Zoho/Google mailbox is the no-new-domain option.
 

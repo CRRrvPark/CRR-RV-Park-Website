@@ -20,6 +20,7 @@
     "@astrojs/netlify": "^6.0.0",
     "@astrojs/react": "^4.0.0",
     "@monaco-editor/react": "^4.7.0",
+    "@netlify/blobs": "^10.7.13",
     "@puckeditor/core": "^0.21.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.0",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.2",
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.0.0",
+    "tsx": "^4.23.13"
   }
 }
